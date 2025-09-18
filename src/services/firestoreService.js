@@ -293,14 +293,21 @@ export async function getUserByEmail(email) {
  */
 export function listenToConversation(userA, userB, callback) {
   try {
-    const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+    // prefer querying by conversationId for efficiency if messages are written with it
+    const convId = [userA, userB].filter(Boolean).sort().join('_');
+    let q;
+    try {
+      q = query(collection(db, 'messages'), where('conversationId', '==', convId), orderBy('timestamp', 'asc'));
+    } catch (e) {
+      // fallback to a broad query if conversationId field not indexed or absent
+      q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+    }
     const unsubscribe = onSnapshot(
       q,
       (snap) => {
         const all = mapSnapshot(snap);
         const convo = all.filter(m => (
-          (m.senderId === userA && m.receiverId === userB) ||
-          (m.senderId === userB && m.receiverId === userA)
+          (m.conversationId ? m.conversationId === convId : ((m.senderId === userA && m.receiverId === userB) || (m.senderId === userB && m.receiverId === userA)))
         ));
         // Ensure timestamps are Dates via normalizeDocData
         convo.sort((a, b) => {
@@ -329,9 +336,11 @@ export function listenToConversation(userA, userB, callback) {
  */
 export async function sendMessage(payload = {}) {
   try {
+    const conversationId = [payload.senderId, payload.receiverId].filter(Boolean).sort().join('_');
     const docRef = await addDoc(collection(db, 'messages'), {
       senderId: payload.senderId,
       receiverId: payload.receiverId,
+      conversationId,
       text: payload.text || '',
       timestamp: serverTimestamp(),
       senderName: payload.senderName || '',

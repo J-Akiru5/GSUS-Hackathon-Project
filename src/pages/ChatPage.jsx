@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { listenToConversation, sendMessage, getUserById, listenToUsers, markConversationRead } from '../services/firestoreService';
 import { auth } from '../../firebaseConfig';
+import { useAuth } from '../hooks/useAuth';
 import './ChatPage.css';
 import { User, Send } from 'lucide-react';
 
@@ -11,6 +12,7 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef(null);
   const unsubRef = useRef(null);
+  const { user: localUser } = useAuth();
 
   // find GSO_Head on mount
   useEffect(() => {
@@ -19,7 +21,7 @@ export default function ChatPage() {
       if (gso) {
         setGsoHead(gso);
         // set up conversation listener
-        const current = auth?.currentUser;
+        const current = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId } : null);
         if (current) {
           if (unsubRef.current) unsubRef.current();
           unsubRef.current = listenToConversation(current.uid, gso.id, (msgs) => {
@@ -43,21 +45,30 @@ export default function ChatPage() {
   }, []);
 
   const handleSend = async () => {
-    const user = auth?.currentUser;
+    const user = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId, displayName: localUser.name || localUser.displayName, email: localUser.email } : null);
     if (!user || !gsoHead) return;
     const text = newMessage.trim();
     if (!text) return;
+
+    // optimistic UI: create a temporary message
+    const tempId = `temp-${Date.now()}`;
+    const tempMsg = { id: tempId, senderId: user.uid, receiverId: gsoHead.id, text, senderName: user.displayName || user.email || 'You', timestamp: new Date(), optimistic: true };
+    setMessages(prev => [...prev, tempMsg]);
     setNewMessage('');
+
     try {
       await sendMessage({ senderId: user.uid, receiverId: gsoHead.id, text, senderName: user.displayName || user.email });
+      // let the real listener replace temp message when Firestore emits
       setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 50);
     } catch (err) {
       console.error('send failed', err);
+      // remove temp and restore input
+      setMessages(prev => prev.filter(m => m.id !== tempId));
       setNewMessage(text);
     }
   };
 
-  const currentUser = auth?.currentUser;
+  const currentUser = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId } : null);
 
   return (
     <div className="page-content chat-page">

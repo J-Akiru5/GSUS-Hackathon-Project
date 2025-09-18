@@ -3,6 +3,8 @@ import { NavLink } from 'react-router-dom';
 import { FiGrid, FiFileText, FiCalendar, FiUsers, FiBarChart2, FiSettings, FiMessageSquare } from 'react-icons/fi';
 import './Sidebar.css';
 import { useAuth } from '../hooks/useAuth';
+import { listenToUsers } from '../services/firestoreService';
+import { listenToConversation } from '../services/firestoreService';
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -12,6 +14,27 @@ const Sidebar = () => {
 
   const sidebarRef = useRef(null);
   const [compact, setCompact] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // monitor unread messages for current user vs GSO Head
+  useEffect(() => {
+    let unsub = null;
+    const usersUnsub = listenToUsers((users) => {
+      const gso = users.find(u => (u.role || '').toLowerCase() === 'gso_head');
+      const current = user;
+      if (gso && current) {
+        if (unsub) unsub();
+        unsub = listenToConversation(current.id || current.userId || current.uid, gso.id, (msgs) => {
+          const unread = msgs.filter(m => m.receiverId === (current.id || current.userId || current.uid) && !m.read).length;
+          setUnreadCount(unread);
+        });
+      }
+    });
+    return () => {
+      if (usersUnsub) usersUnsub();
+      if (unsub) unsub();
+    };
+  }, [user]);
 
   useEffect(() => {
     const el = sidebarRef.current;
@@ -37,7 +60,7 @@ const Sidebar = () => {
           <NavLink to="/dashboard" className="nav-item"><FiGrid /> Dashboard</NavLink>
           <NavLink to="/requests" className="nav-item"><FiFileText /> All Requests</NavLink>
           <NavLink to="/calendar" className="nav-item"><FiCalendar /> Master Calendar</NavLink>
-          <NavLink to="/chat" className="nav-item"><FiMessageSquare /> Chat</NavLink>
+          <NavLink to="/chat" className="nav-item"><FiMessageSquare /> Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</NavLink>
           <NavLink to="/personnel" className="nav-item"><FiUsers /> Personnel</NavLink>
           <NavLink to="/analytics" className="nav-item"><FiBarChart2 /> Analytics</NavLink>
           <NavLink to="/settings" className="nav-item"><FiSettings /> Settings</NavLink>

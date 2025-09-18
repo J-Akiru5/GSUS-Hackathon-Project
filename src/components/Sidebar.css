@@ -63,7 +63,15 @@
     background-color: linear-gradient(90deg, rgba(16, 185, 129, 0.12), rgba(139, 92, 246, 0.06));
     color: var(--color-primary);
   }
-  
+
+.unread-badge {
+  background: var(--color-danger, #ef4444);
+  color: white;
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
   .sidebar-footer {
     padding: 0.75rem 1rem;
     border-top: 1px solid var(--color-border);
