@@ -5,6 +5,7 @@ import './Sidebar.css';
 import { useAuth } from '../hooks/useAuth';
 import { listenToUsers } from '../services/firestoreService';
 import { listenToConversation } from '../services/firestoreService';
+import { useSidebar } from '../contexts/SidebarContext';
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -14,6 +15,8 @@ const Sidebar = () => {
 
   const sidebarRef = useRef(null);
   const [compact, setCompact] = useState(false);
+  // use the SidebarContext provided by SidebarProvider in main.jsx
+  const { open, close, toggle, openSidebar } = useSidebar();
   const [unreadCount, setUnreadCount] = useState(0);
 
   // monitor unread messages for current user vs GSO Head
@@ -49,9 +52,40 @@ const Sidebar = () => {
     return () => window.removeEventListener('resize', update);
   }, []);
 
+  // Note: real hook wiring to SidebarContext is applied below inside the component body
+  // We'll use a proper hook call to read context and react to changes.
+
+  // Replace direct document class manipulation with context; also add Escape key handling and focus management
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape' && open) {
+        try { close(); } catch (err) { /* noop */ }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, close]);
+
+  // Manage focus when opening the offcanvas sidebar
+  useEffect(() => {
+    const el = sidebarRef.current;
+    if (!el) return;
+    if (open) {
+      // store previous active element so we can restore
+      const prev = document.activeElement;
+      el.focus();
+      return () => {
+        try { prev?.focus?.(); } catch (e) { }
+      };
+    }
+  }, [open]);
+
   return (
-    <aside ref={sidebarRef} className={`sidebar ${compact ? 'compact' : ''}`}>
+    <>
+      {open && <div className="sidebar-overlay" onClick={() => close()} aria-hidden="true" />}
+      <aside ref={sidebarRef} className={`sidebar ${compact ? 'compact' : ''} ${open ? 'open' : ''} offcanvas`} aria-hidden={!open && compact} tabIndex={-1} role="dialog" aria-modal={open}>
       <div>
+          <button className="sidebar-close-btn" aria-label="Close sidebar" onClick={() => close()} style={{ display: compact ? 'block' : 'none' }}>✕</button>
         <div className="sidebar-header">
           {/* <img src="/src/assets/GSUS_logo.svg" alt="GSUS Logo" className="logo-img"/> */}
           <h1 className="logo-text">GSUS</h1>
@@ -82,6 +116,7 @@ const Sidebar = () => {
         </div>
       </div>
     </aside>
+    </>
   );
 };
 export default Sidebar;

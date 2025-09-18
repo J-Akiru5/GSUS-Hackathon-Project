@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useSidebar } from '../contexts/SidebarContext';
 import { NavLink } from 'react-router-dom';
 import './GSUSHeader.css';
 import bannerSrc from '../assets/GSUS_Header.svg';
@@ -10,9 +11,11 @@ export default function GSUSHeader() {
     return () => clearInterval(t);
   }, []);
 
+  const { toggle } = useSidebar();
+
   return (
     <header className="gsus-header">
-      {/* Banner image always visible at the top of the header */}
+      {/* Banner image visible at the top of the header */}
       <div className="gsus-banner">
         <div className="gsus-banner-inner">
           <img src={bannerSrc} alt="GSUS banner" className="gsus-banner-img" />

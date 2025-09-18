@@ -1,0 +1,16 @@
+{
+  "name": "gsus-admin-scripts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Admin/migration scripts for GSUS project (isolated to avoid web app peer conflicts)",
+  "main": "migrate-auth-users.js",
+  "scripts": {
+    "migrate": "node migrate-auth-users.js",
+    "link": "node link-user-auth.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "firebase-admin": "^12.7.0"
+  }
+}

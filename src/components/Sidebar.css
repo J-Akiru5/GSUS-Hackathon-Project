@@ -6,12 +6,13 @@
   flex-direction: column;
   justify-content: space-between;
   /* make the sidebar fixed to the left and full-height of the viewport */
-    position: fixed;
+  position: fixed;
   top: 0;
-    left: 0;
+  left: 0;
     bottom: 0;
+  z-index: 99;
   height: 100vh;
-    /* fallback to ensure full viewport height */
+  /* fallback to ensure full viewport height */
     padding: 0;
   flex-shrink: 0;
   transition: width var(--transition-medium), background-color var(--transition-fast);
@@ -51,7 +52,26 @@
     color: var(--color-text-muted);
     font-weight: 600;
     transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-  }
+}
+/* Offcanvas-specific styling for mobile behavior */
+.sidebar.offcanvas {
+  transform: translateX(0);
+  transition: transform 260ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.sidebar.offcanvas.open {
+  transform: translateX(0);
+}
+
+.sidebar-close-btn {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
   
   .nav-item:hover {
     background-color: var(--color-primary-50);
@@ -141,4 +161,11 @@
     padding: 0.5rem 0.6rem;
     white-space: nowrap;
   }
+}
+/* overlay when sidebar is open (mobile) */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.45);
+  z-index: 998;
 }

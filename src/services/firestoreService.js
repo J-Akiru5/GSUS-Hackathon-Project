@@ -297,6 +297,25 @@ export async function getUserByEmail(email) {
 }
 
 /**
+ * Fetch a user by their Firebase Auth UID (authUid) if stored in the document.
+ * @param {string} authUid
+ * @returns {Promise<Object|null>}
+ */
+export async function getUserByAuthUid(authUid) {
+  try {
+    if (!authUid) return null;
+    const q = query(collection(db, 'users'), where('authUid', '==', authUid));
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    const d = snap.docs[0];
+    return { id: d.id, ...normalizeDocData(d.data()) };
+  } catch (err) {
+    console.error('getUserByAuthUid failed:', err);
+    throw err;
+  }
+}
+
+/**
  * Listen to a conversation (all messages exchanged between two user ids)
  * Uses a broad query ordered by timestamp then filters client-side to avoid
  * Firestore composite filter restrictions. Returns unsubscribe.
@@ -383,6 +402,148 @@ export async function markConversationRead(userId, otherId) {
     await Promise.all(updates);
   } catch (err) {
     console.error('markConversationRead failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Create or overwrite a user document in 'users' collection.
+ * If an id is provided it will set that doc id; otherwise addDoc is used.
+ * @param {Object} userData - { id?, email, fullName, role, office, ... }
+ * @returns {Promise<string>} id of created/updated doc
+ */
+export async function createUser(userData = {}) {
+  try {
+    if (!userData) throw new Error('userData required');
+    const payload = {
+      email: userData.email || '',
+      fullName: userData.fullName || userData.name || '',
+      role: userData.role || 'personnel',
+      office: userData.office || '',
+      authUid: userData.authUid || null,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      ...userData
+    };
+    if (userData.id) {
+      const ref = doc(db, 'users', userData.id);
+      await setDoc(ref, payload, { merge: true });
+      // maintain a mapping from auth UID -> userDocId for security rules
+      if (userData.authUid) {
+        try {
+          await setDoc(doc(db, 'userMappings', String(userData.authUid)), { userDocId: userData.id }, { merge: true });
+        } catch (e) {
+          console.warn('Failed to write userMappings entry for', userData.authUid, e);
+        }
+      }
+      return userData.id;
+    }
+    const docRef = await addDoc(collection(db, 'users'), payload);
+    // write mapping from authUid -> new user doc id so server rules can map auth to user doc
+    if (userData.authUid) {
+      try {
+        await setDoc(doc(db, 'userMappings', String(userData.authUid)), { userDocId: docRef.id }, { merge: true });
+      } catch (e) {
+        console.warn('Failed to write userMappings entry for', userData.authUid, e);
+      }
+    }
+    return docRef.id;
+  } catch (err) {
+    console.error('createUser failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Update an existing user document by id with partial payload.
+ * @param {string} id
+ * @param {Object} payload
+ */
+export async function updateUser(id, payload = {}) {
+  try {
+    if (!id) throw new Error('id required');
+    const ref = doc(db, 'users', id);
+    await updateDoc(ref, {
+      ...payload,
+      updatedAt: serverTimestamp()
+    });
+  } catch (err) {
+    console.error('updateUser failed:', err);
+    throw err;
+  }
+}
+
+// --- Chat helpers using chats/{chatId}/messages subcollection ---
+/**
+ * Deterministic chatId from two userDocIds
+ */
+export function makeChatId(userA, userB) {
+  return [userA, userB].filter(Boolean).sort().join('_');
+}
+
+/**
+ * Listen to a chat's messages under chats/{chatId}/messages ordered by timestamp
+ * @returns {() => void} unsubscribe
+ */
+export function listenToChat(userA, userB, callback) {
+  try {
+    const chatId = makeChatId(userA, userB);
+    const q = query(collection(db, 'chats', chatId, 'messages'), orderBy('timestamp', 'asc'));
+    const unsub = onSnapshot(q, (snap) => callback(mapSnapshot(snap), null), (err) => { console.error('listenToChat error', err); callback([], err); });
+    return unsub;
+  } catch (err) {
+    console.error('listenToChat failed', err);
+    callback([], err);
+    return () => { };
+  }
+}
+
+/**
+ * Send a chat message into chats/{chatId}/messages and upsert the chat doc
+ */
+export async function sendChatMessage({ senderId, receiverId, text = '', senderName = '', messageId = null }) {
+  try {
+    const conversationId = makeChatId(senderId, receiverId);
+    // upsert chat doc
+    await setDoc(doc(db, 'chats', conversationId), {
+      participants: [senderId, receiverId],
+      lastMessage: text,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    const docRef = await addDoc(collection(db, 'chats', conversationId, 'messages'), {
+      senderId,
+      receiverId,
+      conversationId,
+      text,
+      timestamp: serverTimestamp(),
+      senderName,
+      read: false,
+      messageId: messageId || Date.now().toString(),
+    });
+    return docRef.id;
+  } catch (err) {
+    console.error('sendChatMessage failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Mark unread messages in chats/{chatId}/messages as read where receiverId == userId and senderId == otherId
+ */
+export async function markChatRead(userId, otherId) {
+  try {
+    const chatId = makeChatId(userId, otherId);
+    const q = query(collection(db, 'chats', chatId, 'messages'), where('receiverId', '==', userId), where('senderId', '==', otherId), where('read', '==', false));
+    const snap = await getDocs(q);
+    const updates = [];
+    snap.forEach(docSnap => {
+      const ref = doc(db, 'chats', chatId, 'messages', docSnap.id);
+      updates.push(updateDoc(ref, { read: true, readAt: serverTimestamp() }));
+    });
+    await Promise.all(updates);
+  } catch (err) {
+    console.error('markChatRead failed:', err);
     throw err;
   }
 }

@@ -24,8 +24,8 @@ function AuthForm({ onLogin }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // demo login uses role only — keep email/password for UX
-    onLogin(role);
+    // pass full credentials to useAuth.login
+    onLogin({ email, password, role, name: role === 'gso_head' ? 'GSO Head' : 'Personnel' });
   };
 
   return (

@@ -1,0 +1,49 @@
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  width: 100%;
+}
+.filter-bar label { font-size: 0.95rem; }
+.filter-cats { display: inline-flex; gap: 0.5rem; }
+.filter-cats .legend-pill { padding: 0.4rem 0.75rem; border-radius: 9999px; font-size: 0.9rem; border: 1px solid transparent; cursor: pointer; transition: background-color 120ms, transform 80ms; }
+.filter-cats .legend-pill.active { box-shadow: none; transform: translateY(0); }
+.filter-cats .legend-pill.inactive { opacity: 0.7; }
+.filter-cats .legend-pill:focus { outline: none; box-shadow: 0 0 0 3px rgba(2,6,23,0.06); }
+
+/* color variants to match header pills */
+.legend-pill.venue { background: #157F4A; color: var(--color-white); }
+.legend-pill.vehicle { background: #0EA5E9; color: var(--color-white); }
+.legend-pill.equipment { background: #F97316; color: var(--color-white); }
+/* small helper for center alignment when used inside SectionHeader */
+.filter-bar .legend-pill { display: inline-flex; align-items: center; gap: 0.5rem; }
+
+/* Shared control style used by search input, selects and pills */
+.control {
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-sizing: border-box;
+}
+
+/* Apply shared control visuals to legend pills */
+.filter-cats .legend-pill { height: 40px; padding: 0 14px; }
+
+/* Select wrapper to show chevron while keeping native select for accessibility */
+.select-wrapper { position: relative; display: inline-block; width: 100%; }
+.select-wrapper .filter-select.control { width: 100%; -webkit-appearance: none; -moz-appearance: none; appearance: none; background: transparent; border: none; padding: 0; }
+.select-wrapper .select-chevron {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--color-text-light);
+}
+
+@media (min-width: 720px) {
+    /* Wide layout: search on left, then two compact selects on the right */
+    .filter-bar {
+        grid-template-columns: 1fr 220px 220px;
+    }
+}

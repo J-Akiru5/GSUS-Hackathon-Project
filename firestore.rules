@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Mapping from Firebase Auth UID -> Firestore user document id
+    // Document ID is the auth UID, value contains { userDocId: '<users doc id>' }
+    match /userMappings/{authUid} {
+      allow read: if request.auth != null && request.auth.uid == authUid;
+      // Allow the authenticated user to create their mapping to a userDocId
+      allow create: if request.auth != null && request.auth.uid == authUid
+                    && request.resource.data.userDocId is string;
+      // Disallow updates/deletes by clients (map should be maintained carefully)
+      allow update, delete: if false;
+    }
+
+    // Users collection: restrict read/update to the mapped owner
+    match /users/{userId} {
+      allow read: if request.auth != null
+                  && get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId == userId;
+      allow create: if request.auth != null && request.resource.data.authUid == request.auth.uid;
+      allow update: if request.auth != null
+                    && get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId == userId;
+      allow delete: if false;
+    }
+
+    // Chats collection and messages subcollection
+    match /chats/{chatId} {
+      // Read chat doc only if the requester maps to one of the participants
+      allow get: if request.auth != null
+                 && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in resource.data.participants);
+      // Allow clients to create a chat doc if they are included in participants
+      allow create: if request.auth != null
+                    && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in request.resource.data.participants)
+                    && request.resource.data.participants.size() >= 2;
+      // Allow updates by participants
+      allow update: if request.auth != null
+                    && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in resource.data.participants);
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        // Read only for participants in the parent chat
+        allow read: if request.auth != null
+                    && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
+
+        // Create message if the authenticated user maps to the senderId and conversationId matches chatId
+        allow create: if request.auth != null
+                      && get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId == request.resource.data.senderId
+                      && request.resource.data.conversationId == chatId
+                      && request.resource.data.text is string
+                      && request.resource.data.text.size() > 0;
+
+        // Disallow arbitrary updates/deletes (optional: allow sender to mark as read)
+        allow update, delete: if false;
+      }
+    }
+
+    // Deny everything else by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

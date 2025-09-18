@@ -1,12 +1,18 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { listenToConversation, sendMessage, getUserById, listenToUsers, markConversationRead } from '../services/firestoreService';
-import { auth } from '../../firebaseConfig';
+import { listenToUsers, getUserByAuthUid, createUser, getUserById, listenToChat, sendChatMessage, markChatRead, makeChatId } from '../services/firestoreService';
+import { auth, db } from '../../firebaseConfig';
 import { signInAnonymously } from 'firebase/auth';
 import { useAuth } from '../hooks/useAuth';
 import './ChatPage.css';
+import SectionHeader from '../components/SectionHeader';
 import { User, Send } from 'lucide-react';
+import { collection, query, orderBy, addDoc, onSnapshot, serverTimestamp, doc, setDoc } from 'firebase/firestore';
 
 export default function ChatPage() {
+  useEffect(() => {
+    document.body.classList.add('hide-banner');
+    return () => document.body.classList.remove('hide-banner');
+  }, []);
   const [messages, setMessages] = useState([]);
   const [gsoHead, setGsoHead] = useState(null);
   const [users, setUsers] = useState([]);
@@ -16,33 +22,16 @@ export default function ChatPage() {
   const scrollRef = useRef(null);
   const unsubRef = useRef(null);
   const { user: localUser } = useAuth();
+  const [authMappedUser, setAuthMappedUser] = useState(null);
+  const [currentUserFsId, setCurrentUserFsId] = useState(null);
 
-  // find GSO_Head on mount
+  // find GSO_Head on mount and populate users list
   useEffect(() => {
     const usersUnsub = listenToUsers((allUsers) => {
       setUsers(allUsers.filter(u => u && u.id));
       const gso = allUsers.find(u => (u.role || '').toLowerCase() === 'gso_head');
       setGsoHead(gso || null);
-      // choose activeUser: prefer previously active or gso
-      const chosen = activeUser || gso || null;
-      if (chosen) {
-        setActiveUser(chosen);
-  const current = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId } : null);
-        if (current) {
-          if (unsubRef.current) unsubRef.current();
-          unsubRef.current = listenToConversation(current.uid, chosen.id, (msgs, err) => {
-            if (err) { console.error('listenToConversation error for chosen:', err); }
-            setMessages(msgs);
-            setLoading(false);
-            // mark read for messages received by current user
-            markConversationRead(current.uid, chosen.id).catch(() => {});
-            // scroll to bottom
-            setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 50);
-          });
-        }
-      } else {
-        setLoading(false);
-      }
+      setLoading(false);
     });
 
     return () => {
@@ -51,31 +40,80 @@ export default function ChatPage() {
     };
   }, []);
 
+  // Map Firebase auth user to Firestore user doc if present; create a minimal doc if missing
+  useEffect(() => {
+    let mounted = true;
+    const fb = auth && auth.currentUser;
+    if (!fb) return;
+    (async () => {
+      try {
+        const mapped = await getUserByAuthUid(fb.uid);
+        if (mapped) {
+          if (!mounted) return;
+          setAuthMappedUser(mapped);
+          setCurrentUserFsId(mapped.id);
+          return;
+        }
+        // not found: create a lightweight user doc so we have a Firestore id to use in chat
+        const id = await createUser({ email: fb.email || '', fullName: fb.displayName || '', role: 'personnel', authUid: fb.uid });
+        const newU = await getUserById(id);
+        if (!mounted) return;
+        setAuthMappedUser(newU);
+        setCurrentUserFsId(newU.id);
+      } catch (err) {
+        console.error('Failed to map auth user to Firestore user doc', err);
+      }
+    })();
+    return () => { mounted = false; };
+  }, [auth?.currentUser]);
+
+  // When activeUser changes or currentUserFsId becomes available, subscribe to chat subcollection
+  useEffect(() => {
+    // clear previous
+    if (unsubRef.current) {
+      unsubRef.current();
+      unsubRef.current = null;
+    }
+    setMessages([]);
+    if (!activeUser || !currentUserFsId) return;
+
+    unsubRef.current = listenToChat(currentUserFsId, activeUser.id, (msgs, err) => {
+      if (err) { console.error('chat listener error', err); setLoading(false); return; }
+      setMessages(msgs);
+      setLoading(false);
+      setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 50);
+    });
+
+    return () => {
+      if (unsubRef.current) unsubRef.current();
+      unsubRef.current = null;
+    };
+  }, [activeUser, currentUserFsId]);
+
   const handleSend = async () => {
-    const user = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId, displayName: localUser.name || localUser.displayName, email: localUser.email } : null);
-    if (!user || !gsoHead) return;
+    const senderId = currentUserFsId || (localUser && localUser.id) || (authMappedUser && authMappedUser.id) || (auth && auth.currentUser && auth.currentUser.uid) || null;
+    const senderName = (localUser && (localUser.fullName || localUser.name)) || (authMappedUser && (authMappedUser.fullName || authMappedUser.name)) || (auth && auth.currentUser && auth.currentUser.displayName) || (localUser && localUser.email) || 'You';
+    if (!senderId || !activeUser) return;
     const text = newMessage.trim();
     if (!text) return;
 
-    // optimistic UI: create a temporary message
+    // optimistic UI
     const tempId = `temp-${Date.now()}`;
-    const tempMsg = { id: tempId, senderId: user.uid, receiverId: gsoHead.id, text, senderName: user.displayName || user.email || 'You', timestamp: new Date(), optimistic: true };
+    const tempMsg = { id: tempId, senderId, receiverId: activeUser.id, text, senderName, timestamp: new Date(), optimistic: true };
     setMessages(prev => [...prev, tempMsg]);
     setNewMessage('');
 
     try {
-      await sendMessage({ senderId: user.uid, receiverId: gsoHead.id, text, senderName: user.displayName || user.email });
-      // let the real listener replace temp message when Firestore emits
+      await sendChatMessage({ senderId, receiverId: activeUser.id, text, senderName, messageId: Date.now().toString() });
       setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 50);
     } catch (err) {
       console.error('send failed', err);
-      // remove temp and restore input
       setMessages(prev => prev.filter(m => m.id !== tempId));
       setNewMessage(text);
     }
   };
 
-  const currentUser = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId } : null);
+  const currentUser = { uid: currentUserFsId || (localUser ? (localUser.id || localUser.userId) : (auth?.currentUser?.uid)) };
 
   const [error, setError] = useState(null);
 
@@ -91,6 +129,7 @@ export default function ChatPage() {
 
   return (
     <div className="page-content chat-page">
+      <SectionHeader title="Chat" subtitle="Team messaging" />
       <div className="chat-wrapper">
         {!currentUser && (
           <div style={{ padding: 12 }}>
@@ -104,17 +143,8 @@ export default function ChatPage() {
           <div className="users-list">
             {users.map(u => (
               <div key={u.id} className={`user-item ${activeUser && activeUser.id === u.id ? 'active' : ''}`} onClick={() => {
+                // set the active user; the useEffect below will subscribe to chats/{chatId}/messages
                 setActiveUser(u);
-                const current = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId } : null);
-                if (current) {
-                  if (unsubRef.current) unsubRef.current();
-                  unsubRef.current = listenToConversation(current.uid, u.id, (msgs) => {
-                    setMessages(msgs);
-                    setLoading(false);
-                    markConversationRead(current.uid, u.id).catch(() => {});
-                    setTimeout(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }), 50);
-                  });
-                }
               }}>
                 <div className="user-name">{u.displayName || u.fullName || u.name || u.email}</div>
                 <div className="user-meta">{u.role || ''}</div>

@@ -23,9 +23,11 @@
   --border-radius: 12px;
   --content-max-width: 1400px;
     --sidebar-width: 260px;
-    --header-height: 250px;
-    /* increased to give banner more height */
-    /* slightly taller to accommodate banner */
+    --header-height: 200px;
+      /* reduced banner offset so the section header can rise earlier */
+      --banner-offset: 220px;
+      /* increase overlap so the section header visually sits into the banner area */
+      --section-overlap: 28px;
     --section-header-height: 64px;
     --gap-lg: 1.5rem;
     --gap-md: 1rem;
@@ -63,6 +65,32 @@ body {
   align-items: flex-start;
 }
 
+/* Off-canvas sidebar support: when body.sidebar-open is set, slide the sidebar into view */
+body.sidebar-open .sidebar.offcanvas {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* When sidebar is offcanvas (mobile), hide main layout margin to let it overlay */
+@media (max-width: 900px) {
+  .sidebar.offcanvas {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    z-index: 9998;
+    transform: translateX(-110%);
+    transition: transform 260ms cubic-bezier(.2, .8, .2, 1);
+    box-shadow: 0 8px 30px rgba(2, 6, 23, 0.2);
+    background: var(--color-surface);
+  }
+
+  .main-layout {
+    margin-left: 0;
+  }
+}
 .app-container {
   width: 100%;
   max-width: calc(var(--content-max-width) - var(--sidebar-width));

@@ -1,2 +1,56 @@
-.section-header { width: 100%; max-width: var(--content-max-width); margin: 0 auto; padding: 0 1rem; transition: background-color 260ms ease, box-shadow 260ms ease, transform 260ms ease; height: var(--section-header-height); display: flex; align-items: center; gap: 0.75rem; z-index: 70; }
-.section-header--active { position: fixed; left: calc((100% - var(--content-max-width)) / 2); right: auto; top: var(--header-height); z-index: 80; background-color: rgba(16,185,129,0.06); box-shadow: 0 6px 18px rgba(16,185,129,0.06); border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.section-header {
+  position: sticky;
+  /* place the section header at the bottom edge of the global header */
+  /* header bottom = header height - section header height */
+  top: calc(var(--header-height) - var(--section-header-height) - var(--section-overlap));
+  left: 0;
+  right: 0;
+  /* keep the header below the banner so the banner remains on top */
+  z-index: 40;
+
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 0 1rem;
+
+
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  /* sit slightly overlapping the banner by default; adjustable via --section-overlap */
+  /* uses global --section-overlap defined in :root */
+
+  transform: translateY(0);
+  transition: top 220ms cubic-bezier(.2, .8, .2, 1),
+    background-color 260ms ease,
+    box-shadow 260ms ease,
+    transform 260ms ease;
+
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.section-header--active {
+  /* Only change visuals when active; keep active state below the banner (banner z-index = 60) */
+  z-index: 58;
+  /* sit above most content */
+  transform: translateY(0);
+  background-color: rgba(16, 185, 129, 0.08);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.08);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  /* snap to very top of the viewport when active */
+  top: 0;
+}
+
+/* when viewport is narrow, reduce overlap and ensure header doesn't cover content */
+@media (max-width: 900px) {
+  .section-header {
+    top: calc(var(--header-height) - var(--section-header-height) - (var(--section-overlap) / 2));
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}

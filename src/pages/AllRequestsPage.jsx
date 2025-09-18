@@ -60,15 +60,16 @@ export default function AllRequestsPage() {
 
     return (
     <div className="page-content all-requests-page">
-            <SectionHeader title="All Requests" subtitle="Manage and track all service requests" />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div className="request-count">{loading ? '...' : `${filteredRequests.length} of ${requests.length} requests`}</div>
-                    <div>
+            <SectionHeader
+                title="All Requests"
+                subtitle="Manage and track all service requests"
+                actions={(
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div className="request-count">{loading ? '...' : `${filteredRequests.length} of ${requests.length} requests`}</div>
                         <button className="btn btn-primary" onClick={() => { setEditing(null); setFormOpen(true); }}>New Request</button>
                     </div>
-            </div>
-        </div>
+                )}
+            />
 
         <div className="card filters-card">
             <div className="card-header">
@@ -83,11 +84,12 @@ export default function AllRequestsPage() {
                         placeholder="Search requests..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
+                        className="search-input control"
                     />
                 </div>
                 
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
+                <div className="select-wrapper">
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select control">
                     <option value="all">All Statuses</option>
                     <option value="Pending">Pending</option>
                     <option value="Approved">Approved</option>
@@ -95,15 +97,20 @@ export default function AllRequestsPage() {
                     <option value="Completed">Completed</option>
                     <option value="Denied">Denied</option>
                     <option value="Awaiting Feedback">Awaiting Feedback</option>
-                </select>
+                    </select>
+                    <div className="select-chevron">▾</div>
+                </div>
 
-                <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="filter-select">
+                <div className="select-wrapper">
+                    <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="filter-select control">
                     <option value="all">All Divisions</option>
                     <option value="facilities">Facilities Team</option>
                     <option value="transportation">Transportation Team</option>
                     <option value="maintenance">Maintenance Team</option>
                     <option value="it">IT Support Team</option>
-                </select>
+                    </select>
+                    <div className="select-chevron">▾</div>
+                </div>
             </div>
         </div>
 
