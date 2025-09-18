@@ -2,54 +2,107 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Mapping from Firebase Auth UID -> Firestore user document id
-    // Document ID is the auth UID, value contains { userDocId: '<users doc id>' }
+    // Helper: safe getter for mapping doc
+    function mappingDoc() {
+      return exists(/databases/$(database)/documents/userMappings/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/userMappings/$(request.auth.uid))
+        : null;
+    }
+
+    // userMappings: map auth UID -> users doc id. Creation is allowed only when
+    // the target users doc exists and is not already mapped to a different authUid.
     match /userMappings/{authUid} {
       allow read: if request.auth != null && request.auth.uid == authUid;
-      // Allow the authenticated user to create their mapping to a userDocId
-      allow create: if request.auth != null && request.auth.uid == authUid
-                    && request.resource.data.userDocId is string;
-      // Disallow updates/deletes by clients (map should be maintained carefully)
+
+      allow create: if request.auth != null
+                    && request.auth.uid == authUid
+                    && request.resource.data.userDocId is string
+                    // target user doc must exist
+                    && exists(/databases/$(database)/documents/users/$(request.resource.data.userDocId))
+                    // ensure the target user doc is not already claimed by another auth UID
+                    && (
+                      !('authUid' in get(/databases/$(database)/documents/users/$(request.resource.data.userDocId)).data)
+                      || get(/databases/$(database)/documents/users/$(request.resource.data.userDocId)).data.authUid == request.auth.uid
+                    )
+                    // do not allow overwriting an existing mapping for this authUid
+                    && !exists(/databases/$(database)/documents/userMappings/$(authUid));
+
+      // Disallow client-side updates/deletes for mappings
       allow update, delete: if false;
     }
 
-    // Users collection: restrict read/update to the mapped owner
+    // users: only the mapped owner may read or update their document. Creates must
+    // include a matching authUid and reasonable field types.
     match /users/{userId} {
       allow read: if request.auth != null
+                  && exists(/databases/$(database)/documents/userMappings/$(request.auth.uid))
                   && get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId == userId;
-      allow create: if request.auth != null && request.resource.data.authUid == request.auth.uid;
+
+      allow create: if request.auth != null
+                    && request.resource.data.authUid == request.auth.uid
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() <= 320
+                    && request.resource.data.fullName is string
+                    && request.resource.data.fullName.size() <= 200
+                    && request.resource.data.role in ['personnel', 'gso_head', 'admin'];
+
       allow update: if request.auth != null
-                    && get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId == userId;
+                    && exists(/databases/$(database)/documents/userMappings/$(request.auth.uid))
+                    && get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId == userId
+                    // prevent client from altering role or authUid via update
+                    && !( 'role' in request.resource.data )
+                    && !( 'authUid' in request.resource.data );
+
       allow delete: if false;
     }
 
-    // Chats collection and messages subcollection
+    // Chats collection: creators must be participants, participants list size is bounded,
+    // and participants array cannot be arbitrarily changed by clients.
     match /chats/{chatId} {
-      // Read chat doc only if the requester maps to one of the participants
       allow get: if request.auth != null
+                 && exists(/databases/$(database)/documents/userMappings/$(request.auth.uid))
                  && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in resource.data.participants);
-      // Allow clients to create a chat doc if they are included in participants
+
       allow create: if request.auth != null
-                    && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in request.resource.data.participants)
-                    && request.resource.data.participants.size() >= 2;
-      // Allow updates by participants
+                    // creator must be provided and match mapping
+                    && request.resource.data.creator is string
+                    && exists(/databases/$(database)/documents/userMappings/$(request.auth.uid))
+                    && get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId == request.resource.data.creator
+                    // participants must be a list, include the creator, and have sensible bounds
+                    && request.resource.data.participants is list
+                    && request.resource.data.participants.size() >= 2
+                    && request.resource.data.participants.size() <= 10
+                    && (request.resource.data.creator in request.resource.data.participants);
+
+      // Allow updates by participants but disallow modifications to the participants array
       allow update: if request.auth != null
-                    && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in resource.data.participants);
+                    && exists(/databases/$(database)/documents/userMappings/$(request.auth.uid))
+                    && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in resource.data.participants)
+                    && request.resource.data.participants == resource.data.participants;
+
+      allow delete: if false;
 
       // Messages subcollection
       match /messages/{messageId} {
-        // Read only for participants in the parent chat
+        // read only for participants of the parent chat (guard with exists)
         allow read: if request.auth != null
+                    && exists(/databases/$(database)/documents/chats/$(chatId))
+                    && exists(/databases/$(database)/documents/userMappings/$(request.auth.uid))
                     && (get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
 
-        // Create message if the authenticated user maps to the senderId and conversationId matches chatId
+        // create message: sender must be the mapped user, conversationId must match parent chat id,
+        // message text must be a string of limited length, and sender must be a participant.
         allow create: if request.auth != null
+                      && exists(/databases/$(database)/documents/chats/$(chatId))
+                      && exists(/databases/$(database)/documents/userMappings/$(request.auth.uid))
                       && get(/databases/$(database)/documents/userMappings/$(request.auth.uid)).data.userDocId == request.resource.data.senderId
                       && request.resource.data.conversationId == chatId
                       && request.resource.data.text is string
-                      && request.resource.data.text.size() > 0;
+                      && request.resource.data.text.size() > 0
+                      && request.resource.data.text.size() <= 2000
+                      && (request.resource.data.senderId in get(/databases/$(database)/documents/chats/$(chatId)).data.participants);
 
-        // Disallow arbitrary updates/deletes (optional: allow sender to mark as read)
+        // No client-side updates/deletes of messages allowed
         allow update, delete: if false;
       }
     }

@@ -79,8 +79,10 @@ export const useAuth = () => {
                 setUser(profile);
                 localStorage.setItem('gsus-user', JSON.stringify(profile));
 
-                // If Firebase auth is available but user is anonymous, sign them in anonymously to get an auth uid
-                if (auth) {
+                // Optionally sign in anonymously to obtain an auth UID for mapping.
+                // This is gated by VITE_ALLOW_ANON_SIGNIN to avoid accidental anonymous
+                // sign-ins in production. Set VITE_ALLOW_ANON_SIGNIN=true for local/dev only.
+                if (auth && import.meta.env.VITE_ALLOW_ANON_SIGNIN === 'true') {
                     try { await signInAnonymously(auth); } catch (e) { /* ignore if not permitted */ }
                 }
 

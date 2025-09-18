@@ -247,9 +247,9 @@
     .calendar-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-.dialog-content {
-    max-width: 92%;
-    padding: 1.25rem;
+        .dialog-content {
+            max-width: 92%;
+            padding: 1.25rem;
     
 .event-type-badge {
     display: inline-block;
@@ -260,34 +260,36 @@
     margin: 0.5rem 0 1rem 0;
         background-color: var(--color-primary);
     
-/* color variants for badges */
-.event-type-badge.event-venue {
-    background-color: #157F4A;
-}
-
-.event-type-badge.event-vehicle {
-    background-color: #0EA5E9;
-}
-
-.event-type-badge.event-equipment {
-    background-color: #F97316;
-}
-
-.event-type-badge.event-default {
-    background-color: var(--color-border);
-    color: var(--color-text-default);
-}
-
-.detail-item {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--color-white);
-}
-
-.detail-item.full-width {
-    grid-column: 1 / -1;
-}
+    
+        /* color variants for badges */
+        .event-type-badge.event-venue {
+            background-color: #157F4A;
+        }
+    
+        .event-type-badge.event-vehicle {
+            background-color: #0EA5E9;
+        }
+    
+        .event-type-badge.event-equipment {
+            background-color: #F97316;
+        }
+    
+        .event-type-badge.event-default {
+            background-color: var(--color-border);
+            color: var(--color-text-default);
+        }
+    
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--color-white);
+        }
+    
+        .detail-item.full-width {
+            grid-column: 1 / -1;
+        }
+    
         .detail-item svg {
             color: var(--color-white);
         }
