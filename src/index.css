@@ -1,0 +1,83 @@
+/* src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --font-family-base: 'Inter', sans-serif;
+  --color-primary: #10B981;
+  --color-primary-dark: #0f9b6c;
+  --color-background: #F9FAFB;
+  --color-white: #FFFFFF;
+  --color-text-dark: #1E293B;
+  --color-text-default: #334155;
+  --color-text-light: #64748B;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-info: #3B82F6;
+  --color-purple: #8B5CF6;
+  --color-border: #E2E8F0;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --border-radius: 12px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-family-base);
+  background-color: var(--color-background);
+  color: var(--color-text-default);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Layout --- */
+.main-layout { display: flex; width: 100%; }
+.content-wrapper { flex-grow: 1; display: flex; flex-direction: column; }
+.page-content { flex-grow: 1; padding: 2rem; }
+
+/* --- Components --- */
+.card {
+    background-color: var(--color-white);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+}
+
+.btn {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-primary { background-color: var(--color-primary); color: var(--color-white); }
+.btn-primary:hover { background-color: var(--color-primary-dark); }
+.btn-danger { background-color: var(--color-danger); color: var(--color-white); }
+.btn-secondary { background-color: transparent; color: var(--color-text-light); border-color: var(--color-border); }
+.btn-secondary:hover { background-color: #f1f5f9; color: var(--color-text-dark); }
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 500;
+    font-size: 0.8rem;
+}
+.status-approved { background-color: #D1FAE5; color: #065F46; }
+.status-inprogress { background-color: #DBEAFE; color: #1E40AF; }
+.status-pending { background-color: #FEF3C7; color: #92400E; }
+.status-completed { background-color: #E5E7EB; color: #374151; }
+.status-denied { background-color: #FEE2E2; color: #991B1B; }
+
+/* Add these lines to src/index.css */
+.status-on-leave { background-color: #FEF3C7; color: #92400E; }
+.status-inactive { background-color: #FEE2E2; color: #991B1B; }

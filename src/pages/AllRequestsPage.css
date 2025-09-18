@@ -1,0 +1,94 @@
+/* src/pages/AllRequestsPage.css */
+.all-requests-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-title { font-size: 1.5rem; font-weight: 600; color: var(--color-text-dark); }
+.page-subtitle { color: var(--color-text-light); }
+.request-count { font-size: 0.875rem; color: var(--color-text-light); }
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    padding-bottom: 0;
+}
+.card-header h3 { font-size: 1.125rem; font-weight: 600; color: var(--color-text-dark); }
+.card-header .icon { color: var(--color-primary); }
+.card-content { padding: 1.5rem; }
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.search-input-wrapper { position: relative; }
+.search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-text-light); }
+.search-input {
+    width: 100%;
+    padding: 0.65rem 0.75rem 0.65rem 2.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+.filter-select {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background-color: white;
+}
+
+.table-wrapper {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+thead tr { background-color: #F8FAFC; }
+th { font-weight: 600; color: var(--color-text-dark); font-size: 0.875rem; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background-color: #F8FAFC; }
+
+.cell-request-id { color: var(--color-primary); font-weight: 500; }
+.cell-requester { font-weight: 500; }
+.cell-assigned-to { font-size: 0.75rem; color: var(--color-text-light); }
+.cell-date { color: var(--color-text-light); }
+
+.btn > svg { margin-right: 0.25rem; }
+
+.priority-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: white;
+}
+.priority-urgent { background-color: #EF4444; }
+.priority-high { background-color: #F59E0B; }
+.priority-medium { background-color: #10B981; }
+.priority-low { background-color: #64748B; }
+
+.empty-state { text-align: center; padding: 2rem; color: var(--color-text-light); }
+.empty-state svg { margin: 0 auto 0.5rem auto; }

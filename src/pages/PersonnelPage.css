@@ -1,0 +1,58 @@
+/* src/pages/PersonnelPage.css */
+.personnel-page { display: flex; flex-direction: column; gap: 1.5rem; }
+.page-header { display: flex; justify-content: space-between; align-items: center; }
+.page-title { font-size: 1.5rem; font-weight: 600; color: var(--color-text-dark); }
+.page-subtitle { color: var(--color-text-light); }
+.btn svg { margin-right: 0.5rem; }
+
+/* Stats Grid */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.stat-card { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; }
+.stat-card .icon { width: 2rem; height: 2rem; color: var(--color-primary); }
+.stat-card .value { font-size: 1.5rem; font-weight: 600; color: var(--color-text-dark); }
+.stat-card .title { font-size: 0.875rem; color: var(--color-text-light); }
+
+/* Filters Card */
+.filters-card .card-header { padding-bottom: 0.5rem; }
+.filters-grid { grid-template-columns: repeat(4, 1fr); }
+.search-input-wrapper { position: relative; }
+.search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-text-light); }
+.search-input { width: 100%; padding: 0.65rem 0.75rem 0.65rem 2.5rem; border: 1px solid var(--color-border); border-radius: 8px; }
+.filter-select { width: 100%; padding: 0.65rem 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; background-color: white; }
+
+/* Table Card */
+.table-card .card-header { padding-bottom: 0.5rem; }
+.table-wrapper { border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+thead tr { background-color: #F8FAFC; }
+th { font-weight: 500; color: var(--color-text-light); font-size: 0.75rem; text-transform: uppercase; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background-color: #F8FAFC; }
+
+/* Table Cell Specifics */
+.personnel-cell { display: flex; align-items: center; gap: 0.75rem; }
+.avatar {
+    width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-primary);
+    color: white; font-weight: 500; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.person-name { font-weight: 500; color: var(--color-text-dark); }
+.person-id { font-size: 0.75rem; color: var(--color-text-light); }
+
+.contact-cell { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--color-text-default); }
+.contact-cell:first-child { margin-bottom: 0.25rem; }
+.contact-cell svg { color: var(--color-text-light); }
+
+.role-cell { display: flex; align-items: center; gap: 0.5rem; }
+.division-name { font-weight: 500; }
+.location-cell { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--color-text-light); }
+.date-cell { color: var(--color-text-light); }
+
+/* Status Badge - reusing global style from index.css */
+.status-badge.status-on-leave { background-color: var(--color-warning); color: white; }
+.status-badge.status-inactive { background-color: var(--color-danger); color: white; }
+.status-badge.status-active { background-color: var(--color-primary); color: white; }
+
+.empty-state { text-align: center; padding: 2rem; color: var(--color-text-light); }
+.empty-state svg { margin: 0 auto 0.5rem auto; }
