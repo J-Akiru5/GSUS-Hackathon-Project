@@ -18,6 +18,7 @@ import PersonnelPage from './pages/PersonnelPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import PersonnelDashboard from './pages/PersonnelDashboard'; // Your "My Tasks" page
+import ChatPage from './pages/ChatPage';
 
 // --- Layout Components ---
 const AdminLayout = () => (
@@ -60,6 +61,7 @@ function App() {
           <Route path="/dashboard" element={<GSODashboard />} />
           <Route path="/requests" element={<AllRequestsPage />} />
           <Route path="/calendar" element={<MasterCalendarPage />} />
+          <Route path="/chat" element={<ChatPage />} />
           <Route path="/personnel" element={<PersonnelPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
