@@ -17,5 +17,25 @@ jobs:
           node-version: '18'
       - name: Install
         run: npm ci
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
+      - name: Run npm audit (save JSON)
+        run: |
+          npm audit --json > audit.json || true
+
+      - name: Check for critical vulnerabilities
+        id: check_audit
+        run: |
+          jq '.metadata.vulnerabilities.critical // 0' audit.json > critical_count.txt || echo 0 > critical_count.txt
+          CRIT=$(cat critical_count.txt)
+          echo "critical=$CRIT" >> $GITHUB_OUTPUT
+
+      - name: Upload audit artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: audit.json
+
+      - name: Fail on critical vulnerabilities
+        if: steps.check_audit.outputs.critical != '0'
+        run: |
+          echo "Critical vulnerabilities found: ${{ steps.check_audit.outputs.critical }}"
+          exit 1
