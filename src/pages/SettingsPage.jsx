@@ -3,8 +3,11 @@
 import React, { useState } from "react";
 import { User, Bell, Shield, Database, Save, Key, Mail, Phone } from "lucide-react";
 import './SettingsPage.css'; // <-- IMPORT OUR NEW CSS FILE
+import { useAuth } from '../hooks/useAuth'; // <-- added
+import SectionHeader from '../components/SectionHeader';
 
 export default function SettingsPage() {
+    const { logout } = useAuth(); // <-- new
     // For the sprint, we'll just log to the console to show it works
     const showToast = (message, type) => {
         console.log(`[${type.toUpperCase()}] ${message}`);
@@ -13,12 +16,7 @@ export default function SettingsPage() {
 
     return (
         <div className="page-content settings-page">
-            <div className="page-header">
-                <div>
-                    <h1 className="page-title">Settings</h1>
-                    <p className="page-subtitle">Manage your account and system preferences</p>
-                </div>
-            </div>
+            <SectionHeader title="Settings" subtitle="Manage your account and system preferences" />
 
             <div className="settings-grid">
                 {/* Profile Settings */}
@@ -34,7 +32,10 @@ export default function SettingsPage() {
                         <div className="form-group"> <label htmlFor="department">Department</label> <input id="department" defaultValue="General Services Office" /> </div>
                         <hr className="separator" />
                         <div className="form-actions">
-                            <button className="btn btn-secondary"><Key size={16} /> Change Password</button>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <button className="btn btn-secondary"><Key size={16} /> Change Password</button>
+                                <button className="btn btn-danger" onClick={logout}><Save size={16} /> Log Out</button> {/* <-- new */}
+                            </div>
                             <button className="btn btn-primary" onClick={() => showToast('Profile settings saved!', 'success')}><Save size={16} /> Save Profile</button>
                         </div>
                     </div>

@@ -1,29 +1,136 @@
 .sidebar {
-  width: 260px;
-  background-color: var(--color-white);
+  width: var(--sidebar-width);
+    background-color: var(--color-surface);
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1.5rem;
+  /* make the sidebar fixed to the left and full-height under the header */
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    /* use top + bottom so the sidebar always fills remaining viewport height */
+    padding: 0;
+    /* user requested no padding */
   flex-shrink: 0;
+  transition: width var(--transition-medium), background-color var(--transition-fast);
+    overflow: auto;
 }
-.sidebar-header { margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem; }
-.logo-text { font-size: 1.8rem; font-weight: 800; color: var(--color-primary); }
-.sidebar-nav { display: flex; flex-direction: column; gap: 0.5rem; }
+.sidebar.compact {
+  width: 72px;
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+}
+
+.sidebar-header {
+  margin: 0.75rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+.logo-text {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+}
 .nav-item {
   display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none;
-  color: var(--color-text-light); font-weight: 500; transition: all 0.2s ease;
+  padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  }
+  
+  .nav-item:hover {
+    background-color: var(--color-primary-50);
+    color: var(--color-text-dark);
+    transform: translateX(2px);
+  }
+  
+  .nav-item.active {
+    background-color: linear-gradient(90deg, rgba(16, 185, 129, 0.12), rgba(139, 92, 246, 0.06));
+    color: var(--color-primary);
+  }
+  
+  .sidebar-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
-.nav-item:hover { background-color: #f1f5f9; color: var(--color-text-dark); }
-.nav-item.active { background-color: var(--color-primary); color: var(--color-white); }
-.sidebar-footer { padding-top: 1rem; border-top: 1px solid var(--color-border); }
 .user-profile { display: flex; align-items: center; gap: 0.75rem; }
+.user-avatar-link {
+  display: inline-block;
+  text-decoration: none;
+}
 .user-avatar {
-  width: 40px; height: 40px; border-radius: 50%; background-color: var(--color-primary);
-  color: var(--color-white); display: flex; align-items: center; justify-content: center; font-weight: 600;
+  width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    color: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
 }
 .user-info { display: flex; flex-direction: column; }
-.user-name { font-weight: 600; color: var(--color-text-dark); }
-.user-role { font-size: 0.8rem; color: var(--color-text-light); }
+.user-name {
+  font-weight: 700;
+  color: var(--color-text-dark);
+}
+
+.user-role {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.sidebar-logout {
+  width: 100%;
+}
+
+.logout-btn {
+  display: block;
+  width: 100%;
+}
+
+/* Responsive: collapse to top navigation on small screens */
+@media (max-width: 720px) {
+  .sidebar {
+    position: relative;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.5rem;
+  }
+
+  .sidebar.compact {
+    width: 100%;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .nav-item {
+    padding: 0.5rem 0.6rem;
+    white-space: nowrap;
+  }
+}

@@ -1,29 +1,57 @@
 // src/pages/PersonnelPage.jsx
 
-import React, { useState } from "react";
-import { Users, Search, Filter, Plus, Edit, Mail, Phone, MapPin, Shield, UserCheck, UserX} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Users, Search, Filter, Plus, Edit, Mail, Phone, MapPin, Shield, UserCheck, UserX } from "lucide-react";
 import './PersonnelPage.css'; // <-- IMPORT OUR NEW CSS FILE
-
-// Mock Data
-const personnelData = [
-    { id: "PER-001", name: "Maria Santos", email: "maria.santos@gov.ph", phone: "+63 912 345 6789", role: "GSO Head", assignedDivision: "General Services Office", status: "Active", joinDate: "2020-03-15", location: "Main Building, 5th Floor" },
-    { id: "PER-002", name: "John Doe", email: "john.doe@gov.ph", phone: "+63 923 456 7890", role: "Division Head", assignedDivision: "Transportation Division", status: "Active", joinDate: "2019-07-22", location: "Transport Hub" },
-    { id: "PER-003", name: "Sarah Wilson", email: "sarah.wilson@gov.ph", phone: "+63 934 567 8901", role: "Division Head", assignedDivision: "Facilities Division", status: "Active", joinDate: "2021-01-10", location: "Main Building, 2nd Floor" },
-    { id: "PER-004", name: "Robert Johnson", email: "robert.johnson@gov.ph", phone: "+63 945 678 9012", role: "Driver", assignedDivision: "Transportation Division", status: "Active", joinDate: "2022-05-18", location: "Transport Hub" },
-    { id: "PER-005", name: "Emily Davis", email: "emily.davis@gov.ph", phone: "+63 956 789 0123", role: "Technician", assignedDivision: "Maintenance Division", status: "Inactive", joinDate: "2020-11-30", location: "Maintenance Workshop" }
-];
+import { listenToUsers } from '../services/firestoreService';
+import SectionHeader from '../components/SectionHeader';
 
 // Reusable Status Badge Component
 const StatusBadge = ({ status }) => {
-    const statusClass = `status-badge status-${status.toLowerCase().replace(' ', '-')}`;
+    const statusClass = `status-badge status-${String(status || '').toLowerCase().replace(' ', '-')}`;
     return <span className={statusClass}>{status}</span>;
 };
 
 export default function PersonnelPage() {
+    const [personnelData, setPersonnelData] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [divisionFilter, setDivisionFilter] = useState("all");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        setLoading(true);
+        const unsubscribe = listenToUsers((data, err) => {
+            if (err) {
+                setError(err);
+                setLoading(false);
+                return;
+            }
+            // Normalize Firestore user doc shapes to the UI model expected by this page
+            const normalized = (data || []).map(u => ({
+                id: u.id,
+                name: u.displayName || u.name || 'Unknown',
+                email: u.email || u.mail || '',
+                phone: u.phone || u.phoneNumber || '',
+                role: u.role || u.position || 'Staff',
+                assignedDivision: u.assignedDivision || u.division || u.department || 'Unassigned',
+                status: u.status || 'Active',
+                joinDate: u.joinDate || u.createdAt || u.joinedAt || null,
+                location: u.location || ''
+            }));
+            setPersonnelData(normalized);
+            setLoading(false);
+        });
+        return () => { if (unsubscribe) unsubscribe(); };
+    }, []);
+
+    const formatDate = (d) => {
+        if (!d) return '—';
+        if (typeof d === 'object' && typeof d.toDate === 'function') return new Date(d.toDate()).toLocaleDateString();
+        try { return new Date(d).toLocaleDateString(); } catch { return '—'; }
+    };
 
     const filteredPersonnel = personnelData.filter(person => {
         const matchesSearch = person.name.toLowerCase().includes(searchTerm.toLowerCase()) || person.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -33,7 +61,7 @@ export default function PersonnelPage() {
         return matchesSearch && matchesRole && matchesStatus && matchesDivision;
     });
 
-    const getInitials = (name) => name.split(' ').map(n => n[0]).join('').toUpperCase();
+    const getInitials = (name) => (name || '').split(' ').map(n => n[0]).join('').toUpperCase();
 
     const getRoleIcon = (role) => {
         if (role === "GSO Head") return <Shield size={16} />;
@@ -43,19 +71,16 @@ export default function PersonnelPage() {
 
     return (
         <div className="page-content personnel-page">
-            <div className="page-header">
-                <div>
-                    <h1 className="page-title">Personnel Management</h1>
-                    <p className="page-subtitle">Manage GSO staff and division assignments</p>
-                </div>
+            <SectionHeader title="Personnel Management" subtitle="Manage GSO staff and division assignments" />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
                 <button className="btn btn-primary"><Plus size={16} /> Add New Personnel</button>
             </div>
 
             <div className="stats-grid">
-                <div className="card stat-card"> <Users className="icon" /> <div><p className="value">{personnelData.filter(p => p.status === "Active").length}</p><p className="title">Active Personnel</p></div></div>
-                <div className="card stat-card"> <Shield className="icon" /> <div><p className="value">{personnelData.filter(p => p.role.includes("Head")).length}</p><p className="title">Leadership</p></div></div>
-                <div className="card stat-card"> <UserX className="icon" /> <div><p className="value">{personnelData.filter(p => p.status === "On Leave").length}</p><p className="title">On Leave</p></div></div>
-                <div className="card stat-card"> <MapPin className="icon" /> <div><p className="value">{new Set(personnelData.map(p => p.assignedDivision)).size}</p><p className="title">Divisions</p></div></div>
+                <div className="card stat-card"> <Users className="icon" /> <div><p className="value">{loading ? '...' : personnelData.filter(p => p.status === "Active").length}</p><p className="title">Active Personnel</p></div></div>
+                <div className="card stat-card"> <Shield className="icon" /> <div><p className="value">{loading ? '...' : personnelData.filter(p => String(p.role).includes("Head")).length}</p><p className="title">Leadership</p></div></div>
+                <div className="card stat-card"> <UserX className="icon" /> <div><p className="value">{loading ? '...' : personnelData.filter(p => p.status === "On Leave").length}</p><p className="title">On Leave</p></div></div>
+                <div className="card stat-card"> <MapPin className="icon" /> <div><p className="value">{loading ? '...' : new Set(personnelData.map(p => p.assignedDivision)).size}</p><p className="title">Divisions</p></div></div>
             </div>
 
             <div className="card filters-card">
@@ -98,7 +123,7 @@ export default function PersonnelPage() {
                                             <div className="location-cell"><MapPin size={14} /> {person.location}</div>
                                         </td>
                                         <td><StatusBadge status={person.status} /></td>
-                                        <td className="date-cell">{new Date(person.joinDate).toLocaleDateString()}</td>
+                                        <td className="date-cell">{formatDate(person.joinDate)}</td>
                                         <td><button className="btn btn-secondary"><Edit size={14} /> Edit</button></td>
                                     </tr>
                                 ))}

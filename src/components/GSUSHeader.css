@@ -1,0 +1,89 @@
+.gsus-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  color: var(--color-text-dark);
+  box-shadow: 0 2px 6px rgba(2,6,23,0.06);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  background: var(--background); /* white background */
+  height: var(--header-height); /* ensure header element height matches banner */
+  overflow: hidden;
+}
+
+.gsus-header-inner {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 0.6rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: absolute; /* position inside header so header's height isn't increased */
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+}
+
+.gsus-banner {
+  width: 55%;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+@media (max-width: 720px) {
+  .gsus-banner {
+    width: 90%;
+  }
+}
+.gsus-banner-inner { width: 100%; max-width: 1260px; height: 100%; }
+.gsus-banner-img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; }
+
+.gsus-brand { display: flex; align-items: center; gap: 0.75rem; }
+.gsus-seal { width: 48px; height: 48px; border-radius: 9999px; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: var(--color-surface); font-weight: 700; }
+.gsus-title .gsus-sub { font-size: 0.75rem; opacity: 0.95; }
+.gsus-title .gsus-main { font-size: 1rem; font-weight: 800; letter-spacing: 0.4px; }
+
+.gsus-nav { display: none; }
+
+@media (max-width: 720px) {
+  .gsus-nav { display: none; }
+  .gsus-header-inner { padding: 0.5rem; }
+}
+
+.gsus-header-actions {
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  height: 100%;
+  display: flex;
+  align-items: flex-start; /* align to top instead of center */
+  gap: 0.75rem;
+  justify-content: flex-end;
+  padding: 0.5rem 0.5rem 0; /* push content to the upper edge */
+  z-index: 9999; /* place this content on top of other header elements */
+  pointer-events: auto;
+}
+.datetime-pill {
+  background: rgba(2,6,23,0.08);
+  padding: 0.8rem 1.1rem;
+  border-radius: 999px;
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+@media (max-width: 900px) {
+  .gsus-header { height: calc(var(--header-height) - 28px); }
+  .gsus-banner { height: 100%; }
+  .gsus-title .gsus-main { font-size: 0.95rem; }
+}
+
+/* reduce header height so it aligns with layout header variable */
+.gsus-header, .gsus-header-inner, .gsus-banner { box-sizing: border-box; }
+

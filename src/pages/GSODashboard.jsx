@@ -1,16 +1,28 @@
 // src/pages/GSODashboard.jsx
 
-import React from 'react';
-import { Clock, CheckCircle, AlertTriangle, FileText, ThumbsUp, ThumbsDown, Eye, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-import AuditTrailPanel from '../components/features/dashboard/AuditTrailPanel'; // <-- IMPORT THE PANEL
-import './Dashboard.css'; // <-- Use our existing CSS file
+import React, { useEffect, useState } from 'react';
+import { Clock, CheckCircle, AlertTriangle, FileText, ThumbsUp, ThumbsDown, Eye, Calendar } from "lucide-react";
 
-// Mock Data
-const PENDING_REQUESTS = [
-    { id: "REQ-005", title: "Board Room Booking", type: "Venue Booking", status: "Pending", submittedBy: "Maria Santos", priority: "High" },
-    { id: "REQ-006", title: "Vehicle Maintenance", type: "Maintenance", status: "Pending", submittedBy: "John Doe", priority: "Medium" },
-    { id: "REQ-007", title: "New Equipment Request", type: "Procurement", status: "Pending", submittedBy: "Lisa Chen", priority: "Low" }
-];
+// Utility to render one of the imported icons by key.
+// Usage: renderIcon('clock', { size: 20, className: 'my-icon' })
+function renderIcon(name, props = { size: 18, className: 'icon' }) {
+  const icons = {
+    clock: Clock,
+    checkCircle: CheckCircle,
+    alertTriangle: AlertTriangle,
+    fileText: FileText,
+    thumbsUp: ThumbsUp,
+    thumbsDown: ThumbsDown,
+    eye: Eye,
+    calendar: Calendar,
+  };
+  const Icon = icons[name];
+  return Icon ? <Icon {...props} /> : null;
+}
+import AuditTrailPanel from '../components/features/dashboard/AuditTrailPanel'; // <-- IMPORT THE PANEL
+import GlobalModal from '../components/GlobalModal';
+import './Dashboard.css'; // <-- Use our existing CSS file
+import { listenToPendingRequests, updateRequestStatus, listenToBookings, listenToUsers } from '../services/firestoreService'; // add service imports
 
 // Reusable Priority Badge Component
 const PriorityBadge = ({ priority }) => {
@@ -18,57 +30,323 @@ const PriorityBadge = ({ priority }) => {
     return <span className={priorityClass}>{priority}</span>;
 };
 
+const StatCard = ({ title, value, icon }) => (
+  <div className="card stat-card">
+    <div className="stat-icon">{icon}</div>
+    <div>
+      <div className="stat-value">{value}</div>
+      <div className="stat-title">{title}</div>
+    </div>
+  </div>
+);
+
 export default function GSODashboard() {
-    // For the sprint, we use static mock data
-    const pendingRequests = PENDING_REQUESTS;
-    const metrics = { pendingRequests: 3, completedThisMonth: 45, inProgress: 8, avgResponseTime: "2.3 hours" };
+  const [sectionActive, setSectionActive] = useState(false);
+  const sentinelRef = React.useRef(null);
 
-    return (
-        <div className="page-content">
-            <div className="header">
-                <h1>GSO Dashboard</h1>
-                <p>Manage service requests and resources</p>
-            </div>
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    // compute header height safely (fallback to 300)
+    let headerHeight = 300;
+    try {
+      const val = getComputedStyle(document.documentElement).getPropertyValue('--header-height');
+      const parsed = parseInt(val, 10);
+      if (!isNaN(parsed)) headerHeight = parsed;
+    } catch (e) { /* ignore and use default */ }
 
-            <div className="stats-grid">
-                <div className="card stat-card"><div className="stat-icon icon-yellow"><Clock /></div><div><p className="stat-value">{metrics.pendingRequests}</p><p className="stat-title">Pending Requests</p></div></div>
-                <div className="card stat-card"><div className="stat-icon icon-green"><CheckCircle /></div><div><p className="stat-value">{metrics.completedThisMonth}</p><p className="stat-title">Completed This Month</p></div></div>
-                <div className="card stat-card"><div className="stat-icon icon-blue"><AlertTriangle /></div><div><p className="stat-value">{metrics.inProgress}</p><p className="stat-title">In Progress</p></div></div>
-                <div className="card stat-card"><div className="stat-icon icon-purple"><FileText /></div><div><p className="stat-value">{metrics.avgResponseTime}</p><p className="stat-title">Avg Response Time</p></div></div>
-            </div>
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // when sentinel is not visible (scrolled past), activate the section header
+        setSectionActive(!entry.isIntersecting);
+      });
+    }, { root: null, threshold: 0, rootMargin: `-${headerHeight}px 0px 0px 0px` });
+    obs.observe(sentinel);
+    return () => obs.disconnect();
+  }, []);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [updatingId, setUpdatingId] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState(null);
 
-            <div className="dashboard-main-grid">
-                <div className="card action-required-panel">
-                    <div className="card-header"><Clock className="icon" /><h3>Action Required</h3></div>
-                    <div className="card-content">
-                        {pendingRequests.map((request) => (
-                            <div key={request.id} className="request-item">
-                                <div className="request-info">
-                                    <h4>{request.title}</h4>
-                                    <p>by {request.submittedBy} • {request.type}</p>
-                                </div>
-                                <div className="request-actions">
-                                    <PriorityBadge priority={request.priority} />
-                                    <button className="btn btn-primary"><ThumbsUp size={14} /> Approve</button>
-                                    <button className="btn btn-danger"><ThumbsDown size={14} /> Deny</button>
-                                    <button className="btn btn-secondary"><Eye size={14} /> Details</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+  // --- NEW: bookings state for mini-calendar ---
+  const [bookings, setBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+  const [bookingsError, setBookingsError] = useState(null);
 
-                <div className="card calendar-panel">
-                    <div className="card-header"><Calendar className="icon" /><h3>Calendar</h3></div>
-                    <div className="card-content">
-                         <p style={{textAlign: 'center', color: 'var(--color-text-light)'}}>Weekly calendar view...</p>
-                    </div>
-                </div>
-            </div>
+  // --- users map to enrich requests with requester details ---
+  const [usersById, setUsersById] = useState({});
+  const [usersByEmail, setUsersByEmail] = useState({});
+  const [loadingUsers, setLoadingUsers] = useState(true);
 
-            {/* --- INTEGRATED AUDIT TRAIL PANEL --- */}
-            <AuditTrailPanel />
+  useEffect(() => {
+    setLoading(true);
+    const unsubscribe = listenToPendingRequests((data, err) => {
+      if (err) {
+        setError(err);
+        setLoading(false);
+        return;
+      }
+      setPendingRequests(data || []);
+      setLoading(false);
+    });
+    return () => { if (unsubscribe) unsubscribe(); };
+  }, []);
 
+  // subscribe to bookings for the mini calendar
+  useEffect(() => {
+    setLoadingBookings(true);
+    const unsub = listenToBookings((data, err) => {
+      if (err) {
+        setBookingsError(err);
+        setLoadingBookings(false);
+        return;
+      }
+      // normalize bookings: ensure date strings for display
+      const normalized = (data || []).map(b => {
+        const rawDate = b.startDate || b.date || b.createdAt || b.time || b.submittedAt || null;
+        const dateObj = rawDate && typeof rawDate.toDate === 'function' ? rawDate.toDate() : (rawDate ? new Date(rawDate) : null);
+        const dateLabel = dateObj ? dateObj.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : (b.date || 'TBD');
+        return {
+          id: b.id,
+          title: b.title || b.summary || b.resourceName || b.purpose || 'Booking',
+          dateLabel,
+          dateObj,
+          location: b.location || b.resourceLocation || '',
+          type: b.type || b.category || ''
+        };
+      })
+        // sort ascending by dateObj (nulls last)
+        .sort((a, b) => {
+          if (!a.dateObj && !b.dateObj) return 0;
+          if (!a.dateObj) return 1;
+          if (!b.dateObj) return -1;
+          return a.dateObj - b.dateObj;
+        });
+      setBookings(normalized);
+      setLoadingBookings(false);
+    });
+    return () => { if (unsub) unsub(); };
+  }, []);
+
+  // subscribe to users collection once and build lookups
+  useEffect(() => {
+    setLoadingUsers(true);
+    const unsub = listenToUsers((data, err) => {
+      if (err) {
+        // don't block requests if users failed to load
+        console.error('Failed to load users', err);
+        setUsersById({});
+        setUsersByEmail({});
+        setLoadingUsers(false);
+        return;
+      }
+      const byId = {};
+      const byEmail = {};
+      (data || []).forEach(u => {
+        if (!u) return;
+        if (u.id) byId[u.id] = u;
+        const email = (u.email || u.emailAddress || '').toLowerCase();
+        if (email) byEmail[email] = u;
+      });
+      setUsersById(byId);
+      setUsersByEmail(byEmail);
+      setLoadingUsers(false);
+    });
+    return () => { if (unsub) unsub(); };
+  }, []);
+
+  // helper to safely format dates from various possible fields
+  const safeFormatDate = (d) => {
+    if (!d) return '—';
+    try {
+      if (d instanceof Date) return d.toLocaleString();
+      if (d && typeof d.toDate === 'function') return d.toDate().toLocaleString();
+      return new Date(d).toLocaleString();
+    } catch (e) {
+      return '—';
+    }
+  };
+
+  // helper to resolve requester info for a request object
+  const getRequesterInfo = (req) => {
+    if (!req) return { name: 'Unknown', email: '', department: '' };
+    // try common id/email fields
+    const candidateIds = [req.requesterId, req.userId, req.userUid, req.uid, req.createdBy, req.requesterUID];
+    for (const id of candidateIds) {
+      if (id && usersById[id]) {
+        const u = usersById[id];
+        return {
+          name: u.fullName || u.displayName || u.fullname || u.name || u.email || 'Unknown',
+          email: u.email || '',
+          department: u.department || u.office || u.unit || (u.role && u.role.toLowerCase().includes('gov') ? u.role : '') || '',
+          contactNumber: u.contactNumber || u.phone || ''
+        };
+      }
+    }
+    // try email
+    const candidateEmails = [req.requesterEmail, req.userEmail, req.email, req.contactEmail, req.requester_email];
+    for (const em of candidateEmails) {
+      if (!em) continue;
+      const lower = ('' + em).toLowerCase();
+      if (usersByEmail[lower]) {
+        const u = usersByEmail[lower];
+        return {
+          name: u.fullName || u.displayName || u.fullname || u.name || u.email || 'Unknown',
+          email: u.email || '',
+          department: u.department || u.office || u.unit || (u.role && u.role.toLowerCase().includes('gov') ? u.role : '') || '',
+          contactNumber: u.contactNumber || u.phone || ''
+        };
+      }
+    }
+
+    // fallback: use any requester fields directly on request
+    const fallbackName = req.requesterName || req.requester || req.requestedBy || req.requestor || req.fullName || '';
+    return {
+      name: fallbackName || (req.email || req.userEmail ? (req.fullName || req.email || req.userEmail) : 'Unknown'),
+      email: req.email || req.userEmail || '',
+      department: req.department || req.office || '',
+      contactNumber: req.contactNumber || ''
+    };
+  };
+
+  const handleUpdateStatus = async (id, newStatus) => {
+    setUpdatingId(id);
+    try {
+      await updateRequestStatus(id, newStatus);
+    } catch (err) {
+      console.error('Failed to update status', err);
+      setError(err);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  return (
+    <div className="page-content">
+      {/* Section header sits under the global header and becomes sticky when scrolling */}
+      <div className={`section-header ${sectionActive ? 'section-header--active' : ''}`} aria-hidden="false">
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <h1 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-text-dark)', fontWeight: 700 }}>GSO Dashboard</h1>
+          <div style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>Manage service requests and resources</div>
         </div>
-    );
+      </div>
+      {/* invisible sentinel used to trigger the sticky state when scrolled past */}
+      <div ref={sentinelRef} style={{ height: '1px', width: '100%' }} />
+      <div className="stats-grid">
+        <StatCard title="Pending Requests" value={loading ? '...' : pendingRequests.length} icon="🕒" />
+        <StatCard title="Completed This Month" value="45" icon="✅" />
+        <StatCard title="In Progress" value="8" icon="⚠️" />
+        <StatCard title="Avg Response Time" value="2.3 hours" icon="📄" />
+      </div>
+      <div className="dashboard-main-grid">
+        <div className="card action-required-panel">
+          <h3>Action Required</h3>
+
+          {loading && <p style={{ color: 'var(--color-text-light)' }}>Loading pending requests...</p>}
+          {error && <p style={{ color: 'var(--color-danger)' }}>Error loading requests.</p>}
+
+          {!loading && !error && pendingRequests.length === 0 && (
+            <p style={{ color: 'var(--color-text-light)' }}>No pending requests.</p>
+          )}
+
+          {!loading && !error && pendingRequests.map(req => {
+            const requester = getRequesterInfo(req);
+            return (
+              <div key={req.id} className="request-item">
+                <div>
+                  <h4>{req.title || req.serviceType || 'Request'}</h4>
+                  <p>
+                    <strong style={{ marginRight: 8 }}>{requester.name}</strong>
+                    {requester.department ? <span style={{ color: 'var(--color-text-muted)' }}>• {requester.department}</span> : null}
+                    <span style={{ color: 'var(--color-text-muted)', marginLeft: 12, fontSize: 12 }}>{req.id}</span>
+                  </p>
+                </div>
+
+                {/* move actions to footer so they align at the bottom of the card */}
+                <div className="request-item-footer">
+                  <div className={`priority-label priority-${(req.priority || 'medium').toLowerCase()}`}>{req.priority || 'Medium'}</div>
+                  <div className="request-item-buttons">
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => handleUpdateStatus(req.id, 'Approved')}
+                      disabled={updatingId === req.id}
+                    >
+                      {updatingId === req.id ? 'Updating…' : 'Approve'}
+                    </button>
+                    <button
+                      className="btn btn-danger"
+                      onClick={() => handleUpdateStatus(req.id, 'Denied')}
+                      disabled={updatingId === req.id}
+                    >
+                      {updatingId === req.id ? 'Updating…' : 'Deny'}
+                    </button>
+                    <button className="btn btn-secondary" onClick={() => { setModalContent({ ...req, __requester: requester }); setModalOpen(true); }}>Details</button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="card calendar-panel">
+          <h3>Calendar</h3>
+
+          {/* REPLACED PLACEHOLDER: show mini upcoming bookings fetched from Firestore */}
+          {loadingBookings && <p style={{ textAlign: 'center', color: 'var(--color-text-light)', marginTop: '1rem' }}>Loading calendar...</p>}
+          {bookingsError && <p style={{ textAlign: 'center', color: 'var(--color-danger)', marginTop: '1rem' }}>Failed to load calendar.</p>}
+
+          {!loadingBookings && bookings.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+              {bookings.slice(0, 6).map(b => (
+                <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <Calendar size={16} style={{ color: 'var(--color-primary)' }} />
+                    <div>
+                      <div style={{ fontWeight: 600 }}>{b.title}</div>
+                      <div style={{ fontSize: 12, color: 'var(--color-text-light)' }}>{b.location || 'No location'}</div>
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right', fontSize: 12, color: 'var(--color-text-light)' }}>
+                    <div>{b.dateLabel}</div>
+                    <div style={{ marginTop: 4 }}>{b.type}</div>
+                  </div>
+                </div>
+              ))}
+              {bookings.length > 6 && <div style={{ textAlign: 'center', color: 'var(--color-text-light' }}>{bookings.length - 6} more events</div>}
+            </div>
+          )}
+
+          {!loadingBookings && bookings.length === 0 && <p style={{ textAlign: 'center', color: 'var(--color-text-light)', marginTop: '2rem' }}>No upcoming bookings.</p>}
+        </div>
+      </div>
+
+      {/* --- INTEGRATED AUDIT TRAIL PANEL --- */}
+      <AuditTrailPanel />
+
+      <GlobalModal open={modalOpen} title={modalContent ? (modalContent.title || 'Audit Trail') : 'Details'} onClose={() => setModalOpen(false)}>
+        {modalContent ? (
+          <div>
+            <p><strong>ID:</strong> {modalContent.id}</p>
+            <p><strong>Title:</strong> {modalContent.title}</p>
+            <p><strong>Type:</strong> {modalContent.type || modalContent.serviceType}</p>
+            <p><strong>Priority:</strong> {modalContent.priority}</p>
+            {/* requester info (enriched) */}
+            {modalContent.__requester ? (
+              <div style={{ marginTop: 8 }}>
+                <p><strong>Requester:</strong> {modalContent.__requester.name} {modalContent.__requester.email ? <span style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>• {modalContent.__requester.email}</span> : null}</p>
+                {modalContent.__requester.department ? <p><strong>Department:</strong> {modalContent.__requester.department}</p> : null}
+                {modalContent.__requester.contactNumber ? <p><strong>Contact:</strong> {modalContent.__requester.contactNumber}</p> : null}
+              </div>
+            ) : null}
+            <p><strong>Submitted:</strong> {safeFormatDate(modalContent.createdAt || modalContent.createdAt || modalContent.submittedAt || modalContent.created)}</p>
+            <pre style={{ whiteSpace: 'pre-wrap', marginTop: 8 }}>{modalContent.description || modalContent.notes || 'No additional details.'}</pre>
+          </div>
+        ) : null}
+      </GlobalModal>
+
+    </div>
+  );
 }

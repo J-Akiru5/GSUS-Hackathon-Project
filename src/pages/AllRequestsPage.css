@@ -28,8 +28,8 @@
 
 .filters-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    grid-template-columns: 1fr;
+        gap: 0.75rem;
 }
 
 .search-input-wrapper { position: relative; }
@@ -41,6 +41,10 @@
     border-radius: 8px;
 }
 .filter-select {
+    display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        /* 1 1 1 ratio */
+        gap: 0.5rem;
     width: 100%;
     padding: 0.65rem 0.75rem;
     border: 1px solid var(--color-border);
@@ -51,12 +55,15 @@
 .table-wrapper {
     border: 1px solid var(--color-border);
     border-radius: 8px;
-    overflow: hidden;
+    overflow: auto;
+        /* allow horizontal scroll on small screens */
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 720px;
+        /* allow table to scroll on small screens */
 }
 
 th, td {
@@ -70,6 +77,11 @@ th { font-weight: 600; color: var(--color-text-dark); font-size: 0.875rem; }
 tbody tr:last-child td { border-bottom: none; }
 tbody tr:hover { background-color: #F8FAFC; }
 
+@media (min-width: 720px) {
+    .filters-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
 .cell-request-id { color: var(--color-primary); font-weight: 500; }
 .cell-requester { font-weight: 500; }
 .cell-assigned-to { font-size: 0.75rem; color: var(--color-text-light); }

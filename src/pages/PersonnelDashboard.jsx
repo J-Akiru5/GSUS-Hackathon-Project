@@ -1,32 +1,70 @@
 // src/pages/PersonnelDashboard.jsx
 
-import React from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Clock, CheckCircle, Play, MessageSquare, User, Calendar, MapPin } from 'lucide-react';
 import './PersonnelDashboard.css'; // <-- IMPORT OUR NEW CSS FILE
-
-// Mock Data
-const MOCK_TASKS = [
-    { id: 1, title: "Vehicle Inspection Service", type: "Transportation", status: "Assigned", assignedDate: "2024-09-17", requester: "John Doe", priority: "High", description: "Provide vehicle for field inspection at Site A", dueDate: "2024-09-20", location: "Field Site A" },
-    { id: 2, title: "Printer Maintenance", type: "Maintenance", status: "In Progress", assignedDate: "2024-09-16", requester: "Maria Santos", priority: "Medium", description: "Fix printer connectivity issues in Office 2A", location: "Office 2A, 2nd Floor" },
-    { id: 3, title: "Network Setup Completion", type: "Technical Support", status: "Awaiting Feedback", assignedDate: "2024-09-15", requester: "Lisa Chen", priority: "Medium", description: "Complete network configuration for new workstation", location: "IT Department" }
-];
+import { listenToRequests } from '../services/firestoreService';
+import { formatDateShort, toDate } from '../utils/dateHelpers';
+import { useAuth } from '../hooks/useAuth';
+import SectionHeader from '../components/SectionHeader';
 
 // Reusable Status Badge Component
 const StatusBadge = ({ status }) => {
-    const statusClass = `status-badge status-${status.toLowerCase().replace(' ', '-')}`;
+    const statusClass = `status-badge status-${String(status || '').toLowerCase().replace(' ', '-')}`;
     return <span className={statusClass}>{status}</span>;
 };
 
 // Reusable Priority Badge Component
 const PriorityBadge = ({ priority }) => {
-    const priorityClass = `priority-badge priority-${priority.toLowerCase()}`;
+    const priorityClass = `priority-badge priority-${String(priority || '').toLowerCase()}`;
     return <span className={priorityClass}>{priority}</span>;
 };
 
-
 export default function PersonnelDashboard() {
-    // For the sprint, we use static mock data
-    const tasks = MOCK_TASKS;
+    const { user } = useAuth();
+    const [requests, setRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        setLoading(true);
+        const unsubscribe = listenToRequests((data, err) => {
+            if (err) {
+                setError(err);
+                setLoading(false);
+                return;
+            }
+            setRequests(data || []);
+            setLoading(false);
+        });
+        return () => { if (unsubscribe) unsubscribe(); };
+    }, []);
+
+    // Derive tasks assigned to current user (match by assignedTo or assignedTeam)
+    const tasks = useMemo(() => {
+        if (!requests) return [];
+        const uname = user?.name?.toLowerCase() || '';
+        const urole = user?.role?.toLowerCase() || '';
+        return requests
+            .filter(r => {
+                const assigned = (r.assignedTo || r.assigned || r.assignedUser || '').toString().toLowerCase();
+                // match by exact name, role, or team token
+                return !!assigned && (assigned.includes(uname) || assigned.includes(urole) || assigned.includes('personnel'));
+            })
+            .map((r, idx) => ({
+                id: r.id || idx,
+                title: r.title || r.serviceType || r.summary || 'Task',
+                type: r.type || r.category || r.serviceType || 'General',
+                status: r.status || 'Assigned',
+                assignedDate: r.submittedAt || r.dateSubmitted || r.createdAt || r.details?.submittedAt || null,
+                requester: r.requesterName || r.requester || r.createdBy || r.userEmail || '—',
+                priority: r.priority || 'Medium',
+                description: r.description || r.notes || '',
+                dueDate: r.dueDate || r.expectedCompletion || null,
+                location: r.location || r.resourceLocation || ''
+            }));
+    }, [requests, user]);
+
     const stats = {
         assigned: tasks.filter(t => t.status === "Assigned").length,
         inProgress: tasks.filter(t => t.status === "In Progress").length,
@@ -36,18 +74,13 @@ export default function PersonnelDashboard() {
 
     return (
         <div className="page-content personnel-dashboard">
-            <div className="page-header">
-                <div>
-                    <h1 className="page-title">My Tasks</h1>
-                    <p className="page-subtitle">Manage your assigned service requests</p>
-                </div>
-            </div>
+            <SectionHeader title="My Tasks" subtitle="Manage your assigned service requests" />
 
             <div className="stats-grid">
-                <div className="card stat-card"><div className="stat-icon icon-yellow"><Clock /></div><div><p className="stat-value">{stats.assigned}</p><p className="stat-title">Assigned</p></div></div>
-                <div className="card stat-card"><div className="stat-icon icon-blue"><Play /></div><div><p className="stat-value">{stats.inProgress}</p><p className="stat-title">In Progress</p></div></div>
-                <div className="card stat-card"><div className="stat-icon icon-purple"><MessageSquare /></div><div><p className="stat-value">{stats.awaitingFeedback}</p><p className="stat-title">Awaiting Feedback</p></div></div>
-                <div className="card stat-card"><div className="stat-icon icon-green"><CheckCircle /></div><div><p className="stat-value">{stats.completed}</p><p className="stat-title">Completed</p></div></div>
+                <div className="card stat-card"><div className="stat-icon icon-yellow"><Clock /></div><div><p className="stat-value">{loading ? '...' : stats.assigned}</p><p className="stat-title">Assigned</p></div></div>
+                <div className="card stat-card"><div className="stat-icon icon-blue"><Play /></div><div><p className="stat-value">{loading ? '...' : stats.inProgress}</p><p className="stat-title">In Progress</p></div></div>
+                <div className="card stat-card"><div className="stat-icon icon-purple"><MessageSquare /></div><div><p className="stat-value">{loading ? '...' : stats.awaitingFeedback}</p><p className="stat-title">Awaiting Feedback</p></div></div>
+                <div className="card stat-card"><div className="stat-icon icon-green"><CheckCircle /></div><div><p className="stat-value">{loading ? '...' : stats.completed}</p><p className="stat-title">Completed</p></div></div>
             </div>
 
             <div className="card tasks-card">
@@ -55,6 +88,9 @@ export default function PersonnelDashboard() {
                     <h3>Assigned Tasks</h3>
                 </div>
                 <div className="card-content">
+                    {loading && <p style={{ color: 'var(--color-text-light)' }}>Loading tasks...</p>}
+                    {error && <p style={{ color: 'var(--color-danger)' }}>Error loading tasks.</p>}
+                    {!loading && tasks.length === 0 && <p style={{ color: 'var(--color-text-light)' }}>No tasks assigned.</p>}
                     {tasks.map(task => (
                         <div key={task.id} className="task-item">
                             <div className="task-main">
@@ -65,7 +101,7 @@ export default function PersonnelDashboard() {
                                 <p className="task-description">{task.description}</p>
                                 <div className="task-details-grid">
                                     <div className="task-detail"><User size={14} /> Requester: <strong>{task.requester}</strong></div>
-                                    <div className="task-detail"><Calendar size={14} /> Assigned: <strong>{task.assignedDate}</strong></div>
+                                    <div className="task-detail"><Calendar size={14} /> Assigned: <strong>{task.assignedDate ? formatDateShort(task.assignedDate) : '—'}</strong></div>
                                     {task.dueDate && <div className="task-detail"><Clock size={14} /> Due: <strong>{task.dueDate}</strong></div>}
                                     {task.location && <div className="task-detail"><MapPin size={14} /> Location: <strong>{task.location}</strong></div>}
                                 </div>

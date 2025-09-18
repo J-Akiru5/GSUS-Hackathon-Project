@@ -1,0 +1,6 @@
+.gm-overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(2,6,23,0.45); z-index: 9999; }
+.gm-dialog { width: 95%; max-width: 720px; background: var(--color-surface); border-radius: 12px; box-shadow: var(--shadow-xl); overflow: hidden; }
+.gm-header { display:flex; align-items:center; justify-content:space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--color-border); }
+.gm-header h3 { margin: 0; font-size: 1.125rem; }
+.gm-close { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; }
+.gm-body { padding: 1.25rem; max-height: 70vh; overflow: auto; }

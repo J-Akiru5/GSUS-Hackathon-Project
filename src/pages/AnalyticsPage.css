@@ -14,11 +14,15 @@
 /* --- Metrics Grid --- */
 .metrics-grid {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
+    grid-template-columns: 1fr;
     gap: 1rem;
 }
 /* Responsive columns for larger screens */
-@media (min-width: 768px) { .metrics-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 720px) {
+    .metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
 @media (min-width: 1024px) { .metrics-grid { grid-template-columns: repeat(6, 1fr); } }
 
 .metric-card {

@@ -1,6 +1,15 @@
+// src/App.jsx (FINAL VERSION WITH ROLES)
+
 import React from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+
+// Layouts
+import AdminSidebar from './components/Sidebar';
+import PersonnelSidebar from './components/PersonnelSidebar';
+import GSUSHeader from './components/GSUSHeader'; // <-- added
+
+// Pages
 import LoginPage from './pages/LoginPage';
 import GSODashboard from './pages/GSODashboard';
 import AllRequestsPage from './pages/AllRequestsPage';
@@ -8,26 +17,63 @@ import MasterCalendarPage from './pages/MasterCalendarPage';
 import PersonnelPage from './pages/PersonnelPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
+import PersonnelDashboard from './pages/PersonnelDashboard'; // Your "My Tasks" page
+
+// --- Layout Components ---
+const AdminLayout = () => (
+  <div>
+    <GSUSHeader /> {/* ensure header is present for admin layout */}
+    <div className="main-layout">
+      <AdminSidebar />
+      <main className="content-wrapper"><Outlet /></main>
+    </div>
+  </div>
+);
+
+const PersonnelLayout = () => (
+  <div>
+    <GSUSHeader /> {/* ensure header is present for personnel layout */}
+    <div className="main-layout">
+      <PersonnelSidebar />
+      <main className="content-wrapper"><Outlet /></main>
+    </div>
+  </div>
+);
+
+// --- Protected Route Component ---
+const ProtectedRoute = ({ allowedRoles }) => {
+  const { user } = useAuth();
+  console.log('ProtectedRoute user:', user);
+  if (!user) return <Navigate to="/" />;
+  return allowedRoles.includes(user.role) ? <Outlet /> : <Navigate to="/" />;
+};
+
 
 function App() {
-  const location = useLocation();
-  const noSidebarRoutes = ['/'];
-
   return (
-    <div className="main-layout">
-      {!noSidebarRoutes.includes(location.pathname) && <Sidebar />}
-      <main className="content-wrapper">
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
+    <Routes>
+      <Route path="/" element={<LoginPage />} />
+
+      {/* Admin Protected Routes */}
+      {/* <Route element={<ProtectedRoute allowedRoles={['gso_head']} />}> */}
+      <Route element={<AdminLayout />}>
           <Route path="/dashboard" element={<GSODashboard />} />
           <Route path="/requests" element={<AllRequestsPage />} />
           <Route path="/calendar" element={<MasterCalendarPage />} />
           <Route path="/personnel" element={<PersonnelPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
-        </Routes>
-      </main>
-    </div>
+      </Route>
+      {/* </Route> */}
+
+      {/* Personnel Protected Routes */}
+      {/* <Route element={<ProtectedRoute allowedRoles={['personnel']} />}> */}
+      <Route element={<PersonnelLayout />}>
+        <Route path="/my-tasks" element={<PersonnelDashboard />} />
+        {/* Add routes for My Schedule and Profile here if you build them */}
+      </Route>
+      {/* </Route> */}
+    </Routes>
   );
 }
 

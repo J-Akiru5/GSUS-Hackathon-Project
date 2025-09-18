@@ -1,33 +1,77 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import logo from '../assets/GSUS_logo.svg';
-const LoginPage = () => {
-    const navigate = useNavigate();
-    const handleLogin = (e) => {
-        e.preventDefault();
-        // This is a FAKE login for the demo. It just navigates.
-        navigate('/dashboard');
-    };
+// src/pages/LoginPage.jsx (Themed Version)
 
-    return (
-      <div style={{width: '100%', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
-        <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-          <img src={logo} alt="GSUS Logo" style={{width: '96px', height: '96px', marginBottom: '1rem'}} />
-          <form onSubmit={handleLogin} style={{padding: '2rem', background: 'white', borderRadius: '12px', boxShadow: 'var(--shadow-md)', width: '400px'}}>
-            <h2 style={{textAlign: 'center', color: 'var(--color-primary)'}}>GSUS Admin Portal</h2>
-            <div style={{marginTop: '1.5rem'}}>
-              <label>Email</label>
-              <input type="email" defaultValue="gso.head@iloilo.gov.ph" style={{width: '100%', padding: '0.75rem', marginTop: '0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)'}} />
-            </div>
-            <div style={{marginTop: '1rem'}}>
-              <label>Password</label>
-              <input type="password" defaultValue="password" style={{width: '100%', padding: '0.75rem', marginTop: '0.5rem', borderRadius: '8px', border: '1px solid var(--color-border)'}} />
-            </div>
-            <button type="submit" className="btn btn-primary" style={{width: '100%', marginTop: '1.5rem'}}>Sign In</button>
-          </form>
-        </div>
+import React, { createContext, useContext, useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
+
+const ThemeContext = createContext('light');
+
+export default function LoginPage() {
+  const { login } = useAuth();
+
+  return (
+    <ThemeContext.Provider value="dark">
+      <div style={{ width: '100%', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <AuthForm onLogin={login} />
       </div>
-    );
-};
+    </ThemeContext.Provider>
+  );
+}
 
-export default LoginPage;
+function AuthForm({ onLogin }) {
+  const [email, setEmail] = useState('gso.head@iloilo.gov.ph');
+  const [password, setPassword] = useState('password');
+  const [role, setRole] = useState('gso_head');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // demo login uses role only — keep email/password for UX
+    onLogin(role);
+  };
+
+  return (
+    <Panel title="GSUS Portal Login">
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: 360 }}>
+        <label style={{ fontSize: 12, color: 'var(--color-text-light)' }}>Email</label>
+        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid var(--color-border)' }} />
+
+        <label style={{ fontSize: 12, color: 'var(--color-text-light)' }}>Password</label>
+        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid var(--color-border)' }} />
+
+        <label style={{ fontSize: 12, color: 'var(--color-text-light)' }}>Role (demo)</label>
+        <select value={role} onChange={(e) => setRole(e.target.value)} style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+          <option value="gso_head">GSO Head</option>
+          <option value="personnel">Personnel</option>
+        </select>
+
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          <Button type="submit">Sign In</Button>
+          <Button type="button" onClick={() => { setEmail('gso.head@iloilo.gov.ph'); setPassword('password'); setRole('gso_head'); }}>Fill Demo</Button>
+        </div>
+      </form>
+    </Panel>
+  );
+}
+
+function Panel({ title, children }) {
+  const theme = useContext(ThemeContext);
+  const className = 'panel-' + theme;
+  return (
+    <section className={className} style={{ background: 'white', borderRadius: 12, padding: '1.25rem', boxShadow: 'var(--shadow-md)', width: 420 }}>
+      <h2 style={{ color: 'var(--color-primary)', marginBottom: '0.75rem', textAlign: 'center' }}>{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function Button({ children, type = 'button', onClick }) {
+  const theme = useContext(ThemeContext);
+  const base = { padding: '0.6rem 0.9rem', borderRadius: 8, fontWeight: 600, cursor: 'pointer' };
+  const themed = theme === 'dark'
+    ? { background: 'var(--color-primary)', color: 'white', border: '1px solid transparent' }
+    : { background: 'transparent', color: 'var(--color-text-default)', border: '1px solid var(--color-border)' };
+  return (
+    <button type={type} onClick={onClick} style={{ ...base, ...themed }}>
+      {children}
+    </button>
+  );
+}

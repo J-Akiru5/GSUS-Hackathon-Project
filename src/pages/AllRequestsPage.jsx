@@ -1,58 +1,72 @@
 // src/pages/AllRequestsPage.jsx
 
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, Filter, Eye, FileText } from "lucide-react";
 import './AllRequestsPage.css'; // <-- IMPORT OUR NEW CSS FILE
-
-// Mock data (keep this as it is)
-const allRequests = [
-    { id: "REQ-001", requesterName: "Maria Santos", serviceType: "Venue Booking", status: "Approved", dateSubmitted: "2024-09-17", priority: "High", assignedTo: "Facilities Team" },
-    { id: "REQ-002", requesterName: "John Doe", serviceType: "Vehicle Request", status: "In Progress", dateSubmitted: "2024-09-17", priority: "Medium", assignedTo: "Transportation Team" },
-    { id: "REQ-003", requesterName: "Lisa Chen", serviceType: "Equipment", status: "Pending", dateSubmitted: "2024-09-16", priority: "Low" },
-    { id: "REQ-004", requesterName: "David Kim", serviceType: "Maintenance", status: "Completed", dateSubmitted: "2024-09-15", priority: "Medium", assignedTo: "Maintenance Team" },
-    { id: "REQ-005", requesterName: "Sarah Wilson", serviceType: "IT Support", status: "Awaiting Feedback", dateSubmitted: "2024-09-14", priority: "High", assignedTo: "IT Support Team" },
-    { id: "REQ-006", requesterName: "Robert Johnson", serviceType: "Venue Booking", status: "Denied", dateSubmitted: "2024-09-13", priority: "Low" },
-    { id: "REQ-007", requesterName: "Emily Davis", serviceType: "Vehicle Request", status: "Approved", dateSubmitted: "2024-09-12", priority: "Urgent", assignedTo: "Transportation Team" },
-    { id: "REQ-008", requesterName: "Michael Brown", serviceType: "Equipment", status: "In Progress", dateSubmitted: "2024-09-11", priority: "Medium", assignedTo: "IT Support Team" }
-];
+import { listenToRequests } from '../services/firestoreService';
+import GlobalModal from '../components/GlobalModal';
+import RequestForm from '../components/RequestForm';
+import { formatDateShort } from '../utils/dateHelpers';
+import SectionHeader from '../components/SectionHeader';
 
 // Reusable Status Badge Component
 const StatusBadge = ({ status }) => {
-    const statusClass = `status-badge status-${status.toLowerCase().replace(' ', '-')}`;
+    const statusClass = `status-badge status-${String(status || '').toLowerCase().replace(' ', '-')}`;
     return <span className={statusClass}>{status}</span>;
 };
 
 // Reusable Priority Badge Component
 const PriorityBadge = ({ priority }) => {
-    const priorityClass = `priority-badge priority-${priority.toLowerCase()}`;
+    const priorityClass = `priority-badge priority-${String(priority || '').toLowerCase()}`;
     return <span className={priorityClass}>{priority}</span>;
 };
 
-
 export default function AllRequestsPage() {
+    const [requests, setRequests] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [divisionFilter, setDivisionFilter] = useState("all");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [formOpen, setFormOpen] = useState(false);
+    const [editing, setEditing] = useState(null);
 
-    const filteredRequests = allRequests.filter(request => {
-        const matchesSearch = request.requesterName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              request.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                              request.serviceType.toLowerCase().includes(searchTerm.toLowerCase());
+    useEffect(() => {
+        setLoading(true);
+        const unsubscribe = listenToRequests((data, err) => {
+            if (err) {
+                setError(err);
+                setLoading(false);
+                return;
+            }
+            setRequests(data || []);
+            setLoading(false);
+        });
+        return () => { if (unsubscribe) unsubscribe(); };
+    }, []);
+
+    const formatDate = (d) => formatDateShort(d);
+
+    const filteredRequests = (requests || []).filter(request => {
+        const q = searchTerm.toLowerCase();
+        const matchesSearch = (request.requesterName || request.requester || '').toLowerCase().includes(q) ||
+            (request.id || '').toLowerCase().includes(q) ||
+            (request.serviceType || request.type || '').toLowerCase().includes(q);
         const matchesStatus = statusFilter === "all" || request.status === statusFilter;
         const matchesDivision = divisionFilter === "all" || 
-                                (request.assignedTo && request.assignedTo.toLowerCase().includes(divisionFilter.toLowerCase()));
+            ((request.assignedTo || '').toLowerCase().includes(divisionFilter.toLowerCase()));
         return matchesSearch && matchesStatus && matchesDivision;
     });
 
     return (
     <div className="page-content all-requests-page">
-        <div className="page-header">
-            <div>
-                <h1 className="page-title">All Requests</h1>
-                <p className="page-subtitle">Manage and track all service requests</p>
-            </div>
-            <div className="request-count">
-                {filteredRequests.length} of {allRequests.length} requests
+            <SectionHeader title="All Requests" subtitle="Manage and track all service requests" />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div className="request-count">{loading ? '...' : `${filteredRequests.length} of ${requests.length} requests`}</div>
+                    <div>
+                        <button className="btn btn-primary" onClick={() => { setEditing(null); setFormOpen(true); }}>New Request</button>
+                    </div>
             </div>
         </div>
 
@@ -117,30 +131,49 @@ export default function AllRequestsPage() {
                                 <tr key={request.id}>
                                     <td className="cell-request-id">{request.id}</td>
                                     <td>
-                                        <div className="cell-requester">{request.requesterName}</div>
-                                        {request.assignedTo && <div className="cell-assigned-to">Assigned to: {request.assignedTo}</div>}
+                                        <div className="cell-requester">{request.requesterName || request.requester || request.createdBy || request.userEmail || '—'}</div>
+                                        {(request.assignedTo) && <div className="cell-assigned-to">Assigned to: {request.assignedTo}</div>}
                                     </td>
-                                    <td>{request.serviceType}</td>
+                                    <td>{request.serviceType || request.type || '—'}</td>
                                     <td><StatusBadge status={request.status} /></td>
-                                    <td><PriorityBadge priority={request.priority} /></td>
-                                    <td className="cell-date">{new Date(request.dateSubmitted).toLocaleDateString()}</td>
+                                    <td><PriorityBadge priority={request.priority || 'Medium'} /></td>
+                                    <td className="cell-date">{formatDate(request.submittedAt || request.dateSubmitted || request.createdAt || request.details?.submittedAt || request.createdAt)}</td>
                                     <td>
-                                        <button className="btn btn-secondary">
-                                            <Eye size={16} /> View Details
-                                        </button>
+                                        <div style={{ display: 'flex', gap: 8 }}>
+                                            <button className="btn btn-secondary" onClick={() => { setEditing(request); setFormOpen(true); }}>
+                                                <Eye size={16} /> Edit
+                                            </button>
+                                            <button className="btn" onClick={() => { /* could open details modal */ }}>
+                                                <FileText size={16} /> Details
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-                {filteredRequests.length === 0 && (
+                    {!loading && filteredRequests.length === 0 && (
                     <div className="empty-state">
                         <FileText size={48} />
                         <p>No requests found matching your criteria.</p>
                     </div>
                 )}
+                    {loading && <p style={{ color: 'var(--color-text-light)' }}>Loading requests...</p>}
+                    {error && <p style={{ color: 'var(--color-danger)' }}>Error loading requests.</p>}
             </div>
+
+                <GlobalModal open={formOpen} title={editing ? 'Edit Request' : 'New Request'} onClose={() => setFormOpen(false)}>
+                    <RequestForm initialData={editing || {}} onSaved={(saved) => {
+                        // update local state optimistically
+                        if (editing && editing.id) {
+                            setRequests(prev => prev.map(r => r.id === editing.id ? { ...r, ...saved } : r));
+                        } else {
+                            setRequests(prev => [{ id: saved.id, ...saved }, ...prev]);
+                        }
+                        setFormOpen(false);
+                    }} onCancel={() => setFormOpen(false)} />
+                </GlobalModal>
         </div>
     </div>
     );

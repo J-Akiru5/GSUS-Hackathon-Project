@@ -4,8 +4,41 @@
 .header h1 { font-size: 1.8rem; color: var(--color-text-dark); }
 .header p { color: var(--color-text-light); }
 
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
-.stat-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; transition: all 0.2s ease; }
+/* Section header that becomes fixed under the GSUS header when active */
+.section-header {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto 0 auto;
+  padding: 0 1rem;
+  transition: background-color 260ms ease, box-shadow 260ms ease, transform 260ms ease;
+}
+
+.section-header--active {
+  position: fixed;
+  left: calc((100% - var(--content-max-width)) / 2);
+  right: auto;
+  top: var(--header-height);
+  z-index: 55;
+  background-color: rgba(16, 185, 129, 0.06);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.06);
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  transition: all 0.18s ease;
+  border-radius: 12px;
+}
 .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .stat-icon { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; }
 .stat-icon.icon-yellow { background-color: #FEF3C7; color: #D97706; }
@@ -15,22 +48,126 @@
 .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--color-text-dark); }
 .stat-title { font-size: 0.9rem; color: var(--color-text-light); }
 
-.dashboard-main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 2rem; align-items: start; }
+.dashboard-main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  align-items: start;
+}
 .action-required-panel, .calendar-panel { padding-bottom: 0.5rem; }
-.card-header { padding: 1.5rem; padding-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+.card-header {
+  padding: 1.25rem;
+  padding-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 .card-header .icon { color: var(--color-warning); }
 .card-header h3 { font-size: 1.125rem; font-weight: 600; color: var(--color-text-dark); }
 
-.card-content { padding: 1.5rem; padding-top: 0; }
-.request-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-top: 1px solid var(--color-border); }
-.request-info h4 { font-weight: 500; }
-.request-info p { font-size: 0.8rem; color: var(--color-text-light); }
+.card-content {
+  padding: 1.25rem;
+  padding-top: 0;
+}
+
+/* Request item: make it a column so footer can sit at the bottom */
+.request-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1rem;
+  border-top: 1px solid var(--color-border);
+  gap: 0.5rem;
+  min-height: 100px;
+}
+
+.request-info h4 {
+  font-weight: 500;
+  margin: 0;
+}
+
+.request-info p {
+  font-size: 0.8rem;
+  color: var(--color-text-light);
+  margin: 0;
+}
+
+/* Footer holds priority and action buttons */
+.request-item-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* priority label */
+.priority-label {
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.priority-high {
+  background-color: #F59E0B;
+  color: #1f2937;
+}
+
+.priority-medium {
+  background-color: #fff1b8;
+  color: #92400e;
+}
+
+.priority-low {
+  background-color: #dcfce7;
+  color: #14532d;
+}
+
+/* Buttons container: stack on small screens, grid on wider */
+.request-item-buttons {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+/* keep compatibility with older class name */
 .request-actions { display: flex; align-items: center; gap: 0.5rem; }
 .btn svg { margin-right: 0.5rem; }
 .priority-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 600; font-size: 0.8rem; color: white; }
-.priority-high { background-color: #F59E0B; }
-.priority-medium { background-color: #3B82F6; }
-.priority-low { background-color: #64748B; }
+@media (min-width: 640px) {
+  .request-item-buttons {
+    grid-template-columns: repeat(3, minmax(0, auto));
+    width: auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-main-grid {
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .request-item {
+    min-height: 120px;
+  }
+
+  .request-item-buttons {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+}
 
 /* --- Audit Trail Panel Styles --- */
 .audit-trail-panel { margin-top: 2rem; }
