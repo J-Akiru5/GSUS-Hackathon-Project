@@ -10,6 +10,7 @@ import PersonnelPage from './pages/PersonnelPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
+import ChatPage from './pages/ChatPage';
 import GSUSHeader from './components/GSUSHeader'; // <-- new import
 
 // This component is now safely inside the Router, so useLocation will work.
@@ -27,6 +28,7 @@ export default function Layout() {
           <Route path="/dashboard" element={<GSODashboard />} />
           <Route path="/requests" element={<AllRequestsPage />} />
           <Route path="/calendar" element={<MasterCalendarPage />} />
+          <Route path="/chat" element={<ChatPage />} />
           <Route path="/personnel" element={<PersonnelPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />

@@ -1,21 +1,21 @@
 .sidebar {
   width: var(--sidebar-width);
-    background-color: var(--color-surface);
+  background-color: var(--color-surface);
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* make the sidebar fixed to the left and full-height under the header */
+  /* make the sidebar fixed to the left and full-height of the viewport */
     position: fixed;
-    top: var(--header-height);
+  top: 0;
     left: 0;
     bottom: 0;
-    /* use top + bottom so the sidebar always fills remaining viewport height */
+  height: 100vh;
+    /* fallback to ensure full viewport height */
     padding: 0;
-    /* user requested no padding */
   flex-shrink: 0;
   transition: width var(--transition-medium), background-color var(--transition-fast);
-    overflow: auto;
+  overflow: auto;
 }
 .sidebar.compact {
   width: 72px;

@@ -1,6 +1,6 @@
 // src/services/firestoreService.js
 
-import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, serverTimestamp, addDoc, setDoc, getDoc, deleteDoc } from "firebase/firestore";
+import { collection, query, where, onSnapshot, doc, updateDoc, orderBy, serverTimestamp, addDoc, setDoc, getDoc, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "../../firebaseConfig"; // adjust relative path if necessary
 
 /**
@@ -279,6 +279,88 @@ export async function getUserByEmail(email) {
     return { id: d.id, ...normalizeDocData(d.data()) };
   } catch (err) {
     console.error('getUserByEmail failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Listen to a conversation (all messages exchanged between two user ids)
+ * Uses a broad query ordered by timestamp then filters client-side to avoid
+ * Firestore composite filter restrictions. Returns unsubscribe.
+ * @param {string} userA
+ * @param {string} userB
+ * @param {(data:Array<Object>, error:Error|null)=>void} callback
+ */
+export function listenToConversation(userA, userB, callback) {
+  try {
+    const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => {
+        const all = mapSnapshot(snap);
+        const convo = all.filter(m => (
+          (m.senderId === userA && m.receiverId === userB) ||
+          (m.senderId === userB && m.receiverId === userA)
+        ));
+        // Ensure timestamps are Dates via normalizeDocData
+        convo.sort((a, b) => {
+          const at = a.timestamp instanceof Date ? a.timestamp.getTime() : (a.timestamp ? new Date(a.timestamp).getTime() : 0);
+          const bt = b.timestamp instanceof Date ? b.timestamp.getTime() : (b.timestamp ? new Date(b.timestamp).getTime() : 0);
+          return at - bt;
+        });
+        callback(convo, null);
+      },
+      (error) => {
+        console.error('listenToConversation error:', error);
+        callback([], error);
+      }
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.error('listenToConversation failed:', err);
+    callback([], err);
+    return () => { };
+  }
+}
+
+/**
+ * Send a message document to the 'messages' collection.
+ * Payload should include senderId, receiverId, text, senderName, optional messageId
+ */
+export async function sendMessage(payload = {}) {
+  try {
+    const docRef = await addDoc(collection(db, 'messages'), {
+      senderId: payload.senderId,
+      receiverId: payload.receiverId,
+      text: payload.text || '',
+      timestamp: serverTimestamp(),
+      senderName: payload.senderName || '',
+      read: payload.read || false,
+      messageId: payload.messageId || Date.now().toString(),
+    });
+    return docRef.id;
+  } catch (err) {
+    console.error('sendMessage failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Mark unread messages from otherId to userId as read.
+ */
+export async function markConversationRead(userId, otherId) {
+  try {
+    if (!userId || !otherId) return;
+    const q = query(collection(db, 'messages'), where('receiverId', '==', userId), where('senderId', '==', otherId), where('read', '==', false));
+    const snap = await getDocs(q);
+    const updates = [];
+    snap.forEach(docSnap => {
+      const ref = doc(db, 'messages', docSnap.id);
+      updates.push(updateDoc(ref, { read: true, readAt: serverTimestamp() }));
+    });
+    await Promise.all(updates);
+  } catch (err) {
+    console.error('markConversationRead failed:', err);
     throw err;
   }
 }

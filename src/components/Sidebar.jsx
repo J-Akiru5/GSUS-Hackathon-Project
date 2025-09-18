@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiGrid, FiFileText, FiCalendar, FiUsers, FiBarChart2, FiSettings } from 'react-icons/fi';
+import { FiGrid, FiFileText, FiCalendar, FiUsers, FiBarChart2, FiSettings, FiMessageSquare } from 'react-icons/fi';
 import './Sidebar.css';
 import { useAuth } from '../hooks/useAuth';
 
@@ -37,6 +37,7 @@ const Sidebar = () => {
           <NavLink to="/dashboard" className="nav-item"><FiGrid /> Dashboard</NavLink>
           <NavLink to="/requests" className="nav-item"><FiFileText /> All Requests</NavLink>
           <NavLink to="/calendar" className="nav-item"><FiCalendar /> Master Calendar</NavLink>
+          <NavLink to="/chat" className="nav-item"><FiMessageSquare /> Chat</NavLink>
           <NavLink to="/personnel" className="nav-item"><FiUsers /> Personnel</NavLink>
           <NavLink to="/analytics" className="nav-item"><FiBarChart2 /> Analytics</NavLink>
           <NavLink to="/settings" className="nav-item"><FiSettings /> Settings</NavLink>
