@@ -103,13 +103,26 @@ export function listenToPendingRequests(callback) {
  */
 export function listenToUsers(callback) {
   try {
-    const q = query(collection(db, "users"), orderBy("displayName", "asc"));
+    // prefer 'fullName' ordering since many documents use that field; fall back if it causes an error
+    let q;
+    try {
+      q = query(collection(db, "users"), orderBy("fullName", "asc"));
+    } catch (e) {
+      q = query(collection(db, "users"));
+    }
     const unsubscribe = onSnapshot(
       q,
       (snap) => callback(mapSnapshot(snap), null),
       (error) => {
         console.error("listenToUsers error:", error);
-        callback([], error);
+        // fallback: try a plain onSnapshot without ordering
+        try {
+          const q2 = query(collection(db, 'users'));
+          const unsub2 = onSnapshot(q2, (s2) => callback(mapSnapshot(s2), null), (err2) => { console.error('listenToUsers fallback error:', err2); callback([], err2); });
+          return unsub2;
+        } catch (err2) {
+          callback([], error);
+        }
       }
     );
     return unsubscribe;

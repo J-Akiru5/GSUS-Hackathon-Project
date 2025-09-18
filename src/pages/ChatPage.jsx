@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { listenToConversation, sendMessage, getUserById, listenToUsers, markConversationRead } from '../services/firestoreService';
 import { auth } from '../../firebaseConfig';
+import { signInAnonymously } from 'firebase/auth';
 import { useAuth } from '../hooks/useAuth';
 import './ChatPage.css';
 import { User, Send } from 'lucide-react';
@@ -26,10 +27,11 @@ export default function ChatPage() {
       const chosen = activeUser || gso || null;
       if (chosen) {
         setActiveUser(chosen);
-        const current = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId } : null);
+  const current = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId } : null);
         if (current) {
           if (unsubRef.current) unsubRef.current();
-          unsubRef.current = listenToConversation(current.uid, chosen.id, (msgs) => {
+          unsubRef.current = listenToConversation(current.uid, chosen.id, (msgs, err) => {
+            if (err) { console.error('listenToConversation error for chosen:', err); }
             setMessages(msgs);
             setLoading(false);
             // mark read for messages received by current user
@@ -75,9 +77,28 @@ export default function ChatPage() {
 
   const currentUser = auth?.currentUser || (localUser ? { uid: localUser.id || localUser.userId } : null);
 
+  const [error, setError] = useState(null);
+
+  const handleAnonSignIn = async () => {
+    try {
+      await signInAnonymously(auth);
+      setError(null);
+    } catch (err) {
+      console.error('anon sign-in failed', err);
+      setError('Anonymous sign-in failed: ' + err.message);
+    }
+  };
+
   return (
     <div className="page-content chat-page">
       <div className="chat-wrapper">
+        {!currentUser && (
+          <div style={{ padding: 12 }}>
+            <div style={{ marginBottom: 8 }}>Not signed into Firebase auth. For quick tests you may sign in anonymously:</div>
+            <button className="btn btn-primary" onClick={handleAnonSignIn}>Sign in anonymously</button>
+            {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
+          </div>
+        )}
         <aside className="chat-users">
           <div className="users-header">Users</div>
           <div className="users-list">
