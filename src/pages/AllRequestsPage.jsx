@@ -84,12 +84,11 @@ export default function AllRequestsPage() {
                         placeholder="Search requests..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input control"
+                            className="search-input"
                     />
                 </div>
                 
-                <div className="select-wrapper">
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select control">
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
                     <option value="all">All Statuses</option>
                     <option value="Pending">Pending</option>
                     <option value="Approved">Approved</option>
@@ -98,19 +97,14 @@ export default function AllRequestsPage() {
                     <option value="Denied">Denied</option>
                     <option value="Awaiting Feedback">Awaiting Feedback</option>
                     </select>
-                    <div className="select-chevron">▾</div>
-                </div>
 
-                <div className="select-wrapper">
-                    <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="filter-select control">
+                    <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="filter-select">
                     <option value="all">All Divisions</option>
                     <option value="facilities">Facilities Team</option>
                     <option value="transportation">Transportation Team</option>
                     <option value="maintenance">Maintenance Team</option>
                     <option value="it">IT Support Team</option>
                     </select>
-                    <div className="select-chevron">▾</div>
-                </div>
             </div>
         </div>
 

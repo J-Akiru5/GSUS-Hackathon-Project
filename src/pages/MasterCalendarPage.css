@@ -250,7 +250,9 @@
         .dialog-content {
             max-width: 92%;
             padding: 1.25rem;
-    
+    }
+
+/* event type badges */
 .event-type-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
@@ -258,47 +260,46 @@
     font-size: 0.8rem;
     color: white;
     margin: 0.5rem 0 1rem 0;
-        background-color: var(--color-primary);
-    
-    
-        /* color variants for badges */
-        .event-type-badge.event-venue {
-            background-color: #157F4A;
-        }
-    
-        .event-type-badge.event-vehicle {
-            background-color: #0EA5E9;
-        }
-    
-        .event-type-badge.event-equipment {
-            background-color: #F97316;
-        }
-    
-        .event-type-badge.event-default {
-            background-color: var(--color-border);
-            color: var(--color-text-default);
-        }
-    
-        .detail-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--color-white);
-        }
-    
-        .detail-item.full-width {
-            grid-column: 1 / -1;
-        }
-    
-        .detail-item svg {
-            color: var(--color-white);
-        }
-    
-        .description {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
-            color: var(--color-white);
-            font-size: 0.9rem;
-        }
+    background-color: var(--color-primary);
+}
+
+/* color variants for badges */
+.event-type-badge.event-venue {
+    background-color: #157F4A;
+}
+
+.event-type-badge.event-vehicle {
+    background-color: #0EA5E9;
+}
+
+.event-type-badge.event-equipment {
+    background-color: #F97316;
+}
+
+.event-type-badge.event-default {
+    background-color: var(--color-border);
+    color: var(--color-text-default);
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-white);
+}
+
+.detail-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.detail-item svg {
+    color: var(--color-white);
+}
+
+.description {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--color-white);
+    font-size: 0.9rem;
 }

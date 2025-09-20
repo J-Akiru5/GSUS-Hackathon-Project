@@ -2,39 +2,57 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, Clock, Users, Calendar, Activity, BarChart3, PieChart as PieChartIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Clock, Users, Calendar, Activity, BarChart3, PieChart as PieChartIcon, MessageSquare } from "lucide-react";
 import './AnalyticsPage.css';
 import SectionHeader from '../components/SectionHeader';
-import { listenToRequests } from '../services/firestoreService';
+import { listenToRequests, listenToFeedback } from '../services/firestoreService';
+
+// Initialize empty arrays for feedback and requestRatings
+const initialRequestRatings = [];
+const initialFeedback = [];
 
 export default function AnalyticsPage() {
   const [requests, setRequests] = useState([]);
+  const [feedback, setFeedback] = useState([]);
+  const [requestRatings, setRequestRatings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
-    const unsubscribe = listenToRequests((data, err) => {
+    let unsubRequests, unsubFeedback;
+
+    // Listen to requests
+    unsubRequests = listenToRequests((data, err) => {
       if (err) {
         setError(err);
-        setLoading(false);
         return;
       }
       setRequests(data || []);
+      // Extract ratings from request data
+      const ratings = (data || [])
+        .map(req => req.rating)
+        .filter(rating => typeof rating === 'number' && rating >= 1 && rating <= 5);
+      setRequestRatings(ratings);
       setLoading(false);
     });
-    return () => { if (unsubscribe) unsubscribe(); };
+
+    // Initialize empty feedback - we'll implement this later
+    // Subscribe to feedback collection
+    unsubFeedback = listenToFeedback((data, err) => {
+      if (err) {
+        setError(err);
+        return;
+      }
+      setFeedback(data || []);
+      setLoading(false);
+    });
+
+    return () => {
+      if (unsubRequests) unsubRequests();
+      if (unsubFeedback) unsubFeedback();
+    };
   }, []);
-
-  const formatDateKey = (input) => {
-    if (!input) return 'Unknown';
-    let d = input;
-    if (typeof input === 'object' && typeof input.toDate === 'function') d = input.toDate();
-    const dt = new Date(d);
-    if (isNaN(dt)) return 'Unknown';
-    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  };
-
   const {
     totalRequests,
     avgApprovalTime,
@@ -93,12 +111,13 @@ export default function AnalyticsPage() {
       if ((r.status || '').toLowerCase() === 'approved') overTimeMap[key].approved += 1;
     }
     const overTimeArr = Object.values(overTimeMap)
+      .map(item => ({ date: item.date, requests: Number.isFinite(Number(item.requests)) ? Number(item.requests) : 0, approved: Number.isFinite(Number(item.approved)) ? Number(item.approved) : 0 }))
       .sort((a, b) => {
-        const parse = (label) => {
+        const parseSafe = (label) => {
           const parsed = Date.parse(label);
-          return isNaN(parsed) ? 0 : parsed;
+          return Number.isFinite(parsed) ? parsed : 0;
         };
-        return parse(a.date) - parse(b.date);
+        return parseSafe(a.date) - parseSafe(b.date);
       })
       .slice(-8);
 
@@ -112,8 +131,8 @@ export default function AnalyticsPage() {
     };
     const statusDist = Object.entries(statusCounts).map(([name, val]) => ({
       name,
-      value: total ? Math.round((val / total) * 100) : 0,
-      raw: val,
+      value: Number.isFinite(Number(val)) && total ? Math.round((Number(val) / total) * 100) : 0,
+      raw: Number.isFinite(Number(val)) ? Number(val) : 0,
       color: statusDistColors[name] || "#94A3B8"
     }));
 
@@ -125,8 +144,8 @@ export default function AnalyticsPage() {
     }
     const resourceArr = Object.entries(resourceMap).map(([resource, count]) => ({
       resource,
-      utilization: total ? Math.round((count / total) * 100) : 0,
-      bookings: count
+      utilization: Number.isFinite(Number(count)) && total ? Math.round((Number(count) / total) * 100) : 0,
+      bookings: Number.isFinite(Number(count)) ? Number(count) : 0
     })).sort((a, b) => b.utilization - a.utilization).slice(0, 5);
 
     const busiest = resourceArr.length ? resourceArr[0].resource : 'N/A';
@@ -142,10 +161,36 @@ export default function AnalyticsPage() {
     const peak = Object.entries(weekdayMap).sort((a, b) => b[1] - a[1])[0];
     const peakDayName = peak ? peak[0] : 'N/A';
 
+    // Calculate satisfaction from both feedback messages and request ratings
     let satisfaction = 'N/A';
-    const ratings = requests.map(r => r.rating).filter(v => typeof v === 'number');
-    if (ratings.length) {
-      const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+    const feedbackRatings = [];
+
+    // Extract ratings from feedback messages (defensive)
+    (feedback || []).forEach(msg => {
+      const rawText = msg && (msg.text || msg.comments || msg.suggestions || '');
+      if (!rawText) return;
+      const text = String(rawText).toLowerCase();
+      if (text.includes('rating:')) {
+        const parts = text.split('rating:');
+        const rating = parts.length > 1 ? parseInt(parts[1]) : NaN;
+        if (!isNaN(rating) && rating >= 1 && rating <= 5) {
+          feedbackRatings.push(rating);
+        }
+      }
+      // Look for satisfaction keywords
+      if (text.includes('not satisfied') || text.includes('dissatisfied') || text.includes('unsatisfied')) {
+        feedbackRatings.push(2); // Not satisfied
+      } else if (text.includes('satisfied') || text.includes('very satisfied') || text.includes('happy')) {
+        feedbackRatings.push(5); // Very satisfied
+      }
+    });
+
+    // Combine with request ratings if any
+    const requestRatings = requests.map(r => r.rating).filter(v => typeof v === 'number');
+    const allRatings = [...feedbackRatings, ...requestRatings];
+
+    if (allRatings.length) {
+      const avg = allRatings.reduce((a, b) => a + b, 0) / allRatings.length;
       const safeAvg = Number.isFinite(avg) ? avg : 0;
       satisfaction = `${(safeAvg).toFixed(1)}/5`;
     }
@@ -172,17 +217,38 @@ export default function AnalyticsPage() {
     };
   }, [requests]);
 
+  // helper to compute average rating from satisfactionRatings map stored on each feedback doc
+  const averageRatingFromMap = (mapObj) => {
+    if (!mapObj || typeof mapObj !== 'object') return null;
+    const vals = Object.values(mapObj).filter(v => typeof v === 'number');
+    if (!vals.length) return null;
+    const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+    return Number.isFinite(avg) ? avg : null;
+  };
   const safeRequestsByDivision = (requestsByDivision && requestsByDivision.length)
-    ? requestsByDivision
+    ? requestsByDivision.map(r => ({
+        division: r.division || 'Unknown',
+        approved: Number.isFinite(Number(r.approved)) ? Number(r.approved) : 0,
+        denied: Number.isFinite(Number(r.denied)) ? Number(r.denied) : 0
+      }))
     : [{ division: 'No data', approved: 0, denied: 0 }];
 
   const safeRequestsOverTime = (requestsOverTime && requestsOverTime.length)
-    ? requestsOverTime
+    ? requestsOverTime.map(d => ({
+        date: d.date || new Date().toLocaleDateString(),
+        requests: Number.isFinite(Number(d.requests)) ? Number(d.requests) : 0,
+        approved: Number.isFinite(Number(d.approved)) ? Number(d.approved) : 0
+      }))
     : [{ date: new Date().toLocaleDateString(), requests: 0, approved: 0 }];
 
   const safeStatusDistribution = (statusDistribution && statusDistribution.length)
-    ? statusDistribution
-    : [{ name: 'No data', value: 1, raw: 0, color: '#CBD5E1' }];
+    ? statusDistribution.map(s => ({
+        name: s.name || 'Unknown',
+        value: Number.isFinite(Number(s.value)) ? Number(s.value) : 0,
+        raw: Number.isFinite(Number(s.raw)) ? Number(s.raw) : 0,
+        color: s.color || '#CBD5E1'
+      }))
+  : [{ name: 'No data', value: 1, raw: 0, color: '#CBD5E1' }];
 
   const safeResourceUtilization = (resourceUtilization && resourceUtilization.length)
     ? resourceUtilization
@@ -349,7 +415,63 @@ export default function AnalyticsPage() {
         <div className="card-content insights-grid">
           <div className="insight-item green"><div className="insight-header"><TrendingUp /> Performance Improvement</div> <p>Approval time decreased compared to prior period.</p></div>
           <div className="insight-item yellow"><div className="insight-header"><Calendar /> High Demand</div> <p>{busiestResource} has high utilization. Consider optimizing scheduling.</p></div>
-          <div className="insight-item blue"><div className="insight-header"><Users /> User Satisfaction</div> <p>User satisfaction is {userSatisfaction} based on available ratings.</p></div>
+          <div className="insight-item blue"><div className="insight-header"><Users /> User Satisfaction</div> <p>User satisfaction is {userSatisfaction} based on {feedback.length + requestRatings.length} ratings.</p></div>
+        </div>
+      </div>
+
+      <div className="card feedback-card">
+        <div className="card-header">
+          <MessageSquare className="icon" />
+          Recent Feedback
+          <span className="feedback-count">({feedback.length} messages)</span>
+        </div>
+        <div className="card-content">
+          <div className="feedback-summary">
+            <div className="feedback-stat">
+              <span className="stat-label">Average Rating</span>
+              <span className="stat-value">{metrics.userSatisfaction}</span>
+            </div>
+            <div className="feedback-stat">
+              <span className="stat-label">Total Ratings</span>
+              <span className="stat-value">{feedback.length + requestRatings.length}</span>
+            </div>
+          </div>
+          <div className="feedback-list">
+            {loading ? (
+              <p>Loading feedback...</p>
+            ) : feedback.length === 0 ? (
+              <p>No feedback available</p>
+            ) : (
+              feedback.slice(0, 5).map((fb, index) => {
+                const submitted = fb.submittedAt ? (fb.submittedAt instanceof Date ? fb.submittedAt : new Date(fb.submittedAt)) : null;
+                const avgRating = averageRatingFromMap(fb.satisfactionRatings) || fb.averageRating || fb.average_rating || null;
+                return (
+                  <div key={fb.id || index} className="feedback-item">
+                    <div className="feedback-header">
+                      <div className="feedback-meta">
+                        <span className="feedback-from">{fb.name || 'Anonymous'}</span>
+                        <span className="feedback-time">{submitted ? submitted.toLocaleString() : (fb.date ? String(fb.date) : 'Unknown time')}</span>
+                        <span className="feedback-from">{fb.contact ? `Contact: ${fb.contact}` : ''}</span>
+                        <span className="feedback-from">{fb.region ? `Region: ${fb.region}` : ''}</span>
+                      </div>
+                      <div className="feedback-rating">{avgRating ? `Avg: ${Number(avgRating).toFixed(2)}` : 'No rating'}</div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600 }}>{fb.itemTitle || fb.item_title || fb.itemId || ''}</div>
+                        <div style={{ color: 'var(--color-text-light)', fontSize: 13 }}>{fb.feedbackType || fb.feedback_type || ''} • {fb.clientType || fb.client_type || ''}</div>
+                        <p className="feedback-text" style={{ marginTop: 8 }}>{fb.suggestions || fb.suggestion || fb.comments || ''}</p>
+                      </div>
+                      <div style={{ minWidth: 120, textAlign: 'right' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>{fb.status || 'pending'}</div>
+                        <div style={{ fontSize: 12, color: 'var(--color-text-light)', marginTop: 8 }}>Submitted: {submitted ? submitted.toLocaleDateString() : (fb.submittedAt ? String(fb.submittedAt) : '—')}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </div>

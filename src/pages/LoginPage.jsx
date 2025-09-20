@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const ThemeContext = createContext('light');
 
@@ -21,6 +22,21 @@ function AuthForm({ onLogin }) {
   const [email, setEmail] = useState('gso.head@iloilo.gov.ph');
   const [password, setPassword] = useState('password');
   const [role, setRole] = useState('gso_head');
+  const navigate = useNavigate();
+
+  const handleRoleChange = async (newRole) => {
+    setRole(newRole);
+    // If user selects Personnel in the demo role dropdown, perform a quick demo login
+    // and navigate to the Personnel Dashboard to support quick presentation access.
+    if (newRole === 'personnel') {
+      try {
+        await onLogin({ role: 'personnel' });
+      } catch (e) {
+        // ignore errors in demo convenience flow
+      }
+      navigate('/my-tasks');
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -38,7 +54,7 @@ function AuthForm({ onLogin }) {
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid var(--color-border)' }} />
 
         <label style={{ fontSize: 12, color: 'var(--color-text-light)' }}>Role (demo)</label>
-        <select value={role} onChange={(e) => setRole(e.target.value)} style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+        <select value={role} onChange={(e) => handleRoleChange(e.target.value)} style={{ padding: '0.6rem', borderRadius: 8, border: '1px solid var(--color-border)' }}>
           <option value="gso_head">GSO Head</option>
           <option value="personnel">Personnel</option>
         </select>
@@ -46,6 +62,15 @@ function AuthForm({ onLogin }) {
         <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
           <Button type="submit">Sign In</Button>
           <Button type="button" onClick={() => { setEmail('gso.head@iloilo.gov.ph'); setPassword('password'); setRole('gso_head'); }}>Fill Demo</Button>
+          <Button type="button" onClick={async () => {
+            // quick access: demo login as Personnel then navigate to the Personnel Dashboard
+            try {
+              await onLogin({ role: 'personnel' });
+            } catch (e) {
+              // ignore errors here (demo path)
+            }
+            navigate('/my-tasks');
+          }}>Personnel Dashboard</Button>
         </div>
       </form>
     </Panel>
