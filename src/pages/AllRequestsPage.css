@@ -201,6 +201,15 @@
     font-weight: 600;
 }
 
+/* Hover/focus to reveal actions */
+.request-card { position: relative; }
+.request-card .card-actions { opacity: 0; transform: translateY(6px); transition: opacity 160ms ease, transform 160ms ease; }
+.request-card:focus-within .card-actions, .request-card:hover .card-actions { opacity: 1; transform: translateY(0); }
+
+.card-desc { margin-top: 0.5rem; color: var(--color-text-muted); }
+.desc-text { max-height: 4.5rem; overflow: hidden; }
+.request-card .btn-link { padding: 0; font-size: 0.85rem; }
+
 .card-type {
     font-size: 0.9rem;
     color: var(--color-text-light);

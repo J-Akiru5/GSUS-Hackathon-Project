@@ -82,17 +82,57 @@ export default function AllRequestsPage() {
         );
     };
 
+    // Small presentational card component with expand/collapse for description and hover actions
+    const RequestCard = ({ request, setEditing, setFormOpen, formatDate }) => {
+        const [expanded, setExpanded] = React.useState(false);
+        const desc = request.description || request.details?.description || '';
+        const snippet = desc.length > 120 ? desc.slice(0, 120).trim() + '…' : desc;
+
+        return (
+            <div className="request-card" tabIndex={0} aria-labelledby={`req-${request.id}`}>
+                <div className="card-main">
+                    <div className="card-left">
+                        <div className="card-id" id={`req-${request.id}`}>{request.id}</div>
+                        <div className="card-field"><span className="card-label">Requester</span><span className="card-value">{request.requesterName || request.requester || '—'}</span></div>
+                        <div className="card-field"><span className="card-label">Type</span><span className="card-value">{request.serviceType || request.type || '—'}</span></div>
+                        <div className="card-field"><span className="card-label">Assigned</span><span className="card-value">{request.assignedTo || 'Unassigned'}</span></div>
+                        {desc ? (
+                            <div className="card-desc">
+                                <div className="desc-text">{expanded ? desc : snippet}</div>
+                                {desc.length > 120 && (
+                                    <button className="btn btn-link" onClick={() => setExpanded(s => !s)} aria-expanded={expanded}>{expanded ? 'Less' : 'More'}</button>
+                                )}
+                            </div>
+                        ) : null}
+                    </div>
+                    <div className="card-right">
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                            <div><StatusBadge status={request.status} /></div>
+                            <div><PriorityBadge priority={request.priority || 'Medium'} /></div>
+                            <div className="card-date">{formatDate(request.submittedAt || request.dateSubmitted || request.createdAt)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div className="card-actions">
+                    {request.status === 'Pending' && <button className="btn btn-primary" onClick={() => { setEditing(request); setFormOpen(true); }}>Start</button>}
+                    {request.status === 'In Progress' && <button className="btn btn-primary" onClick={() => { setEditing(request); setFormOpen(true); }}>Continue</button>}
+                    {request.status === 'Completed' && <button className="btn" onClick={() => {/* show details */ }}>Details</button>}
+                </div>
+            </div>
+        );
+    };
+
     return (
     <div className="page-content all-requests-page">
             <SectionHeader
                 title="All Requests"
                 subtitle="Manage and track all service requests"
                 actions={(
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div className="request-count">{loading ? '...' : `${filteredRequests.length} of ${requests.length} requests`}</div>
-                        <button className="btn btn-primary" onClick={() => { setEditing(null); setFormOpen(true); }}>New Request</button>
-                    </div>
-                )}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div className="request-count">{loading ? '...' : `${filteredRequests.length} of ${requests.length} requests`}</div>
+                            <button className="btn btn-primary" onClick={() => { setEditing(null); setFormOpen(true); }}>Add Request</button>
+                        </div>
+                    )}
             />
 
         <div className="card filters-card">
@@ -152,28 +192,7 @@ export default function AllRequestsPage() {
                                             <h4 className="group-title">{group} <span className="group-count">{groupedByStatus[group].length}</span></h4>
                                             <GroupCarousel groupKey={group}>
                                                 {groupedByStatus[group].map(request => (
-                                                    <div key={request.id} className="request-card">
-                                                        <div className="card-main">
-                                                            <div className="card-left">
-                                                                <div className="card-id">{request.id}</div>
-                                                                <div className="card-field"><span className="card-label">Requester</span><span className="card-value">{request.requesterName || request.requester || '—'}</span></div>
-                                                                <div className="card-field"><span className="card-label">Type</span><span className="card-value">{request.serviceType || request.type || '—'}</span></div>
-                                                                <div className="card-field"><span className="card-label">Assigned</span><span className="card-value">{request.assignedTo || 'Unassigned'}</span></div>
-                                                            </div>
-                                                            <div className="card-right">
-                                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                                                                    <div><StatusBadge status={request.status} /></div>
-                                                                    <div><PriorityBadge priority={request.priority || 'Medium'} /></div>
-                                                                    <div className="card-date">{formatDate(request.submittedAt || request.dateSubmitted || request.createdAt)}</div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div className="card-actions">
-                                                            {request.status === 'Pending' && <button className="btn btn-primary" onClick={() => { setEditing(request); setFormOpen(true); }}>Start</button>}
-                                                            {request.status === 'In Progress' && <button className="btn btn-primary" onClick={() => { setEditing(request); setFormOpen(true); }}>Continue</button>}
-                                                            {request.status === 'Completed' && <button className="btn" onClick={() => {/* show details */ }}>Details</button>}
-                                                        </div>
-                                                    </div>
+                                                    <RequestCard key={request.id} request={request} setEditing={setEditing} setFormOpen={setFormOpen} formatDate={formatDate} />
                                                 ))}
                                             </GroupCarousel>
                                         </>
@@ -186,25 +205,9 @@ export default function AllRequestsPage() {
                                     <h4 className="group-title">{k} <span className="group-count">{groupedByStatus[k].length}</span></h4>
                                             <GroupCarousel groupKey={k}>
                                                 {groupedByStatus[k].map(request => (
-                                                    <div key={request.id} className="request-card">
-                                                <div className="card-main">
-                                                    <div className="card-left">
-                                                        <div className="card-id">{request.id}</div>
-                                                        <div className="card-requester">{request.requesterName || request.requester || '—'}</div>
-                                                        <div className="card-type">{request.serviceType || request.type || '—'}</div>
-                                                    </div>
-                                                    <div className="card-right">
-                                                        <StatusBadge status={request.status} />
-                                                        <PriorityBadge priority={request.priority || 'Medium'} />
-                                                        <div className="card-date">{formatDate(request.submittedAt || request.dateSubmitted || request.createdAt)}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="card-actions">
-                                                    <button className="btn" onClick={() => { setEditing(request); setFormOpen(true); }}>Details</button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </GroupCarousel>
+                                                    <RequestCard key={request.id} request={request} setEditing={setEditing} setFormOpen={setFormOpen} formatDate={formatDate} />
+                                                ))}
+                                            </GroupCarousel>
                                 </div>
                             ))}
                         </div>
