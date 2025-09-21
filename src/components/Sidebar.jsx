@@ -103,6 +103,7 @@ const Sidebar = () => {
             <NavLink to="/dashboard" className="nav-item" title="Dashboard"><FiGrid className="nav-icon" /><span className="nav-label">Dashboard</span></NavLink>
             <NavLink to="/requests" className="nav-item" title="All Requests"><FiFileText className="nav-icon" /><span className="nav-label">All Requests</span></NavLink>
             <NavLink to="/calendar" className="nav-item" title="Master Calendar"><FiCalendar className="nav-icon" /><span className="nav-label">Master Calendar</span></NavLink>
+            <NavLink to="/divisions" className="nav-item" title="Divisions"><FiUsers className="nav-icon" /><span className="nav-label">Divisions</span></NavLink>
             <NavLink to="/chat" className="nav-item" title="Chat"><FiMessageSquare className="nav-icon" /> <span className="nav-label">Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</span></NavLink>
             <NavLink to="/personnel" className="nav-item" title="Personnel"><FiUsers className="nav-icon" /><span className="nav-label">Personnel</span></NavLink>
             <NavLink to="/analytics" className="nav-item" title="Analytics"><FiBarChart2 className="nav-icon" /><span className="nav-label">Analytics</span></NavLink>

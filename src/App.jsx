@@ -19,6 +19,7 @@ import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import PersonnelDashboard from './pages/PersonnelDashboard'; // Your "My Tasks" page
 import ChatPage from './pages/ChatPage';
+import DivisionsPage from './pages/DivisionsPage';
 
 // --- Layout Components ---
 const HeaderWrapper = ({ children }) => {
@@ -86,6 +87,7 @@ function App() {
           <Route path="/requests" element={<AllRequestsPage />} />
           <Route path="/calendar" element={<MasterCalendarPage />} />
           <Route path="/chat" element={<ChatPage />} />
+        <Route path="/divisions" element={<DivisionsPage />} />
           <Route path="/personnel" element={<PersonnelPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />

@@ -627,3 +627,98 @@ export async function markChatRead(userId, otherId) {
     throw err;
   }
 }
+
+/**
+ * Real-time listener for the 'divisions' collection.
+ * Expects documents with fields matching the Division shape used in the UI.
+ * @param {(data:Array<Object>, error:Error|null)=>void} callback
+ * @returns {() => void} unsubscribe
+ */
+export function listenToDivisions(callback) {
+  try {
+    const q = query(collection(db, 'divisions'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => callback(mapSnapshot(snap), null),
+      (error) => {
+        console.error('listenToDivisions error:', error);
+        callback([], error);
+      }
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.error('listenToDivisions failed:', err);
+    callback([], err);
+    return () => { };
+  }
+}
+
+/**
+ * Fetch a single division document by id.
+ * @param {string} id
+ * @returns {Promise<Object|null>}
+ */
+export async function getDivisionById(id) {
+  try {
+    if (!id) return null;
+    const ref = doc(db, 'divisions', id);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return null;
+    return { id: snap.id, ...normalizeDocData(snap.data()) };
+  } catch (err) {
+    console.error('getDivisionById failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Create a division document. Returns the new doc id.
+ * @param {Object} payload
+ */
+export async function createDivision(payload = {}) {
+  try {
+    const docRef = await addDoc(collection(db, 'divisions'), {
+      ...payload,
+      createdAt: payload.createdAt && typeof payload.createdAt.toDate !== 'function' ? payload.createdAt : serverTimestamp(),
+      updatedAt: payload.updatedAt && typeof payload.updatedAt.toDate !== 'function' ? payload.updatedAt : serverTimestamp(),
+    });
+    return docRef.id;
+  } catch (err) {
+    console.error('createDivision failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Update a division document by id with partial payload.
+ * @param {string} id
+ * @param {Object} payload
+ */
+export async function updateDivision(id, payload = {}) {
+  try {
+    if (!id) throw new Error('id required');
+    const ref = doc(db, 'divisions', id);
+    await updateDoc(ref, {
+      ...payload,
+      updatedAt: serverTimestamp()
+    });
+  } catch (err) {
+    console.error('updateDivision failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete a division document by id.
+ * @param {string} id
+ */
+export async function deleteDivision(id) {
+  try {
+    if (!id) throw new Error('id required');
+    const ref = doc(db, 'divisions', id);
+    await deleteDoc(ref);
+  } catch (err) {
+    console.error('deleteDivision failed:', err);
+    throw err;
+  }
+}
