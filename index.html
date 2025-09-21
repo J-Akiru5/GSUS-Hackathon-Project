@@ -8,6 +8,28 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Apply saved sidebar state early to avoid flash-of-compact on initial paint -->
+    <script>
+      try {
+        var raw = localStorage.getItem('gsus:sidebar');
+        if (raw) {
+          var s = JSON.parse(raw);
+          if (s && typeof document !== 'undefined') {
+            if (s.open) document.documentElement.classList.add('sidebar-open');
+            if (s.compact) document.documentElement.classList.add('sidebar-compact');
+            else document.documentElement.classList.remove('sidebar-compact');
+          }
+        } else {
+          // no saved preference: ensure desktop starts expanded by default
+          if (window.innerWidth > 900) {
+            document.documentElement.classList.add('sidebar-open');
+            document.documentElement.classList.remove('sidebar-compact');
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

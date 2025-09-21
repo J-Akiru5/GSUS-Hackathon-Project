@@ -5,7 +5,8 @@
   top: 0;
   left: 0;
     width: 100%;
-    z-index: 50;
+    z-index: 60;
+      /* keep header near same plane as content */
   color: var(--color-text-dark);
   background: #ffffff;
     /* solid white background */
@@ -81,6 +82,26 @@
   min-width: 0;
 }
 
+/* Header hamburger: show on small screens only. On large screens the sidebar contains the toggle. */
+.gsus-section-left .sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+@media (min-width: 901px) {
+
+  /* hide the header hamburger on desktop to avoid duplicate controls */
+  .gsus-section-left .sidebar-toggle {
+    display: none;
+  }
+}
 /* top-right datetime pill pinned to the viewport top-right inside header */
 .gsus-right-top {
   position: absolute;
@@ -116,11 +137,25 @@
 
   /* shift the banner inner container right by the sidebar width so page content centers under the banner */
   .gsus-banner-inner {
-    margin-left: var(--sidebar-width);
-    max-width: calc(var(--content-max-width) - var(--sidebar-width));
+      margin-left: var(--sidebar-width);
+        max-width: calc(var(--content-max-width) - var(--sidebar-width));
+      transition: margin-left 240ms var(--transition-medium);
   }
 }
 
+/* When the sidebar is compact (narrow icon-only), shift the header and banner by a smaller amount */
+@media (min-width: 901px) {
+  html.sidebar-compact .gsus-header-bar {
+    left: var(--sidebar-compact-width);
+    /* match .sidebar.compact width */
+    max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+  }
+
+  html.sidebar-compact .gsus-banner-inner {
+    margin-left: var(--sidebar-compact-width);
+    max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+  }
+}
 .gsus-section-left .section-header-title-portal h1 {
   color: var(--color-text-dark);
   font-size: 1.25rem;
@@ -246,4 +281,16 @@ body.hide-banner .gsus-header {
 /* reduce header height so it aligns with layout header variable */
 .gsus-header, .gsus-header-inner, .gsus-banner { box-sizing: border-box; }
 
+}
+/* Shift the header/banner when sidebar-open is present so header and content move together */
+@media (min-width: 901px) {
+  html.sidebar-open .gsus-header-bar {
+    left: var(--sidebar-width);
+    max-width: calc(var(--content-max-width) - var(--sidebar-width));
+  }
+
+  html.sidebar-open .gsus-banner-inner {
+    margin-left: var(--sidebar-width);
+    max-width: calc(var(--content-max-width) - var(--sidebar-width));
+  }
 }

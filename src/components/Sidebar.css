@@ -5,23 +5,87 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* make the sidebar fixed to the left and full-height of the viewport */
-  position: fixed;
-  top: 0;
-  left: 0;
-    bottom: 0;
-  z-index: 99;
-  height: 100vh;
-  /* fallback to ensure full viewport height */
+  /* On wide screens the sidebar participates in layout (pushes content). */
+    position: relative;
+    z-index: 1200;
     padding: 0;
   flex-shrink: 0;
-  transition: width var(--transition-medium), background-color var(--transition-fast);
+  transition: width var(--transition-medium), background-color var(--transition-fast), transform 240ms var(--transition-medium);
   overflow: auto;
 }
+.sidebar.hidden {
+  /* move sidebar offscreen while keeping it out of layout and avoid forcing scroll */
+  transform: translateX(-110%);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.sidebar.open {
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+}
 .sidebar.compact {
-  width: 72px;
-  padding-left: 0.6rem;
-  padding-right: 0.6rem;
+  width: var(--sidebar-compact-width);
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+  
+  /* Icon-only compact state: hide labels and center icons */
+  .sidebar.compact .nav-item .nav-label,
+  html.sidebar-compact .sidebar .nav-item .nav-label {
+    display: none;
+  }
+  
+  .sidebar .nav-item .nav-label[aria-hidden="true"] {
+    display: none !important;
+  }
+  
+  .sidebar.compact .nav-item,
+  html.sidebar-compact .sidebar .nav-item {
+    justify-content: center;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+  }
+  
+  .sidebar.compact .nav-item svg,
+  html.sidebar-compact .sidebar .nav-item svg {
+    margin-right: 0;
+  }
+  
+  .sidebar.compact .user-info,
+  html.sidebar-compact .sidebar .user-info {
+    display: none;
+  }
+  
+  .sidebar.compact .logo-text,
+  html.sidebar-compact .sidebar .logo-text {
+    font-size: 0.95rem;
+  }
+  
+  /* Style the internal toggle button that lives inside the sidebar header */
+  .sidebar .sidebar-toggle.internal {
+    background: transparent;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .sidebar .sidebar-toggle.internal svg {
+    color: var(--color-text-muted);
+  }
+  
+  .sidebar .sidebar-toggle.internal:focus {
+    outline: 2px solid rgba(16, 185, 129, 0.18);
+  }
+  
+  /* Visually indicate compact state for screen readers */
+  .sidebar[aria-expanded="false"] {
+    width: var(--sidebar-compact-width);
 }
 
 .sidebar-header {
@@ -98,6 +162,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    /* stick the footer to the bottom when sidebar is full height */
+      margin-top: auto;
 }
 .user-profile { display: flex; align-items: center; gap: 0.75rem; }
 .user-avatar-link {
@@ -170,19 +236,61 @@
   z-index: 998;
 }
 
-/* Strong overrides to prevent Bootstrap's .offcanvas or other utility classes from hiding our sidebar */
-.sidebar {
-  display: flex !important;
-  position: fixed !important;
-  left: 0 !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  height: 100vh !important;
-  visibility: visible !important;
-  transform: none !important;
-  z-index: 1200 !important; /* sit above Bootstrap layers */
+/* When the offcanvas sidebar is open on small screens, lock body scroll and make the offcanvas cover viewport */
+@media (max-width: 900px) {
+
+  html.sidebar-open,
+  html.sidebar-open body {
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* ensure offcanvas is visible when sidebar-open is set */
+  html.sidebar-open .sidebar.offcanvas {
+    transform: translateX(0) !important;
+  }
 }
-.sidebar.offcanvas {
-  transform: translateX(0) !important;
+
+/* On desktop make the sidebar full viewport height and ensure it pushes the header/main content */
+@media (min-width: 901px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 1200;
+  }
+
+  /* ensure the nav scroll area fits between header area and footer */
+  .sidebar .sidebar-nav {
+    overflow: auto;
+    max-height: calc(100vh - 240px);
+  }
 }
-.sidebar.open { transform: translateX(0) !important; }
+
+/* when a sidebar is hidden we want the document to not produce horizontal scroll */
+html,
+body,
+#root {
+  overflow-x: hidden;
+}
+
+/* On small screens we use fixed positioning so the sidebar overlays content */
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      height: 100vh;
+      z-index: 1200;
+    }
+    
+        .sidebar.offcanvas {
+      transform: translateX(-110%);
+      }
+        .sidebar.open {
+          transform: translateX(0);
+        }
+        }

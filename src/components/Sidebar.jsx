@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { listenToUsers } from '../services/firestoreService';
 import { listenToConversation } from '../services/firestoreService';
 import { useSidebar } from '../contexts/SidebarContext';
+import Offcanvas from 'react-bootstrap/Offcanvas';
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
@@ -14,9 +15,8 @@ const Sidebar = () => {
   const displayRole = user?.role === 'personnel' ? 'Team Member' : 'Administrator';
 
   const sidebarRef = useRef(null);
-  const [compact, setCompact] = useState(false);
   // use the SidebarContext provided by SidebarProvider in main.jsx
-  const { open, close, toggle, openSidebar } = useSidebar();
+  const { open, close, toggle, openSidebar, compact, toggleCompact } = useSidebar();
   const [unreadCount, setUnreadCount] = useState(0);
 
   // monitor unread messages for current user vs GSO Head
@@ -39,67 +39,39 @@ const Sidebar = () => {
     };
   }, [user]);
 
+  // keep a responsive hint: if window is small, treat as compact by default
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth <= 900 : false);
   useEffect(() => {
-    const el = sidebarRef.current;
-    if (!el) return;
-
-    const update = () => {
-      const shouldCompact = window.innerWidth <= 720;
-      setCompact(shouldCompact);
-    };
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    const onResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', onResize);
+    onResize();
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   // Note: real hook wiring to SidebarContext is applied below inside the component body
   // We'll use a proper hook call to read context and react to changes.
 
   // Replace direct document class manipulation with context; also add Escape key handling and focus management
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === 'Escape' && open) {
-        try { close(); } catch (err) { /* noop */ }
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, close]);
-
-  // Manage focus when opening the offcanvas sidebar
-  useEffect(() => {
-    const el = sidebarRef.current;
-    if (!el) return;
-    if (open) {
-      // store previous active element so we can restore
-      const prev = document.activeElement;
-      el.focus();
-      return () => {
-        try { prev?.focus?.(); } catch (e) { }
-      };
-    }
-  }, [open]);
-
-  return (
-    <>
-      {open && <div className="sidebar-overlay" onClick={() => close()} aria-hidden="true" />}
-      <aside ref={sidebarRef} className={`sidebar ${compact ? 'compact' : ''} ${open ? 'open' : ''} offcanvas`} aria-hidden={!open && compact} tabIndex={-1} role="dialog" aria-modal={open}>
-      <div>
-          <button className="sidebar-close-btn" aria-label="Close sidebar" onClick={() => close()} style={{ display: compact ? 'block' : 'none' }}>✕</button>
-        <div className="sidebar-header">
-          {/* <img src="/src/assets/GSUS_logo.svg" alt="GSUS Logo" className="logo-img"/> */}
-          <h1 className="logo-text">GSUS</h1>
-        </div>
-        <nav className="sidebar-nav">
-          <NavLink to="/dashboard" className="nav-item"><FiGrid /> Dashboard</NavLink>
-          <NavLink to="/requests" className="nav-item"><FiFileText /> All Requests</NavLink>
-          <NavLink to="/calendar" className="nav-item"><FiCalendar /> Master Calendar</NavLink>
-          <NavLink to="/chat" className="nav-item"><FiMessageSquare /> Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</NavLink>
-          <NavLink to="/personnel" className="nav-item"><FiUsers /> Personnel</NavLink>
-          <NavLink to="/analytics" className="nav-item"><FiBarChart2 /> Analytics</NavLink>
-          <NavLink to="/settings" className="nav-item"><FiSettings /> Settings</NavLink>
-        </nav>
+  const content = (
+    <div>
+      {/* Always-visible compact toggle inside the sidebar header so users can toggle when compact */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 1rem' }}>
+        <button className="sidebar-toggle internal" aria-label={open ? 'Close sidebar' : 'Open sidebar'} onClick={() => { if (isMobile) { close(); } else { toggleCompact(); const sb = document.querySelector('.sidebar'); if (sb) sb.classList.toggle('compact'); document.documentElement.classList.toggle('sidebar-compact'); } }} aria-expanded={open || compact}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <h1 className="logo-text">GSUS</h1>
       </div>
+      <nav className="sidebar-nav" aria-hidden={open === false && compact === true}>
+        <NavLink to="/dashboard" className="nav-item"><FiGrid /><span className="nav-label" aria-hidden={compact}>{'Dashboard'}</span></NavLink>
+        <NavLink to="/requests" className="nav-item"><FiFileText /><span className="nav-label" aria-hidden={compact}>{'All Requests'}</span></NavLink>
+        <NavLink to="/calendar" className="nav-item"><FiCalendar /><span className="nav-label" aria-hidden={compact}>{'Master Calendar'}</span></NavLink>
+        <NavLink to="/chat" className="nav-item"><FiMessageSquare /><span className="nav-label" aria-hidden={compact}>{'Chat'}</span> {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</NavLink>
+        <NavLink to="/personnel" className="nav-item"><FiUsers /><span className="nav-label" aria-hidden={compact}>{'Personnel'}</span></NavLink>
+        <NavLink to="/analytics" className="nav-item"><FiBarChart2 /><span className="nav-label" aria-hidden={compact}>{'Analytics'}</span></NavLink>
+        <NavLink to="/settings" className="nav-item"><FiSettings /><span className="nav-label" aria-hidden={compact}>{'Settings'}</span></NavLink>
+      </nav>
       <div className="sidebar-footer">
         <div className="user-profile">
           <NavLink to="/profile" className="user-avatar-link">
@@ -115,8 +87,29 @@ const Sidebar = () => {
           <button className="btn btn-secondary logout-btn" onClick={logout} style={{ padding: '0.5rem', width: '100%', fontSize: '0.9rem' }}>Log out</button>
         </div>
       </div>
+    </div>
+  );
+
+  // Render Offcanvas on mobile; persistent sidebar on wide screens
+  if (isMobile) {
+    return (
+      <>
+        <Offcanvas show={open} onHide={close} placement="start">
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>GSUS</Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            {content}
+          </Offcanvas.Body>
+        </Offcanvas>
+      </>
+    );
+  }
+
+  return (
+    <aside ref={sidebarRef} className={`sidebar ${compact ? 'compact' : ''} ${open ? 'open' : ''}`} aria-hidden={false} tabIndex={-1} role="navigation" aria-expanded={compact}>
+      {content}
     </aside>
-    </>
   );
 };
 export default Sidebar;

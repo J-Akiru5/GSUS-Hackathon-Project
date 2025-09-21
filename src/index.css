@@ -22,7 +22,8 @@
     --shadow-xl: 0 20px 40px rgba(2, 6, 23, 0.08);
   --border-radius: 12px;
   --content-max-width: 1400px;
-    --sidebar-width: 260px;
+  --sidebar-width: 260px;
+    --sidebar-compact-width: 260px;
     --header-height: 200px;
       /* reduced banner offset so the section header can rise earlier */
       --banner-offset: 220px;
@@ -34,6 +35,7 @@
     --gap-sm: 0.5rem;
     --transition-fast: 180ms ease;
     --transition-medium: 240ms ease;
+  --sidebar-width: 240px;
 }
 
 /* When there's no banner (pages that set body.hide-banner), remove the banner offset
@@ -101,12 +103,28 @@ body.sidebar-open .sidebar.offcanvas {
 }
 .app-container {
   width: 100%;
-  /* keep a max content width but offset to the right to account for fixed sidebar */
-  max-width: calc(var(--content-max-width) - var(--sidebar-width));
-  margin-left: var(--sidebar-width);
-  padding: 0 1rem;
-}
-
+  /* default: full content width (no sidebar offset) */
+    max-width: var(--content-max-width);
+    margin-left: 0;
+    padding: 0 1rem;
+  }
+                /* When the sidebar is fully open, offset the app container */
+                html.sidebar-open .app-container {
+                  margin-left: var(--sidebar-width);
+                  max-width: calc(var(--content-max-width) - var(--sidebar-width));
+  
+      /* When sidebar is compact, offset the app container by the compact width */
+        html.sidebar-compact .app-container {
+          margin-left: var(--sidebar-compact-width);
+          max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+        }
+      
+        /* Prevent global horizontal scroll when sidebar moves off-canvas */
+        html,
+        body,
+        #root {
+          overflow-x: hidden;
+        }
 .content-wrapper {
   flex: 1 1 auto;
   display: flex;
@@ -144,13 +162,22 @@ body.sidebar-open .sidebar.offcanvas {
 .page-content {
   flex-grow: 1;
   padding: 2rem 0;
+  max-width: var(--content-max-width);
+  }
+  
+  /* Make inner content (cards, tables) stretch to the container width so they respect the sidebar offset */
+  .app-container .page-content,
+  .app-container .card,
+  .app-container .requests-cards {
+    width: 100%;
+    max-width: 100%;
 }
 
 /* Responsive behavior */
 /* breakpoints: make the layout more friendly for typical mobile widths */
 @media (max-width: 1024px) {
   :root {
-    --content-max-width: 980px;
+    --content-max-width: 1400px;
   }
 
   .main-layout {
@@ -168,22 +195,55 @@ body.sidebar-open .sidebar.offcanvas {
     flex-direction: column;
     max-width: 100%;
     padding: 0 0.5rem;
+    margin-left: 0;
+      /* ensure no left offset on mobile */
   }
 
   .content-wrapper {
     padding-top: calc(var(--header-height) - 8px);
+    /* ensure content fills viewport height below header */
+      min-height: calc(100vh - var(--header-height));
   }
 
   .app-container {
+    width: 100%;
     max-width: 100%;
+    margin-left: 0;
     padding: 0 0.5rem;
   }
 }
 
-/* compensate for the fixed sidebar - push main layout over on larger screens */
+/* Layout push logic: on desktop the sidebar participates in layout by default (pushes header and content) */
 @media (min-width: 901px) {
   .main-layout {
     margin-left: var(--sidebar-width);
+    transition: margin-left 240ms var(--transition-medium);
+    }
+    
+    .gsus-banner-inner {
+      margin-left: var(--sidebar-width);
+      max-width: calc(var(--content-max-width) - var(--sidebar-width));
+      transition: margin-left 240ms var(--transition-medium);
+    }
+    
+    .gsus-header-bar {
+      left: var(--sidebar-width);
+      max-width: calc(var(--content-max-width) - var(--sidebar-width));
+    }
+    
+    /* compact sidebar override */
+    html.sidebar-compact .main-layout {
+      margin-left: var(--sidebar-compact-width);
+    }
+    
+    html.sidebar-compact .gsus-banner-inner {
+      margin-left: var(--sidebar-compact-width);
+      max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+    }
+    
+    html.sidebar-compact .gsus-header-bar {
+      left: var(--sidebar-compact-width);
+      max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
   }
 }
 
@@ -273,7 +333,7 @@ body.sidebar-open .sidebar.offcanvas {
 
 .status-badge {
   display: inline-block;
-    padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-weight: 500;
     font-size: 0.8rem;
@@ -286,5 +346,10 @@ body.sidebar-open .sidebar.offcanvas {
   background-color: #FEE2E2;
   color: #991B1B;
 }
-.status-on-leave { background-color: #FEF3C7; color: #92400E; }
-.status-inactive { background-color: #FEE2E2; color: #991B1B; }
+.status-inactive {
+  background-color: #F3F4F6;
+  color: #6B7280;
+}
+
+/* ensure file ends with a newline and balanced braces */
+}
