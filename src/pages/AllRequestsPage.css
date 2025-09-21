@@ -93,9 +93,9 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-width: 340px; /* ensure consistent card width in the carousel */
-    max-width: 420px;
-    height: 220px; /* taller cards to fit more details */
+    min-width: 420px; /* wider cards for better content */
+    max-width: 760px;
+    height: 260px; /* taller cards to fit more details */
     overflow: hidden; /* avoid content spilling out */
     scroll-snap-align: start;
 }

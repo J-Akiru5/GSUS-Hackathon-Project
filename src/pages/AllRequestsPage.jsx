@@ -72,7 +72,7 @@ export default function AllRequestsPage() {
     const GroupCarousel = ({ children, groupKey }) => {
         // react-bootstrap Carousel expects direct child <Carousel.Item> nodes; we'll wrap each card
         return (
-            <Carousel interval={null} controls={true} indicators={false} variant="dark" className="mb-2">
+            <Carousel crossfade={true} interval={null} controls={true} indicators={false} variant="dark" className="mb-2">
                 {React.Children.map(children, (child, idx) => (
                     <Carousel.Item key={`${groupKey}-${idx}`} className="carousel-slide">
                         <div style={{ display: 'flex', justifyContent: 'center' }}>{child}</div>

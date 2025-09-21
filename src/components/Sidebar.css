@@ -169,3 +169,20 @@
   background: rgba(2, 6, 23, 0.45);
   z-index: 998;
 }
+
+/* Strong overrides to prevent Bootstrap's .offcanvas or other utility classes from hiding our sidebar */
+.sidebar {
+  display: flex !important;
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  height: 100vh !important;
+  visibility: visible !important;
+  transform: none !important;
+  z-index: 1200 !important; /* sit above Bootstrap layers */
+}
+.sidebar.offcanvas {
+  transform: translateX(0) !important;
+}
+.sidebar.open { transform: translateX(0) !important; }
