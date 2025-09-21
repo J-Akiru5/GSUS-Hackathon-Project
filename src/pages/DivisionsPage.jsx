@@ -22,6 +22,7 @@ export default function DivisionsPage() {
 				setLoading(false);
 				return;
 			}
+			console.debug('listenToDivisions ->', data);
 			setDivisions(Array.isArray(data) ? data : []);
 			setLoading(false);
 		});
@@ -80,7 +81,8 @@ export default function DivisionsPage() {
 				{error && <div className="error">Failed to load divisions: {String(error?.message || error)}</div>}
 
 				<div className="divisions-grid">
-					{divisions.map((d) => (
+							{divisions.length === 0 && !loading && <div className="muted">No divisions yet — click Add Division to create one.</div>}
+							{divisions.map((d) => (
 						<article key={d.id || d.name} className="division-card" onClick={() => navigate(`/divisions/${d.id}`)}>
 							<header className="division-card-header">
 								<div className="division-avatar">{(d.name || '').split(' ').map(s => s[0]).slice(0,2).join('')}</div>
