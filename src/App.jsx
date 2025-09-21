@@ -1,7 +1,7 @@
 // src/App.jsx (FINAL VERSION WITH ROLES)
 
 import React from 'react';
-import { Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import { Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 
 // Layouts
@@ -21,24 +21,34 @@ import PersonnelDashboard from './pages/PersonnelDashboard'; // Your "My Tasks" 
 import ChatPage from './pages/ChatPage';
 
 // --- Layout Components ---
+const HeaderWrapper = ({ children }) => {
+  const location = useLocation();
+  const hidePaths = ['/calendar', '/chat', '/settings'];
+  const hideHeader = hidePaths.includes(location.pathname);
+  return (
+    <div>
+      {!hideHeader && <GSUSHeader />}
+      {children}
+    </div>
+  );
+};
+
 const AdminLayout = () => (
-  <div>
-    <GSUSHeader /> {/* ensure header is present for admin layout */}
+  <HeaderWrapper>
     <div className="main-layout">
       <AdminSidebar />
       <main className="content-wrapper"><Outlet /></main>
     </div>
-  </div>
+  </HeaderWrapper>
 );
 
 const PersonnelLayout = () => (
-  <div>
-    <GSUSHeader /> {/* ensure header is present for personnel layout */}
+  <HeaderWrapper>
     <div className="main-layout">
       <PersonnelSidebar />
       <main className="content-wrapper"><Outlet /></main>
     </div>
-  </div>
+  </HeaderWrapper>
 );
 
 // --- Protected Route Component ---
