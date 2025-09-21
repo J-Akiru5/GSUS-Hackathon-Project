@@ -22,6 +22,7 @@ function renderIcon(name, props = { size: 18, className: 'icon' }) {
 import AuditTrailPanel from '../components/features/dashboard/AuditTrailPanel'; // <-- IMPORT THE PANEL
 import GlobalModal from '../components/GlobalModal';
 import './Dashboard.css'; // <-- Use our existing CSS file
+import SectionHeader from '../components/SectionHeader';
 import { listenToPendingRequests, updateRequestStatus, listenToBookings, listenToUsers } from '../services/firestoreService'; // add service imports
 
 // Reusable Priority Badge Component
@@ -41,29 +42,6 @@ const StatCard = ({ title, value, icon }) => (
 );
 
 export default function GSODashboard() {
-  const [sectionActive, setSectionActive] = useState(false);
-  const sentinelRef = React.useRef(null);
-
-  useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
-    // compute header height safely (fallback to 300)
-    let headerHeight = 300;
-    try {
-      const val = getComputedStyle(document.documentElement).getPropertyValue('--header-height');
-      const parsed = parseInt(val, 10);
-      if (!isNaN(parsed)) headerHeight = parsed;
-    } catch (e) { /* ignore and use default */ }
-
-    const obs = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        // when sentinel is not visible (scrolled past), activate the section header
-        setSectionActive(!entry.isIntersecting);
-      });
-    }, { root: null, threshold: 0, rootMargin: `-${headerHeight}px 0px 0px 0px` });
-    obs.observe(sentinel);
-    return () => obs.disconnect();
-  }, []);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -226,15 +204,8 @@ export default function GSODashboard() {
 
   return (
     <div className="page-content">
-      {/* Section header sits under the global header and becomes sticky when scrolling */}
-      <div className={`section-header ${sectionActive ? 'section-header--active' : ''}`} aria-hidden="false">
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <h1 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-text-dark)', fontWeight: 700 }}>GSO Dashboard</h1>
-          <div style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>Manage service requests and resources</div>
-        </div>
-      </div>
-      {/* invisible sentinel used to trigger the sticky state when scrolled past */}
-      <div ref={sentinelRef} style={{ height: '1px', width: '100%' }} />
+      {/* Use the shared SectionHeader so the title and subtitle are portalled into the banner when present */}
+      <SectionHeader title="GSO Dashboard" subtitle="Manage service requests and resources" />
       <div className="stats-grid">
         <StatCard title="Pending Requests" value={loading ? '...' : pendingRequests.length} icon="🕒" />
         <StatCard title="Completed This Month" value="45" icon="✅" />

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import './SectionHeader.css';
 
 export default function SectionHeader({ title, subtitle, actions = null, center = null }) {
@@ -23,24 +24,50 @@ export default function SectionHeader({ title, subtitle, actions = null, center 
     return () => obs.disconnect();
   }, []);
 
+  // If the global header actions/title container exists, portal the actions and title there so buttons/dateline sit in the header area.
+  const headerActionsContainer = (typeof document !== 'undefined') ? document.querySelector('.gsus-actions-slot') : null;
+  const headerTitleContainer = (typeof document !== 'undefined') ? document.querySelector('.gsus-section-left') : null;
+
+  const actionsNode = actions ? (
+    <div className="section-header-actions">{actions}</div>
+  ) : null;
+
+  const titleNode = (
+    <div className="section-header-title-portal">
+      <h1 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-text-dark)', fontWeight: 700 }}>{title}</h1>
+      {subtitle ? <div style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>{subtitle}</div> : null}
+    </div>
+  );
+
+  // If headerTitleContainer exists, this page has a banner/header and we should portal title & actions there and NOT render the sticky section header.
+  if (headerTitleContainer) {
+    return (
+      <>
+        {headerTitleContainer ? createPortal(titleNode, headerTitleContainer) : null}
+        {headerActionsContainer && actionsNode ? createPortal(actionsNode, headerActionsContainer) : null}
+        <div ref={sentinelRef} style={{ height: '1px', width: '100%' }} />
+      </>
+    );
+  }
+
+  // Fallback: render the section header inline (no banner present)
   return (
     <>
       <div className={`section-header ${active ? 'section-header--active' : ''}`} aria-hidden="false">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <div className="section-header-left">
+          <div className="section-header-title">
             <h1 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-text-dark)', fontWeight: 700 }}>{title}</h1>
             {subtitle ? <div style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>{subtitle}</div> : null}
           </div>
-
-          {/* center area for filters or other centered UI */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 1 50%', padding: '0 1rem' }}>
-            {center}
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: 0 }}>
-            {actions ? <div className="section-header-actions">{actions}</div> : null}
-          </div>
         </div>
+
+        <div className="section-header-center">
+          {center}
+        </div>
+
+        <div className="section-header-spacer" />
+
+        <div className="section-header-right">{actionsNode}</div>
       </div>
       <div ref={sentinelRef} style={{ height: '1px', width: '100%' }} />
     </>

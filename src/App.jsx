@@ -24,7 +24,18 @@ import ChatPage from './pages/ChatPage';
 const HeaderWrapper = ({ children }) => {
   const location = useLocation();
   const hidePaths = ['/calendar', '/chat', '/settings'];
-  const hideHeader = hidePaths.includes(location.pathname);
+  // hide for path prefixes so subpaths like /chat/123 are included
+  const hideHeader = hidePaths.some(p => location.pathname.startsWith(p));
+
+  React.useEffect(() => {
+    if (hideHeader) {
+      document.body.classList.add('hide-banner');
+    } else {
+      document.body.classList.remove('hide-banner');
+    }
+    return () => { document.body.classList.remove('hide-banner'); };
+  }, [hideHeader]);
+
   return (
     <div>
       {!hideHeader && <GSUSHeader />}

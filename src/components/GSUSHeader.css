@@ -21,6 +21,7 @@
   width: min(100%, var(--content-max-width));
   padding: 0.6rem 1rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: flex-end;
   gap: 1rem;
@@ -36,6 +37,8 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  position: relative;
+    /* allow absolute children */
 }
 
 .gsus-banner-img {
@@ -46,6 +49,108 @@
   object-position: center;
 }
 
+.gsus-banner-inner {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Full-width overlay bar across the banner: left = title, right = datetime + actions */
+.gsus-header-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  height: 100%;
+  box-sizing: border-box;
+  pointer-events: none;
+  /* keep overlay non-interactive by default */
+}
+
+.gsus-section-left {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  max-width: 200px;
+  min-width: 0;
+}
+
+/* top-right datetime pill pinned to the viewport top-right inside header */
+.gsus-right-top {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  pointer-events: auto;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+}
+
+/* bottom-right cluster inside the banner */
+.gsus-right-bottom {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  pointer-events: auto;
+  z-index: 60;
+  max-width: 45%;
+  justify-content: flex-end;
+}
+
+/* Respect the left sidebar on wide screens by shifting the header bar's left edge */
+@media (min-width: 901px) {
+  .gsus-header-bar {
+    left: var(--sidebar-width);
+    max-width: calc(var(--content-max-width) - var(--sidebar-width));
+    margin-left: 0;
+  }
+
+  /* shift the banner inner container right by the sidebar width so page content centers under the banner */
+  .gsus-banner-inner {
+    margin-left: var(--sidebar-width);
+    max-width: calc(var(--content-max-width) - var(--sidebar-width));
+  }
+}
+
+.gsus-section-left .section-header-title-portal h1 {
+  color: var(--color-text-dark);
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+/* Right-side container: allow interactions and pin to viewport right */
+.gsus-section-right {
+  pointer-events: auto;
+  /* enable clicks */
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  position: relative;
+}
+
+/* Make the set of right controls visually stick to the right edge of the viewport */
+.gsus-header-bar>.gsus-section-right {
+  position: absolute;
+  right: 0.5rem;
+  /* small gap from edge */
+  max-width: 200px;
+  /* keep right group compact */
+  width: 100%;
+  justify-content: flex-end;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 /* When a page requests the banner hidden (e.g. calendar/chat), hide the banner area */
 body.hide-banner .gsus-banner,
 body.hide-banner .gsus-banner-inner,
@@ -55,7 +160,7 @@ body.hide-banner .gsus-banner-img {
 
 /* Reduce header height when banner is hidden so layout stays tight */
 body.hide-banner .gsus-header {
-  height: calc(var(--header-height) - 140px);
+  height: calc(var(--header-height) - 0px);
 }
 .gsus-brand { display: flex; align-items: center; gap: 0.75rem; }
 .gsus-seal { width: 48px; height: 48px; border-radius: 9999px; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: var(--color-surface); font-weight: 700; }
@@ -75,23 +180,63 @@ body.hide-banner .gsus-header {
   right: 1rem;
   height: 100%;
   display: flex;
-  align-items: flex-start; /* align to top instead of center */
-  gap: 0.75rem;
-  justify-content: flex-end;
+  flex-direction: column;
+    align-items: flex-end;
+    /* stack items at the right */
+    gap: 0.5rem;
+    justify-content: flex-start;
   padding: 0.5rem 0.5rem 0; /* push content to the upper edge */
   z-index: 9999; /* place this content on top of other header elements */
   pointer-events: auto;
 }
 .datetime-pill {
   background: rgba(2,6,23,0.08);
-  padding: 0.8rem 1.1rem;
+  padding: 0.6rem 0.9rem;
   border-radius: 999px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--color-text-dark);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 
+.gsus-section-slot {
+  display: block;
+  margin-bottom: auto;
+}
+
+.gsus-actions-slot {
+  margin-top: 0.5rem;
+}
+
+.header-personnel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.personnel-label {
+  font-size: 0.85rem;
+  color: var(--color-text-dark);
+  opacity: 0.95;
+  font-weight: 600;
+}
+
+.personnel-count {
+  background: rgba(2, 6, 23, 0.06);
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.header-personnel .btn {
+  padding: 0.45rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+/* Ensure the actions slot to the very right is interactive */
+.gsus-actions-slot {
+  pointer-events: auto;
+}
 @media (max-width: 900px) {
   .gsus-header { height: calc(var(--header-height) - 28px); }
   .gsus-banner { height: 100%; }

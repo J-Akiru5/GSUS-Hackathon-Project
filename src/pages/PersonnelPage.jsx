@@ -72,9 +72,7 @@ export default function PersonnelPage() {
     return (
         <div className="page-content personnel-page">
             <SectionHeader title="Personnel Management" subtitle="Manage GSO staff and division assignments" />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                <button className="btn btn-primary"><Plus size={16} /> Add New Personnel</button>
-            </div>
+            {/* Add button removed — use the global header Add Personnel instead */}
 
             <div className="stats-grid">
                 <div className="card stat-card"> <Users className="icon" /> <div><p className="value">{loading ? '...' : personnelData.filter(p => p.status === "Active").length}</p><p className="title">Active Personnel</p></div></div>

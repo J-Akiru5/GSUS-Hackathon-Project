@@ -17,6 +17,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  /* new internal layout: left title area, center area, actions portal */
 
   /* sit slightly overlapping the banner by default; adjustable via --section-overlap */
   /* uses global --section-overlap defined in :root */
@@ -31,6 +32,51 @@
   backdrop-filter: none;
 }
 
+/* When a banner is present, the section header content is portalled into the header/banner area.
+   Remove any extra left offset so it aligns with the banner content (no sidebar offset). */
+.gsus-banner+.section-header,
+.gsus-header .section-header {
+  /* ensure it lines up with the banner full-width content area */
+  left: 0;
+  margin-left: 0;
+  max-width: var(--content-max-width);
+}
+
+.section-header-left {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding-left: 0.5rem;
+}
+
+.section-header-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  padding: 0 1rem;
+}
+
+.section-header-spacer {
+  width: 1rem;
+}
+
+.section-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+/* When the banner is hidden, pin the section header to the very top of the page */
+body.hide-banner .section-header {
+  top: 0 !important;
+}
 .section-header--active {
   /* Only change visuals when active; keep active state below the banner (banner z-index = 60) */
   z-index: 58;

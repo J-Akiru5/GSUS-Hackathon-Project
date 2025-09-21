@@ -298,35 +298,7 @@ export default function MasterCalendarPage() {
                     </div>
 
 
-                    {(() => {
-                        const filteredUnscheduled = (unscheduledEvents || []).filter(ev => {
-                            const visibleBySource = (ev.source === 'booking' && filters.showBookings) || (ev.source === 'request' && filters.showRequests);
-                            const visibleByCategory = filters.categories[ev.type] !== false;
-                            return visibleBySource && visibleByCategory;
-                        });
-
-                        if (!filteredUnscheduled || filteredUnscheduled.length === 0) return null;
-
-                        return (
-                            <div className="card unscheduled-card">
-                                <SectionHeader title="Unscheduled / unknown date" subtitle={`${filteredUnscheduled.length} item(s)`} />
-                                <div className="unscheduled-list">
-                                    {filteredUnscheduled.map(ev => {
-                                        const { className, Icon } = getTypeProps(ev.type);
-                                        return (
-                                            <div key={ev.id} className={`unscheduled-item ${className}`} onClick={() => setSelectedEvent(ev)}>
-                                                <Icon size={14} />
-                                                <div className="unscheduled-content">
-                                                    <div className="unscheduled-title">{ev.title}</div>
-                                                    <div className="unscheduled-meta">{ev.requesterName || ev.requester || '—'} · {ev.location || 'No location'}</div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        );
-                    })()}
+                    {/* Unscheduled items removed for focused calendar view */}
 
                     <div className="calendar-grid">
                         {dayNames.map((day) => (<div key={day} className="day-header">{day}</div>))}
