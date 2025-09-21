@@ -30,6 +30,7 @@ export default function AllRequestsPage() {
     const [error, setError] = useState(null);
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState(null);
+    const [viewMode, setViewMode] = useState('cards'); // 'cards' or 'table'
 
     useEffect(() => {
         setLoading(true);
@@ -58,6 +59,39 @@ export default function AllRequestsPage() {
         return matchesSearch && matchesStatus && matchesDivision;
     });
 
+    // group requests by status for prioritized display
+    const groupedByStatus = filteredRequests.reduce((acc, r) => {
+        const k = r.status || 'Unknown';
+        if (!acc[k]) acc[k] = [];
+        acc[k].push(r);
+        return acc;
+    }, {});
+
+    // Small carousel helper: left/right buttons and scrollIntoView behavior
+    const GroupCarousel = ({ children, groupKey }) => {
+        const ref = React.useRef(null);
+
+        const scroll = (dir) => {
+            const el = ref.current;
+            if (!el) return;
+            const cardWidth = el.querySelector('.request-card')?.getBoundingClientRect().width || 360;
+            const scrollAmount = dir === 'left' ? -Math.round(cardWidth + 12) : Math.round(cardWidth + 12);
+            el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        };
+
+        return (
+            <div className="carousel-wrapper">
+                <div className="carousel-controls" style={{ marginRight: 6 }}>
+                    <button className="carousel-arrow" onClick={() => scroll('left')} aria-label={`Scroll ${groupKey} left`}>&lt;</button>
+                    <button className="carousel-arrow" onClick={() => scroll('right')} aria-label={`Scroll ${groupKey} right`}>&gt;</button>
+                </div>
+                <div className="group-cards" ref={ref}>
+                    {children}
+                </div>
+            </div>
+        );
+    };
+
     return (
     <div className="page-content all-requests-page">
             <SectionHeader
@@ -76,35 +110,39 @@ export default function AllRequestsPage() {
                 <Filter className="icon" />
                 <h3>Filters</h3>
             </div>
-            <div className="card-content filters-grid">
-                <div className="search-input-wrapper">
-                    <Search className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Search requests..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                <div className="card-content filters-grid--inline">
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', width: '100%' }}>
+                        <div style={{ flex: 1 }} className="search-input-wrapper">
+                            <Search className="search-icon" />
+                            <input
+                                type="text"
+                                placeholder="Search requests..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
                             className="search-input"
-                    />
-                </div>
-                
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
-                    <option value="all">All Statuses</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Approved">Approved</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Denied">Denied</option>
-                    <option value="Awaiting Feedback">Awaiting Feedback</option>
+                            />
+                        </div>
+
+                        <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="filter-select" style={{ width: 220 }}>
+                            <option value="all">All Divisions</option>
+                            <option value="facilities">Facilities Team</option>
+                            <option value="transportation">Transportation Team</option>
+                            <option value="maintenance">Maintenance Team</option>
+                            <option value="it">IT Support Team</option>
                     </select>
 
-                    <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="filter-select">
-                    <option value="all">All Divisions</option>
-                    <option value="facilities">Facilities Team</option>
-                    <option value="transportation">Transportation Team</option>
-                    <option value="maintenance">Maintenance Team</option>
-                    <option value="it">IT Support Team</option>
-                    </select>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <button className={`btn ${viewMode === 'cards' ? 'btn-primary' : ''}`} onClick={() => setViewMode('cards')}>Card View</button>
+                            <button className={`btn ${viewMode === 'table' ? 'btn-primary' : ''}`} onClick={() => setViewMode('table')}>Table View</button>
+                        </div>
+                    </div>
+
+                    {/* status pills */}
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                        {['all', 'Pending', 'In Progress', 'Completed', 'Approved', 'Denied', 'Awaiting Feedback'].map(s => (
+                            <button key={s} className={`btn status-pill ${statusFilter === s ? 'active' : ''}`} onClick={() => setStatusFilter(s)}>{s === 'all' ? 'All' : s}</button>
+                        ))}
+                    </div>
             </div>
         </div>
 
@@ -114,46 +152,111 @@ export default function AllRequestsPage() {
                 <h3>Requests Overview</h3>
             </div>
             <div className="card-content">
-                <div className="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Request ID</th>
-                                <th>Requester</th>
-                                <th>Service Type</th>
-                                <th>Status</th>
-                                <th>Priority</th>
-                                <th>Date Submitted</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredRequests.map((request) => (
-                                <tr key={request.id}>
-                                    <td className="cell-request-id">{request.id}</td>
-                                    <td>
-                                        <div className="cell-requester">{request.requesterName || request.requester || request.createdBy || request.userEmail || '—'}</div>
-                                        {(request.assignedTo) && <div className="cell-assigned-to">Assigned to: {request.assignedTo}</div>}
-                                    </td>
-                                    <td>{request.serviceType || request.type || '—'}</td>
-                                    <td><StatusBadge status={request.status} /></td>
-                                    <td><PriorityBadge priority={request.priority || 'Medium'} /></td>
-                                    <td className="cell-date">{formatDate(request.submittedAt || request.dateSubmitted || request.createdAt || request.details?.submittedAt || request.createdAt)}</td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: 8 }}>
-                                            <button className="btn btn-secondary" onClick={() => { setEditing(request); setFormOpen(true); }}>
-                                                <Eye size={16} /> Edit
-                                            </button>
-                                            <button className="btn" onClick={() => { /* could open details modal */ }}>
-                                                <FileText size={16} /> Details
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                    {viewMode === 'cards' ? (
+                        <div className="requests-cards">
+                            {/* render groups in order: Pending, In Progress, Approved, Completed, other */}
+                            {['Pending', 'In Progress', 'Approved', 'Completed'].map(group => (
+                                <div key={group} className="request-group">
+                                    {groupedByStatus[group] && groupedByStatus[group].length > 0 && (
+                                        <>
+                                            <h4 className="group-title">{group} <span className="group-count">{groupedByStatus[group].length}</span></h4>
+                                            <GroupCarousel groupKey={group}>
+                                                {groupedByStatus[group].map(request => (
+                                                    <div key={request.id} className="request-card">
+                                                        <div className="card-main">
+                                                            <div className="card-left">
+                                                                <div className="card-id">{request.id}</div>
+                                                                <div className="card-requester">{request.requesterName || request.requester || '—'}</div>
+                                                                <div className="card-type">{request.serviceType || request.type || '—'}</div>
+                                                            </div>
+                                                            <div className="card-right">
+                                                                <StatusBadge status={request.status} />
+                                                                <PriorityBadge priority={request.priority || 'Medium'} />
+                                                                <div className="card-date">{formatDate(request.submittedAt || request.dateSubmitted || request.createdAt)}</div>
+                                                            </div>
+                                                        </div>
+                                                        <div className="card-actions">
+                                                            {request.status === 'Pending' && <button className="btn btn-primary" onClick={() => { setEditing(request); setFormOpen(true); }}>Start</button>}
+                                                            {request.status === 'In Progress' && <button className="btn btn-primary" onClick={() => { setEditing(request); setFormOpen(true); }}>Continue</button>}
+                                                            {request.status === 'Completed' && <button className="btn" onClick={() => {/* show details */ }}>Details</button>}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </GroupCarousel>
+                                        </>
+                                    )}
+                                </div>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                            {/* show any other statuses */}
+                            {Object.keys(groupedByStatus).filter(k => !['Pending', 'In Progress', 'Approved', 'Completed'].includes(k)).map(k => (
+                                <div key={k} className="request-group">
+                                    <h4 className="group-title">{k} <span className="group-count">{groupedByStatus[k].length}</span></h4>
+                                            <GroupCarousel groupKey={k}>
+                                                {groupedByStatus[k].map(request => (
+                                                    <div key={request.id} className="request-card">
+                                                <div className="card-main">
+                                                    <div className="card-left">
+                                                        <div className="card-id">{request.id}</div>
+                                                        <div className="card-requester">{request.requesterName || request.requester || '—'}</div>
+                                                        <div className="card-type">{request.serviceType || request.type || '—'}</div>
+                                                    </div>
+                                                    <div className="card-right">
+                                                        <StatusBadge status={request.status} />
+                                                        <PriorityBadge priority={request.priority || 'Medium'} />
+                                                        <div className="card-date">{formatDate(request.submittedAt || request.dateSubmitted || request.createdAt)}</div>
+                                                    </div>
+                                                </div>
+                                                <div className="card-actions">
+                                                    <button className="btn" onClick={() => { setEditing(request); setFormOpen(true); }}>Details</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </GroupCarousel>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                            <div className="table-wrapper">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Request ID</th>
+                                            <th>Requester</th>
+                                            <th>Service Type</th>
+                                            <th>Status</th>
+                                            <th>Priority</th>
+                                            <th>Date Submitted</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredRequests.map((request) => (
+                                            <tr key={request.id}>
+                                                <td className="cell-request-id">{request.id}</td>
+                                                <td>
+                                                    <div className="cell-requester">{request.requesterName || request.requester || request.createdBy || request.userEmail || '—'}</div>
+                                                </td>
+                                                <td>{request.serviceType || request.type || '—'}</td>
+                                                <td><StatusBadge status={request.status} /></td>
+                                                <td><PriorityBadge priority={request.priority || 'Medium'} /></td>
+                                                <td className="cell-date">{formatDate(request.submittedAt || request.dateSubmitted || request.createdAt || request.details?.submittedAt || request.createdAt)}</td>
+                                                <td>
+                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                        <button className="btn btn-secondary" onClick={() => { setEditing(request); setFormOpen(true); }}>
+                                                            <Eye size={16} /> Edit
+                                                        </button>
+                                                        <button className="btn" onClick={() => { /* could open details modal */ }}>
+                                                            <FileText size={16} /> Details
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                    )}
+
                     {!loading && filteredRequests.length === 0 && (
                     <div className="empty-state">
                         <FileText size={48} />
@@ -162,7 +265,6 @@ export default function AllRequestsPage() {
                 )}
                     {loading && <p style={{ color: 'var(--color-text-light)' }}>Loading requests...</p>}
                     {error && <p style={{ color: 'var(--color-danger)' }}>Error loading requests.</p>}
-            </div>
 
                 <GlobalModal open={formOpen} title={editing ? 'Edit Request' : 'New Request'} onClose={() => setFormOpen(false)}>
                     <RequestForm initialData={editing || {}} onSaved={(saved) => {
@@ -175,6 +277,7 @@ export default function AllRequestsPage() {
                         setFormOpen(false);
                     }} onCancel={() => setFormOpen(false)} />
                 </GlobalModal>
+                </div>
         </div>
     </div>
     );
