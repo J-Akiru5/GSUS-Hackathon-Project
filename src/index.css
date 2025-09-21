@@ -23,7 +23,7 @@
   --border-radius: 12px;
   --content-max-width: 1400px;
   --sidebar-width: 260px;
-    --sidebar-compact-width: 260px;
+  --sidebar-compact-width: 80px;
     --header-height: 200px;
       /* reduced banner offset so the section header can rise earlier */
       --banner-offset: 220px;
@@ -35,7 +35,6 @@
     --gap-sm: 0.5rem;
     --transition-fast: 180ms ease;
     --transition-medium: 240ms ease;
-  --sidebar-width: 240px;
 }
 
 /* When there's no banner (pages that set body.hide-banner), remove the banner offset
@@ -101,30 +100,32 @@ body.sidebar-open .sidebar.offcanvas {
     margin-left: 0;
   }
 }
+/* App container: center content and allow sidebar offsets to push it */
 .app-container {
   width: 100%;
-  /* default: full content width (no sidebar offset) */
-    max-width: var(--content-max-width);
-    margin-left: 0;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
     padding: 0 1rem;
-  }
-                /* When the sidebar is fully open, offset the app container */
-                html.sidebar-open .app-container {
-                  margin-left: var(--sidebar-width);
-                  max-width: calc(var(--content-max-width) - var(--sidebar-width));
-  
-      /* When sidebar is compact, offset the app container by the compact width */
-        html.sidebar-compact .app-container {
-          margin-left: var(--sidebar-compact-width);
-          max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
-        }
-      
-        /* Prevent global horizontal scroll when sidebar moves off-canvas */
-        html,
-        body,
-        #root {
-          overflow-x: hidden;
-        }
+  transition: margin-left 240ms var(--transition-medium), max-width 240ms var(--transition-medium);
+}
+/* When the sidebar is fully open, offset the app container so content doesn't sit under the sidebar */
+html.sidebar-open .app-container {
+  margin-left: var(--sidebar-width);
+  max-width: calc(var(--content-max-width) - var(--sidebar-width));
+}
+
+/* Compact sidebar mode uses a smaller left offset */
+html.sidebar-compact .app-container {
+  margin-left: var(--sidebar-compact-width);
+  max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+}
+
+/* Prevent global horizontal scroll when sidebar moves off-canvas */
+html,
+body,
+#root {
+  overflow-x: hidden;
+}
 .content-wrapper {
   flex: 1 1 auto;
   display: flex;
@@ -352,4 +353,3 @@ body.sidebar-open .sidebar.offcanvas {
 }
 
 /* ensure file ends with a newline and balanced braces */
-}

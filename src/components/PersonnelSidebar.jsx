@@ -22,9 +22,9 @@ const PersonnelSidebar = () => {
                         <h1 className="logo-text">GSUS</h1>
                 </div>
                     <nav className="sidebar-nav">
-                        <NavLink to="/my-tasks" className="nav-item"><FiFileText /><span className="nav-label">My Tasks</span></NavLink>
-                        <NavLink to="/my-schedule" className="nav-item"><FiCalendar /><span className="nav-label">My Schedule</span></NavLink>
-                        <NavLink to="/profile" className="nav-item"><FiUser /><span className="nav-label">Profile</span></NavLink>
+                        <NavLink to="/my-tasks" className="nav-item" title="My Tasks"><FiFileText className="nav-icon" /><span className="nav-label">My Tasks</span></NavLink>
+                        <NavLink to="/my-schedule" className="nav-item" title="My Schedule"><FiCalendar className="nav-icon" /><span className="nav-label">My Schedule</span></NavLink>
+                        <NavLink to="/profile" className="nav-item" title="Profile"><FiUser className="nav-icon" /><span className="nav-label">Profile</span></NavLink>
                     </nav>
             </div>
             <div className="sidebar-footer">

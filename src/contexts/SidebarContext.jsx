@@ -71,7 +71,7 @@ export const SidebarProvider = ({ children }) => {
   const setCompactState = useCallback((value) => setCompact(Boolean(value)), []);
 
   return (
-    <SidebarContext.Provider value={{ open, compact, toggle, toggleCompact, close, openSidebar, setCompact: setCompactState }}>
+    <SidebarContext.Provider value={{ open, compact, toggle, toggleCompact, close, openSidebar, setCompact: setCompactState, isDesktop }}>
       {children}
     </SidebarContext.Provider>
   );

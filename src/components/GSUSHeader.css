@@ -17,6 +17,7 @@
     backdrop-filter: blur(6px);
     transition: box-shadow 180ms, background-color 180ms, transform 220ms cubic-bezier(.2, .8, .2, 1);
 
+}
 .gsus-header-inner {
   max-width: var(--content-max-width);
   width: min(100%, var(--content-max-width));
@@ -38,8 +39,11 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  position: relative;
-    /* allow absolute children */
+  position: sticky;
+  top: 0;
+  z-index: 55; /* keep banner below header controls but above page content */
+  background: linear-gradient(180deg, rgba(15,122,63,0.06), rgba(15,122,63,0.03));
+  /* allow absolute children */
 }
 
 .gsus-banner-img {
@@ -97,9 +101,9 @@
 
 @media (min-width: 901px) {
 
-  /* hide the header hamburger on desktop to avoid duplicate controls */
+  /* Keep the header hamburger visible on desktop so it can toggle compact mode when desired. */
   .gsus-section-left .sidebar-toggle {
-    display: none;
+    display: inline-flex;
   }
 }
 /* top-right datetime pill pinned to the viewport top-right inside header */
@@ -279,8 +283,10 @@ body.hide-banner .gsus-header {
 }
 
 /* reduce header height so it aligns with layout header variable */
-.gsus-header, .gsus-header-inner, .gsus-banner { box-sizing: border-box; }
-
+.gsus-header,
+.gsus-header-inner,
+.gsus-banner {
+  box-sizing: border-box;
 }
 /* Shift the header/banner when sidebar-open is present so header and content move together */
 @media (min-width: 901px) {
