@@ -103,24 +103,27 @@ body.sidebar-open .sidebar.offcanvas {
 }
 /* App container: center content and allow sidebar offsets to push it */
 .app-container {
-  /* reserve a small side gap (8px) on left and right so content never touches sidebar or viewport edge */
-  width: calc(100vw - var(--sidebar-width) - (var(--layout-side-gap) * 2));
+  /* Use auto width with a max-width cap; offset from the sidebar via margin-left on desktop.
+     This avoids vw-based calculations that can produce overflow at some zoom levels.
+     Maintain an 8px inner padding on both sides so child elements have a uniform gutter. */
+  width: auto;
   max-width: var(--content-max-width);
   margin: 0 auto;
   padding: 0 var(--layout-side-gap);
-  transition: margin-left 240ms var(--transition-medium), max-width 240ms var(--transition-medium), width 240ms var(--transition-medium);
+  box-sizing: border-box;
+  transition: margin-left 240ms var(--transition-medium), max-width 240ms var(--transition-medium);
 }
 /* When the sidebar is fully open, offset the app container so content doesn't sit under the sidebar */
+/* When sidebar is open on desktop, push the app container right by the sidebar width + gap
+   and reduce the max-width so content doesn't overflow the viewport. */
 html.sidebar-open .app-container {
   margin-left: calc(var(--sidebar-width) + var(--layout-side-gap));
-  width: calc(100vw - var(--sidebar-width) - (var(--layout-side-gap) * 2));
   max-width: calc(var(--content-max-width) - var(--sidebar-width) - var(--layout-side-gap));
 }
 
 /* Compact sidebar mode uses a smaller left offset */
 html.sidebar-compact .app-container {
   margin-left: calc(var(--sidebar-compact-width) + var(--layout-side-gap));
-  width: calc(100vw - var(--sidebar-compact-width) - (var(--layout-side-gap) * 2));
   max-width: calc(var(--content-max-width) - var(--sidebar-compact-width) - var(--layout-side-gap));
 }
 
