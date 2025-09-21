@@ -24,6 +24,7 @@ import GlobalModal from '../components/GlobalModal';
 import './Dashboard.css'; // <-- Use our existing CSS file
 import SectionHeader from '../components/SectionHeader';
 import { listenToPendingRequests, updateRequestStatus, listenToBookings, listenToUsers } from '../services/firestoreService'; // add service imports
+import { useNavigate } from 'react-router-dom';
 
 // Reusable Priority Badge Component
 const PriorityBadge = ({ priority }) => {
@@ -31,8 +32,8 @@ const PriorityBadge = ({ priority }) => {
     return <span className={priorityClass}>{priority}</span>;
 };
 
-const StatCard = ({ title, value, icon }) => (
-  <div className="card stat-card">
+const StatCard = ({ title, value, icon, onClick }) => (
+  <div className={`card stat-card clickable ${onClick ? 'clickable-card' : ''}`} onClick={onClick} role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined}>
     <div className="stat-icon">{icon}</div>
     <div>
       <div className="stat-value">{value}</div>
@@ -58,6 +59,7 @@ export default function GSODashboard() {
   const [usersById, setUsersById] = useState({});
   const [usersByEmail, setUsersByEmail] = useState({});
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -207,10 +209,10 @@ export default function GSODashboard() {
       {/* Use the shared SectionHeader so the title and subtitle are portalled into the banner when present */}
       <SectionHeader title="GSO Dashboard" subtitle="Manage service requests and resources" />
       <div className="stats-grid">
-        <StatCard title="Pending Requests" value={loading ? '...' : pendingRequests.length} icon="🕒" />
-        <StatCard title="Completed This Month" value="45" icon="✅" />
-        <StatCard title="In Progress" value="8" icon="⚠️" />
-        <StatCard title="Avg Response Time" value="2.3 hours" icon="📄" />
+        <StatCard title="Pending Requests" value={loading ? '...' : pendingRequests.length} icon="🕒" onClick={() => navigate('/requests')} />
+        <StatCard title="Completed This Month" value="45" icon="✅" onClick={() => navigate('/analytics')} />
+        <StatCard title="In Progress" value="8" icon="⚠️" onClick={() => navigate('/requests')} />
+        <StatCard title="Avg Response Time" value="2.3 hours" icon="📄" onClick={() => navigate('/analytics')} />
       </div>
       <div className="dashboard-main-grid">
         <div className="card action-required-panel">
@@ -226,7 +228,7 @@ export default function GSODashboard() {
           {!loading && !error && pendingRequests.map(req => {
             const requester = getRequesterInfo(req);
             return (
-              <div key={req.id} className="request-item">
+              <div key={req.id} className="request-item clickable" onClick={() => navigate('/requests')}>
                 <div>
                   <h4>{req.title || req.serviceType || 'Request'}</h4>
                   <p>
@@ -254,7 +256,7 @@ export default function GSODashboard() {
                     >
                       {updatingId === req.id ? 'Updating…' : 'Deny'}
                     </button>
-                    <button className="btn btn-secondary" onClick={() => { setModalContent({ ...req, __requester: requester }); setModalOpen(true); }}>Details</button>
+                    <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); setModalContent({ ...req, __requester: requester }); setModalOpen(true); }}>Details</button>
                   </div>
                 </div>
               </div>
@@ -272,7 +274,7 @@ export default function GSODashboard() {
           {!loadingBookings && bookings.length > 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
               {bookings.slice(0, 6).map(b => (
-                <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', borderRadius: 8, border: '1px solid var(--color-border)' }}>
+                <div key={b.id} className="calendar-row clickable" onClick={() => navigate('/calendar')} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem', borderRadius: 8, border: '1px solid var(--color-border)' }}>
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                     <Calendar size={16} style={{ color: 'var(--color-primary)' }} />
                     <div>

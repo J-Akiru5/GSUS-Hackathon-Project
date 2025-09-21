@@ -21,9 +21,9 @@
 
 .calendar-card {
     padding: 1rem;
-        display: flex;
+    display: flex;
         flex-direction: column;
-        height: calc(100vh - 160px);
+    height: calc(100vh - 120px);
         min-height: 520px;
 }
 
@@ -62,10 +62,148 @@
     grid-template-columns: repeat(7, 1fr);
     gap: 0.25rem;
     flex: 1 1 auto;
-        overflow: auto;
+    overflow: auto;
         padding-bottom: 0.5rem;
 }
 
+/* full viewport helper */
+.full-viewport {
+    height: calc(100vh - 80px);
+}
+
+.calendar-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.calendar-settings {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    padding: 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.calendar-settings h4 {
+    margin: 0;
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.settings-row label {
+    min-width: 140px;
+}
+
+.settings-row input[type="number"] {
+    width: 64px;
+}
+
+/* Week view styles */
+.week-view {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+    overflow: auto;
+}
+
+.week-header {
+    display: grid;
+    grid-template-columns: 120px repeat(7, 1fr);
+    align-items: center;
+}
+
+.week-day-header {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+    font-weight: 600;
+}
+
+.week-body {
+    display: grid;
+    grid-template-columns: 120px repeat(7, 1fr);
+    flex: 1 1 auto;
+    gap: 0.25rem;
+}
+
+.time-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.25rem;
+}
+
+.time-slot-label {
+    height: 48px;
+    display: flex;
+    align-items: center;
+    color: var(--color-text-light);
+    font-size: 0.9rem;
+}
+
+.week-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border-left: 1px solid var(--color-border);
+}
+
+.week-slot {
+    min-height: 48px;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.03);
+    padding: 4px;
+}
+
+/* Day view styles */
+.day-view {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    height: 100%;
+}
+
+.day-header-row {
+    padding: 0.5rem 0;
+}
+
+.day-title {
+    font-weight: 700;
+}
+
+.day-body {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0.25rem;
+    flex: 1 1 auto;
+    overflow: auto;
+}
+
+.day-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.25rem;
+}
+
+.day-slot {
+    min-height: 48px;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.03);
+    padding: 4px;
+}
+
+.slot-time {
+    font-weight: 700;
+    margin-right: 6px;
+}
 .day-header {
     text-align: center;
     font-weight: 500;
