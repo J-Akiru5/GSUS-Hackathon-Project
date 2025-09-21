@@ -12,7 +12,7 @@ export default function GSUSHeader() {
     return () => clearInterval(t);
   }, []);
 
-  const { toggle } = useSidebar();
+  // Header no longer controls sidebar toggle; the control lives in the sidebar itself
   const navigate = useNavigate();
   const location = useLocation();
   const [personnelCount, setPersonnelCount] = useState(null);

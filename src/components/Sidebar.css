@@ -1,65 +1,169 @@
+/* Sidebar stylesheet: compact icon-only mode, offcanvas for small screens, green theme */
+
+/* Root-level CSS variables fallback for sidebar sizing and transitions */
+:root {
+  --sidebar-width: 260px;
+  --sidebar-compact-width: 72px;
+  --transition-fast: 160ms;
+  --transition-medium: 220ms;
+  --color-primary: #0f7a3f;
+  /* green theme */
+}
+
+/* Base sidebar */
 .sidebar {
   width: var(--sidebar-width);
-  background-color: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  background-color: var(--color-primary);
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* make the sidebar fixed to the left and full-height of the viewport */
   position: fixed;
-  top: 0;
-  left: 0;
+    top: 0;
+    left: 0;
     bottom: 0;
-  z-index: 99;
+    z-index: 1200;
   height: 100vh;
-  /* fallback to ensure full viewport height */
-    padding: 0;
+  padding: 0;
   flex-shrink: 0;
   transition: width var(--transition-medium), background-color var(--transition-fast);
-  overflow: auto;
-}
-.sidebar.compact {
-  width: 72px;
-  padding-left: 0.6rem;
-  padding-right: 0.6rem;
+    color: #f7fff7;
 }
 
+.sidebar.compact {
+  width: var(--sidebar-compact-width);
+  padding-left: 0.6rem;
+    padding-right: 0.6rem;
+  }
 .sidebar-header {
   margin: 0.75rem 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
 }
-
+.sidebar-header .sidebar-toggle {
+  background: transparent;
+  border: none;
+  color: #fff;
+  display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+  margin-right: 8px;
+    cursor: pointer;
+.sidebar-header .sidebar-toggle:focus {
+    outline: none;
+  }
+}
 .logo-text {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: 800;
-  color: var(--color-primary);
+  color: #fff;
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  padding: 0.25rem 0.5rem;
+  gap: 0.3rem;
+    padding: 0.5rem 0.5rem;
 }
 .nav-item {
-  display: flex; align-items: center; gap: 0.75rem;
+  display: flex;
+    align-items: center;
+    gap: 0.75rem;
   padding: 0.6rem 0.9rem;
-    border-radius: 10px;
+  border-radius: 10px;
     text-decoration: none;
-    color: var(--color-text-muted);
+  color: #f7fff7;
     font-weight: 600;
     transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
 }
-/* Offcanvas-specific styling for mobile behavior */
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    transform: translateX(2px);
+}
+.nav-item.active {
+  background-color: rgba(255, 255, 255, 0.06);
+    color: #fff;
+  }
+  
+    .nav-item .nav-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      color: inherit;
+    }
+  
+    .nav-item .nav-label {
+      display: inline-block;
+    }
+.unread-badge {
+  background: var(--color-danger, #ef4444);
+  color: white;
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 0.75rem;
+  margin-left: 8px;
+}
+
+.sidebar-footer {
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.user-avatar-link {
+  display: inline-block;
+  text-decoration: none;
+}
+.user-avatar {
+  width: 48px;
+  height: 48px;
+    border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+.user-name {
+  font-weight: 700;
+  color: #fff;
+}
+.user-role {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+.sidebar-logout {
+  width: 100%;
+}
+.logout-btn {
+  display: block;
+  width: 100%;
+}
+
+/* offcanvas behavior (mobile) */
 .sidebar.offcanvas {
-  transform: translateX(0);
+  transform: translateX(-110%);
   transition: transform 260ms cubic-bezier(.2, .8, .2, 1);
 }
 
-.sidebar.offcanvas.open {
+.sidebar.open {
   transform: translateX(0);
 }
 
@@ -71,78 +175,66 @@
   border: none;
   font-size: 1.25rem;
   cursor: pointer;
+  color: #fff;
 }
-  
-  .nav-item:hover {
-    background-color: var(--color-primary-50);
-    color: var(--color-text-dark);
-    transform: translateX(2px);
-  }
-  
-  .nav-item.active {
-    background-color: linear-gradient(90deg, rgba(16, 185, 129, 0.12), rgba(139, 92, 246, 0.06));
-    color: var(--color-primary);
-  }
 
-.unread-badge {
-  background: var(--color-danger, #ef4444);
-  color: white;
-  border-radius: 999px;
-  padding: 0 8px;
-  font-size: 0.75rem;
-  margin-left: 8px;
-}
-  .sidebar-footer {
-    padding: 0.75rem 1rem;
-    border-top: 1px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-.user-profile { display: flex; align-items: center; gap: 0.75rem; }
-.user-avatar-link {
-  display: inline-block;
-  text-decoration: none;
-}
-.user-avatar {
-  width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background-color: var(--color-primary);
-    color: var(--color-surface);
-    display: flex;
-    align-items: center;
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.45);
+  z-index: 1199;
+  }
+  
+  /* compact mode: icon-only and hide some elements */
+  .sidebar.compact .nav-item {
     justify-content: center;
-    font-weight: 700;
-    font-size: 0.95rem;
-}
-.user-info { display: flex; flex-direction: column; }
-.user-name {
-  font-weight: 700;
-  color: var(--color-text-dark);
-}
-
-.user-role {
-  font-size: 0.8rem;
-  color: var(--color-text-muted);
-}
-
-.sidebar-logout {
-  width: 100%;
-}
-
-.logout-btn {
-  display: block;
-  width: 100%;
+    padding: 0.6rem 0.4rem;
+  }
+  
+  .sidebar.compact .nav-item .nav-label {
+    display: none;
+  }
+  
+  .sidebar.compact .logo-text {
+    display: none;
+  }
+  
+  .sidebar.compact .user-info {
+    display: none;
+  }
+  
+  .sidebar.compact .sidebar-logout {
+    display: none;
 }
 
-/* Responsive: collapse to top navigation on small screens */
+/* responsive rules */
+@media (max-width: 900px) {
+  .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      height: 100vh;
+      z-index: 1200;
+    }
+
+  html.sidebar-open,
+  html.sidebar-open body {
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  /* ensure offcanvas is visible when sidebar-open is set */
+  html.sidebar-open .sidebar.offcanvas {
+    transform: translateX(0) !important;
+  }
+}
 @media (max-width: 720px) {
   .sidebar {
     position: relative;
     width: 100%;
     border-right: none;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     padding: 0.5rem;
   }
 
@@ -162,27 +254,82 @@
     white-space: nowrap;
   }
 }
-/* overlay when sidebar is open (mobile) */
-.sidebar-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(2, 6, 23, 0.45);
-  z-index: 998;
+
+@media (min-width: 901px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 1200;
+  }
+
+  /* ensure the nav scroll area fits between header area and footer */
+  .sidebar .sidebar-nav {
+    overflow: auto;
+    max-height: calc(100vh - 240px);
+  }
 }
 
-/* Strong overrides to prevent Bootstrap's .offcanvas or other utility classes from hiding our sidebar */
-.sidebar {
-  display: flex !important;
-  position: fixed !important;
-  left: 0 !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  height: 100vh !important;
-  visibility: visible !important;
-  transform: none !important;
-  z-index: 1200 !important; /* sit above Bootstrap layers */
+/* prevent horizontal scroll from sidebar interactions */
+html,
+body,
+#root {
+  overflow-x: hidden;
 }
-.sidebar.offcanvas {
-  transform: translateX(0) !important;
+
+/* Footer: make bottom part white with dark text for contrast */
+.sidebar-footer {
+  background: #ffffff;
+  color: #07321a;
+  /* dark green/near-black text for contrast */
+  padding: 0.75rem 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
-.sidebar.open { transform: translateX(0) !important; }
+
+.sidebar-footer .user-avatar {
+  background-color: var(--color-primary);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  font-size: 0.9rem;
+}
+
+.sidebar-footer .user-name {
+  color: #06321a;
+}
+.sidebar-footer .user-role {
+  color: #225a3d;
+}
+
+/* Nav label contrast and active emphasis */
+.nav-item .nav-label {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.08rem 0.45rem;
+  border-radius: 6px;
+  transition: background-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.nav-item:hover .nav-label {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.nav-item.active {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 4px 0 0 rgba(255, 255, 255, 0.18);
+}
+.nav-item.active .nav-label {
+  background: rgba(255, 255, 255, 0.22);
+  color: #062514;
+  /* darker text on the emphasized label */
+  font-weight: 700;
+}
+/* Remove the top-close (X) control when the sidebar is compact */
+.sidebar.compact .sidebar-close-btn {
+  display: none;
+}

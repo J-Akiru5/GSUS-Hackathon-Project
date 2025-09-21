@@ -1,21 +1,20 @@
 .gsus-header {
   position: -webkit-sticky;
-    /* Safari */
+  /* Safari */
   position: sticky;
   top: 0;
   left: 0;
-    width: 100%;
-    z-index: 50;
+  width: 100%;
+  z-index: 1000; /* ensure header + controls are above the banner */
   color: var(--color-text-dark);
-  background: #ffffff;
-    /* solid white background */
+  background: #ffffff; /* solid white wrapper so header has a consistent background */
   height: var(--header-height); /* ensure header element height matches banner */
-  overflow: hidden;
+  overflow: visible;
   will-change: transform;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    transition: box-shadow 180ms, background-color 180ms, transform 220ms cubic-bezier(.2, .8, .2, 1);
-
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: box-shadow 180ms, background-color 180ms, transform 220ms cubic-bezier(.2, .8, .2, 1);
+}
 .gsus-header-inner {
   max-width: var(--content-max-width);
   width: min(100%, var(--content-max-width));
@@ -37,8 +36,11 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  position: relative;
-    /* allow absolute children */
+  position: sticky;
+  top: 0;
+  z-index: 0; /* sit behind header and action controls */
+  background: transparent; /* keep banner background transparent so overlay controls are clear */
+  pointer-events: none; /* let interactive controls above receive clicks */
 }
 
 .gsus-banner-img {
@@ -81,6 +83,26 @@
   min-width: 0;
 }
 
+/* Header hamburger: show on small screens only. On large screens the sidebar contains the toggle. */
+.gsus-section-left .sidebar-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+@media (min-width: 901px) {
+
+  /* Keep the header hamburger visible on desktop so it can toggle compact mode when desired. */
+  .gsus-section-left .sidebar-toggle {
+    display: inline-flex;
+  }
+}
 /* top-right datetime pill pinned to the viewport top-right inside header */
 .gsus-right-top {
   position: absolute;
@@ -101,7 +123,7 @@
   align-items: center;
   gap: 0.75rem;
   pointer-events: auto;
-  z-index: 60;
+  z-index: 1010; /* ensure actionable cluster sits above the banner */
   max-width: 45%;
   justify-content: flex-end;
 }
@@ -116,11 +138,25 @@
 
   /* shift the banner inner container right by the sidebar width so page content centers under the banner */
   .gsus-banner-inner {
-    margin-left: var(--sidebar-width);
-    max-width: calc(var(--content-max-width) - var(--sidebar-width));
+      margin-left: var(--sidebar-width);
+        max-width: calc(var(--content-max-width) - var(--sidebar-width));
+      transition: margin-left 240ms var(--transition-medium);
   }
 }
 
+/* When the sidebar is compact (narrow icon-only), shift the header and banner by a smaller amount */
+@media (min-width: 901px) {
+  html.sidebar-compact .gsus-header-bar {
+    left: var(--sidebar-compact-width);
+    /* match .sidebar.compact width */
+    max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+  }
+
+  html.sidebar-compact .gsus-banner-inner {
+    margin-left: var(--sidebar-compact-width);
+    max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+  }
+}
 .gsus-section-left .section-header-title-portal h1 {
   color: var(--color-text-dark);
   font-size: 1.25rem;
@@ -244,6 +280,20 @@ body.hide-banner .gsus-header {
 }
 
 /* reduce header height so it aligns with layout header variable */
-.gsus-header, .gsus-header-inner, .gsus-banner { box-sizing: border-box; }
+.gsus-header,
+.gsus-header-inner,
+.gsus-banner {
+  box-sizing: border-box;
+}
+/* Shift the header/banner when sidebar-open is present so header and content move together */
+@media (min-width: 901px) {
+  html.sidebar-open .gsus-header-bar {
+    left: var(--sidebar-width);
+    max-width: calc(var(--content-max-width) - var(--sidebar-width));
+  }
 
+  html.sidebar-open .gsus-banner-inner {
+    margin-left: var(--sidebar-width);
+    max-width: calc(var(--content-max-width) - var(--sidebar-width));
+  }
 }

@@ -48,7 +48,9 @@ const AdminLayout = () => (
   <HeaderWrapper>
     <div className="main-layout">
       <AdminSidebar />
-      <main className="content-wrapper"><Outlet /></main>
+      <div className="app-container">
+        <main className="content-wrapper"><Outlet /></main>
+      </div>
     </div>
   </HeaderWrapper>
 );
@@ -57,7 +59,9 @@ const PersonnelLayout = () => (
   <HeaderWrapper>
     <div className="main-layout">
       <PersonnelSidebar />
-      <main className="content-wrapper"><Outlet /></main>
+      <div className="app-container">
+        <main className="content-wrapper"><Outlet /></main>
+      </div>
     </div>
   </HeaderWrapper>
 );
