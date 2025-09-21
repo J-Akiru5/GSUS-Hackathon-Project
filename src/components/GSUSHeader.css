@@ -7,7 +7,7 @@
   width: 100%;
   z-index: 1000; /* ensure header + controls are above the banner */
   color: var(--color-text-dark);
-  background: transparent; /* transparent wrapper so banner shows through behind controls */
+  background: #ffffff; /* solid white wrapper so header has a consistent background */
   height: var(--header-height); /* ensure header element height matches banner */
   overflow: visible;
   will-change: transform;
