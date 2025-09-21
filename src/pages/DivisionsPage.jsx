@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listenToDivisions, createDivision, updateDivision, deleteDivision } from '../services/firestoreService';
 import DivisionFormModal from '../components/DivisionFormModal';
+import SectionHeader from '../components/SectionHeader';
 import './DivisionsPage.css';
 
 export default function DivisionsPage() {
@@ -27,6 +28,19 @@ export default function DivisionsPage() {
 			setLoading(false);
 		});
 		return () => { if (unsub && typeof unsub === 'function') unsub(); };
+	}, []);
+
+	// Listen for a global header event to open the division modal (so banner button can open it)
+	useEffect(() => {
+		const handler = (e) => {
+			// only open if currently on the divisions page — we can check location path
+			if (window.location && window.location.pathname && window.location.pathname.startsWith('/divisions')) {
+				setModalInitial({});
+				setModalOpen(true);
+			}
+		};
+		window.addEventListener('gsus:open-division-modal', handler);
+		return () => window.removeEventListener('gsus:open-division-modal', handler);
 	}, []);
 
 	const handleCreate = () => {
@@ -66,15 +80,10 @@ export default function DivisionsPage() {
 
 	return (
 		<div className="divisions-page">
-			<div className="section-header section-header--active divisions-header">
-				<div className="divisions-header-left">
-          <h2 className="divisions-title">Divisions Management</h2>
-          <p className="muted">Overview and management of all GSO divisions</p>
-				</div>
-				<div className="divisions-actions">
-					<button className="btn btn-primary" onClick={handleCreate}>Add Division</button>
-				</div>
-			</div>
+			<SectionHeader
+				title="Divisions Management"
+				subtitle="Overview and management of all GSO divisions"
+			/>
 
       {/* top stat tiles */}
       <div className="divisions-stats-row container">

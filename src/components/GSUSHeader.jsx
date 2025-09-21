@@ -70,7 +70,14 @@ export default function GSUSHeader() {
                   )}
                 </div>
               )}
-              <div className="gsus-actions-slot" />
+              <div className="gsus-actions-slot">
+                {location && location.pathname && location.pathname.startsWith('/divisions') ? (
+                  <button className="btn btn-primary" onClick={() => {
+                    // Dispatch a custom event that pages can listen for to open the division modal
+                    try { window.dispatchEvent(new Event('gsus:open-division-modal')); } catch (e) { /* fallback */ navigate('/divisions'); }
+                  }}>Add Division</button>
+                ) : null}
+              </div>
             </>
           )}
         </div>
