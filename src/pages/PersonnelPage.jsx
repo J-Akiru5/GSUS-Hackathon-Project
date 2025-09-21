@@ -2,6 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { Users, Search, Filter, Edit, Mail, Phone, MapPin, Shield, UserCheck, UserX, Eye, FileText } from "lucide-react";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, A11y } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import './PersonnelPage.css'; // <-- IMPORT OUR NEW CSS FILE
 import { listenToUsers } from '../services/firestoreService';
 import SectionHeader from '../components/SectionHeader';
@@ -151,10 +156,27 @@ export default function PersonnelPage() {
                  <div className="card-header"><Users className="icon" /><h3>Personnel Directory</h3></div>
                 <div className="card-content">
                     {viewMode === 'cards' ? (
-                        <div className="personnel-cards">
-                            {filteredPersonnel.map(person => (
-                                <PersonnelCard key={person.id} person={person} />
-                            ))}
+                        // Use Swiper to present personnel cards in a responsive carousel on smaller screens
+                        <div className="personnel-cards-swiper">
+                            <Swiper
+                                modules={[Navigation, Pagination, A11y]}
+                                spaceBetween={12}
+                                slidesPerView={1}
+                                navigation
+                                pagination={{ clickable: true }}
+                                breakpoints={{
+                                    640: { slidesPerView: 1 },
+                                    900: { slidesPerView: 2 },
+                                    1200: { slidesPerView: 3 }
+                                }}
+                                a11y={{ enabled: true }}
+                            >
+                                {filteredPersonnel.map(person => (
+                                    <SwiperSlide key={person.id}>
+                                        <PersonnelCard person={person} />
+                                    </SwiperSlide>
+                                ))}
+                            </Swiper>
                         </div>
                     ) : (
                         <div className="table-wrapper">

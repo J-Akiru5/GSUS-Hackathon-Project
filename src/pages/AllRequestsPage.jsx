@@ -2,7 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { Search, Filter, Eye, FileText } from "lucide-react";
-import Carousel from 'react-bootstrap/Carousel';
+// replaced react-bootstrap Carousel with Swiper for better responsive behavior
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, A11y } from 'swiper';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import './AllRequestsPage.css'; // <-- IMPORT OUR NEW CSS FILE
 import { listenToRequests } from '../services/firestoreService';
 import GlobalModal from '../components/GlobalModal';
@@ -70,19 +75,30 @@ export default function AllRequestsPage() {
         return acc;
     }, {});
 
-    // We'll use react-bootstrap's Carousel for improved accessibility and SSR friendliness
-    const GroupCarousel = ({ children, groupKey }) => {
-        // react-bootstrap Carousel expects direct child <Carousel.Item> nodes; we'll wrap each card
-        return (
-            <Carousel crossfade={true} interval={null} controls={true} indicators={false} variant="dark" className="mb-2">
+    // Use Swiper for grouped carousel; it renders accessible slides and handles responsive breakpoints
+    const GroupCarousel = ({ children, groupKey }) => (
+        <div className="group-carousel mb-2">
+            <Swiper
+                modules={[Navigation, Pagination, A11y]}
+                spaceBetween={16}
+                slidesPerView={1}
+                navigation
+                pagination={{ clickable: true }}
+                breakpoints={{
+                    640: { slidesPerView: 1 },
+                    900: { slidesPerView: 2 },
+                    1200: { slidesPerView: 3 }
+                }}
+                a11y={{ enabled: true }}
+            >
                 {React.Children.map(children, (child, idx) => (
-                    <Carousel.Item key={`${groupKey}-${idx}`} className="carousel-slide">
+                    <SwiperSlide key={`${groupKey}-${idx}`} className="carousel-slide">
                         <div style={{ display: 'flex', justifyContent: 'center' }}>{child}</div>
-                    </Carousel.Item>
+                    </SwiperSlide>
                 ))}
-            </Carousel>
-        );
-    };
+            </Swiper>
+        </div>
+    );
 
     // simple HTML sanitizer: strip tags
     const stripHtml = (input) => {

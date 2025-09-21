@@ -82,3 +82,7 @@ tbody tr:hover { background-color: #F8FAFC; }
 .person-card-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
 .person-join { font-size:0.8rem; color:var(--color-text-light); }
 .person-card-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+/* Swiper adjustments */
+.personnel-cards-swiper .swiper-slide { display: flex; justify-content: center; }
+.personnel-cards-swiper .swiper { padding-bottom: 12px; }

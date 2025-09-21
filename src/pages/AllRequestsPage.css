@@ -375,3 +375,7 @@ tbody tr:hover { background-color: #F8FAFC; }
 
 .empty-state { text-align: center; padding: 2rem; color: var(--color-text-light); }
 .empty-state svg { margin: 0 auto 0.5rem auto; }
+
+/* Swiper group carousel tweaks */
+.group-carousel .swiper-slide { display: flex; justify-content: center; }
+.group-carousel .swiper { padding-bottom: 12px; }
