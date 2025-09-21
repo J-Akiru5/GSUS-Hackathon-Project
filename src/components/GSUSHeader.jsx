@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSidebar } from '../contexts/SidebarContext';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './GSUSHeader.css';
@@ -57,10 +58,10 @@ export default function GSUSHeader() {
         <div className="gsus-section-left" />
       </div>
 
-      {/* Top-right datetime pill pinned to the top-right of the header */}
-      <div className="gsus-right-top">
+      {/* Top-right datetime pill: rendered into document.body so it's always visible regardless of header/banner state */}
+      {typeof document !== 'undefined' && createPortal(
         <div className="datetime-pill" aria-live="polite">{now.toLocaleString()}</div>
-      </div>
+      , document.body)}
     </header>
   );
 }

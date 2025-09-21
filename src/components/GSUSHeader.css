@@ -104,16 +104,6 @@
   }
 }
 /* top-right datetime pill pinned to the viewport top-right inside header */
-.gsus-right-top {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.75rem;
-  pointer-events: auto;
-  z-index: 60;
-  display: flex;
-  align-items: center;
-}
-
 /* bottom-right cluster inside the banner */
 .gsus-right-bottom {
   position: absolute;
@@ -226,13 +216,24 @@ body.hide-banner .gsus-header {
   pointer-events: auto;
 }
 .datetime-pill {
-  background: rgba(2,6,23,0.08);
-  padding: 0.6rem 0.9rem;
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 99999; /* very high so it remains above all UI layers */
+  background: rgba(255,255,255,0.95);
+  padding: 0.45rem 0.8rem;
   border-radius: 999px;
   font-size: 0.95rem;
   color: var(--color-text-dark);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.08);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
+  pointer-events: auto;
+}
+
+/* Reduce overlap on small screens */
+@media (max-width: 720px) {
+  .datetime-pill { top: 8px; right: 8px; font-size: 0.85rem; }
 }
 
 .gsus-section-slot {
