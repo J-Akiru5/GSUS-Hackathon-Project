@@ -224,35 +224,52 @@ body,
 /* Layout push logic: on desktop the sidebar participates in layout by default (pushes header and content) */
 @media (min-width: 901px) {
   .main-layout {
-    margin-left: var(--sidebar-width);
+    /* don't double-offset the layout; app container will be positioned relative to the sidebar */
+    margin-left: 0;
     transition: margin-left 240ms var(--transition-medium);
-    }
+  }
     
     .gsus-banner-inner {
-      margin-left: var(--sidebar-width);
-      max-width: calc(var(--content-max-width) - var(--sidebar-width));
+      margin-left: calc(var(--sidebar-width) + var(--layout-side-gap));
+      max-width: calc(100vw - var(--sidebar-width) - var(--layout-side-gap));
       transition: margin-left 240ms var(--transition-medium);
     }
     
     .gsus-header-bar {
-      left: var(--sidebar-width);
-      max-width: calc(var(--content-max-width) - var(--sidebar-width));
+      left: calc(var(--sidebar-width) + var(--layout-side-gap));
+      max-width: calc(100vw - var(--sidebar-width) - var(--layout-side-gap));
+    }
+
+    /* Position the app container to start right after the sidebar (plus small gap)
+       and use the remaining viewport width so there's no large right gap. */
+    .app-container {
+      margin-left: calc(var(--sidebar-width) + var(--layout-side-gap));
+      width: calc(100vw - var(--sidebar-width) - var(--layout-side-gap));
+      max-width: none; /* allow full use of remaining space */
+      padding: 0 var(--layout-side-gap);
     }
     
     /* compact sidebar override */
     html.sidebar-compact .main-layout {
-      margin-left: var(--sidebar-compact-width);
+      margin-left: 0;
     }
-    
+
     html.sidebar-compact .gsus-banner-inner {
-      margin-left: var(--sidebar-compact-width);
-      max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+      margin-left: calc(var(--sidebar-compact-width) + var(--layout-side-gap));
+      max-width: calc(100vw - var(--sidebar-compact-width) - var(--layout-side-gap));
     }
-    
+
     html.sidebar-compact .gsus-header-bar {
-      left: var(--sidebar-compact-width);
-      max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
-  }
+      left: calc(var(--sidebar-compact-width) + var(--layout-side-gap));
+      max-width: calc(100vw - var(--sidebar-compact-width) - var(--layout-side-gap));
+    }
+
+    html.sidebar-compact .app-container {
+      margin-left: calc(var(--sidebar-compact-width) + var(--layout-side-gap));
+      width: calc(100vw - var(--sidebar-compact-width) - var(--layout-side-gap));
+      max-width: none;
+      padding: 0 var(--layout-side-gap);
+    }
 }
 
 /* --- Components --- */
