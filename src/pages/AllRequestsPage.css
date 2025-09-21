@@ -178,6 +178,10 @@
 .card-left, .card-right { overflow: hidden; }
 .card-requester, .card-type { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 
+/* react-bootstrap carousel slide overrides for our card layout */
+.carousel-slide { display: flex; justify-content: center; }
+.carousel-slide .request-card { margin: 0 auto; }
+
 .card-left {
     display: flex;
     flex-direction: column;

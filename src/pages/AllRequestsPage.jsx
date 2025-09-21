@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Search, Filter, Eye, FileText } from "lucide-react";
+import Carousel from 'react-bootstrap/Carousel';
 import './AllRequestsPage.css'; // <-- IMPORT OUR NEW CSS FILE
 import { listenToRequests } from '../services/firestoreService';
 import GlobalModal from '../components/GlobalModal';
@@ -67,28 +68,17 @@ export default function AllRequestsPage() {
         return acc;
     }, {});
 
-    // Small carousel helper: left/right buttons and scrollIntoView behavior
+    // We'll use react-bootstrap's Carousel for improved accessibility and SSR friendliness
     const GroupCarousel = ({ children, groupKey }) => {
-        const ref = React.useRef(null);
-
-        const scroll = (dir) => {
-            const el = ref.current;
-            if (!el) return;
-            const cardWidth = el.querySelector('.request-card')?.getBoundingClientRect().width || 360;
-            const scrollAmount = dir === 'left' ? -Math.round(cardWidth + 12) : Math.round(cardWidth + 12);
-            el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        };
-
+        // react-bootstrap Carousel expects direct child <Carousel.Item> nodes; we'll wrap each card
         return (
-            <div className="carousel-wrapper">
-                <div className="carousel-controls" style={{ marginRight: 6 }}>
-                    <button className="carousel-arrow" onClick={() => scroll('left')} aria-label={`Scroll ${groupKey} left`}>&lt;</button>
-                    <button className="carousel-arrow" onClick={() => scroll('right')} aria-label={`Scroll ${groupKey} right`}>&gt;</button>
-                </div>
-                <div className="group-cards" ref={ref}>
-                    {children}
-                </div>
-            </div>
+            <Carousel interval={null} controls={true} indicators={false} variant="dark" className="mb-2">
+                {React.Children.map(children, (child, idx) => (
+                    <Carousel.Item key={`${groupKey}-${idx}`} className="carousel-slide">
+                        <div style={{ display: 'flex', justifyContent: 'center' }}>{child}</div>
+                    </Carousel.Item>
+                ))}
+            </Carousel>
         );
     };
 
