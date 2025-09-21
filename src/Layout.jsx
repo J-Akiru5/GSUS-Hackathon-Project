@@ -13,7 +13,7 @@ import ProfilePage from './pages/ProfilePage';
 import ChatPage from './pages/ChatPage';
 import GSUSHeader from './components/GSUSHeader'; // <-- new import
 import DivisionsPage from './pages/DivisionsPage';
-import DivisionDetail from './pages/DivisionDetail';
+import DivisionDetail from './pages/DivisionDetail.jsx';
 
 // This component is now safely inside the Router, so useLocation will work.
 export default function Layout() {
