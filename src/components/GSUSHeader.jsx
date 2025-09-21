@@ -58,10 +58,7 @@ export default function GSUSHeader() {
                 <div className="header-personnel">
                   <div className="personnel-label">Divisions</div>
                   <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
-                  {/* Hide Add Division on the All Requests page (/requests) - mirrors personnel logic */}
-                  {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                    <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
-                  )}
+                  {/* Button removed: SectionHeader will portal the Add Division action into the banner */}
                 </div>
               ) : (
                 <div className="header-personnel">
@@ -92,9 +89,7 @@ export default function GSUSHeader() {
                   <div className="header-personnel">
                     <div className="personnel-label">Divisions</div>
                     <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
-                    {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                      <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
-                    )}
+                    {/* Button removed: SectionHeader will portal the Add Division action into the header */}
                   </div>
                   <div className="gsus-actions-slot" />
                 </>
