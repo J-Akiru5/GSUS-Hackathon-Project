@@ -163,6 +163,32 @@
     padding: 4px;
 }
 
+/* ensure day/week columns are ready for absolutely positioned children */
+.week-column, .day-column { position: relative; }
+
+/* event blocks for week/day views */
+.event-block {
+    box-sizing: border-box;
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: var(--color-white);
+    overflow: hidden;
+    font-size: 0.85rem;
+    display:flex;
+    flex-direction:column;
+    gap: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.06);
+}
+.event-block .event-block-time { font-size: 0.75rem; font-weight:700; opacity:0.95; }
+.event-block .event-block-title { font-size: 0.9rem; font-weight:600; white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+
+/* slightly dim default (when event-default) */
+.event-block.event-default { background: var(--color-surface); color: var(--color-text-default); border: 1px solid var(--color-border); }
+.event-block.event-venue { background: #157F4A; }
+.event-block.event-vehicle { background: #0EA5E9; }
+.event-block.event-equipment { background: #F97316; }
+
 /* Day view styles */
 .day-view {
     display: flex;

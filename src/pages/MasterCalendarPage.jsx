@@ -308,6 +308,66 @@ export default function MasterCalendarPage() {
         const am = h < 12; const hour = ((h + 11) % 12) + 1; return `${hour}:00 ${am ? 'AM' : 'PM'}`;
     };
 
+    // helpers for event layout
+    const hhmmToMinutes = (hhmm) => {
+        if (!hhmm) return null;
+        const parts = String(hhmm).split(':');
+        if (parts.length < 2) return null;
+        const hh = parseInt(parts[0], 10);
+        const mm = parseInt(parts[1], 10);
+        if (isNaN(hh) || isNaN(mm)) return null;
+        return hh * 60 + mm;
+    };
+
+    // compute layout for events within a single day column
+    // returns array of blocks with top(%), height(%), left(%), width(%) and event reference
+    const computeDayEventLayout = (eventsForDay) => {
+        // eventsForDay: [{ id, startTime, endTime, ... }]
+        // convert to minutes and filter
+        const evs = (eventsForDay || []).map(ev => {
+            const startMin = hhmmToMinutes(ev.startTime) ?? null;
+            const endMin = hhmmToMinutes(ev.endTime) ?? null;
+            return { ev, startMin, endMin };
+        }).filter(x => x.startMin !== null || x.endMin !== null);
+
+        // assume a default 60-minute duration if no end provided
+        evs.forEach(x => { if (x.startMin !== null && x.endMin === null) x.endMin = x.startMin + 60; });
+
+        // sort by start
+        evs.sort((a, b) => (a.startMin || 0) - (b.startMin || 0));
+
+        // greedy grouping for overlaps: produce columns sets
+        const columns = [];
+        evs.forEach(item => {
+            let placed = false;
+            for (let c = 0; c < columns.length; c++) {
+                const col = columns[c];
+                // check if item overlaps with last in this column
+                const last = col[col.length - 1];
+                if (item.startMin >= last.endMin) {
+                    col.push(item);
+                    placed = true;
+                    break;
+                }
+            }
+            if (!placed) columns.push([item]);
+        });
+
+        // flatten with column index
+        const result = [];
+        const totalCols = columns.length || 1;
+        columns.forEach((col, colIndex) => {
+            col.forEach(item => {
+                const topPct = ((item.startMin - (workHours.start * 60)) / ((workHours.end - workHours.start) * 60)) * 100;
+                const heightPct = ((item.endMin - item.startMin) / ((workHours.end - workHours.start) * 60)) * 100;
+                const leftPct = (colIndex / totalCols) * 100;
+                const widthPct = (1 / totalCols) * 100;
+                result.push({ event: item.ev, topPct, heightPct, leftPct, widthPct });
+            });
+        });
+        return result;
+    };
+
     const renderMonthView = () => (
         <div className="calendar-grid">
             {dayNames.map((day) => (<div key={day} className="day-header">{day}</div>))}
@@ -358,27 +418,28 @@ export default function MasterCalendarPage() {
                     <div className="time-column">
                         {hours.map(h => <div key={h} className="time-slot-label">{formatHourLabel(h)}</div>)}
                     </div>
-                    {weekDays.map(d => (
-                        <div key={d.toISOString()} className="week-column">
-                            {hours.map(h => {
-                                const evs = getEventsForDate(d).filter(ev => {
-                                    if (!ev.startTime) return false;
-                                    const hour = parseInt(ev.startTime.split(':')[0], 10);
-                                    return hour === h;
-                                });
-                                return (
-                                    <div key={`${d.toISOString()}-${h}`} className="week-slot">
-                                        {evs.map(ev => (
-                                            <div key={ev.id} className={`event-item ${getTypeProps(ev.type).className}`} onClick={() => setSelectedEvent(ev)}>
-                                                <span className="slot-time">{ev.startTime}</span>
-                                                <span>{ev.title}</span>
-                                            </div>
-                                        ))}
+                    {weekDays.map(d => {
+                        const eventsForDay = getEventsForDate(d);
+                        const blocks = computeDayEventLayout(eventsForDay);
+                        return (
+                            <div key={d.toISOString()} className="week-column" style={{ position: 'relative' }}>
+                                <div className="day-slots">
+                                    {hours.map(h => (<div key={h} className="week-slot" />))}
+                                </div>
+                                {blocks.map(b => (
+                                    <div
+                                        key={b.event.id}
+                                        className={`event-block ${getTypeProps(b.event.type).className}`}
+                                        style={{ top: `${b.topPct}%`, height: `${b.heightPct}%`, left: `${b.leftPct}%`, width: `${b.widthPct}%`, position: 'absolute' }}
+                                        onClick={() => setSelectedEvent(b.event)}
+                                    >
+                                        <div className="event-block-time">{b.event.startTime}{b.event.endTime ? ` - ${b.event.endTime}` : ''}</div>
+                                        <div className="event-block-title">{b.event.title}</div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    ))}
+                                ))}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         );
@@ -388,6 +449,8 @@ export default function MasterCalendarPage() {
         const day = currentDate;
         const hours = [];
         for (let h = workHours.start; h <= workHours.end; h++) hours.push(h);
+        const eventsForDay = getEventsForDate(day);
+        const blocks = computeDayEventLayout(eventsForDay);
         return (
             <div className="day-view">
                 <div className="day-header-row">
@@ -397,24 +460,19 @@ export default function MasterCalendarPage() {
                     <div className="time-column">
                         {hours.map(h => <div key={h} className="time-slot-label">{formatHourLabel(h)}</div>)}
                     </div>
-                    <div className="day-column">
-                        {hours.map(h => {
-                            const evs = getEventsForDate(day).filter(ev => {
-                                if (!ev.startTime) return false;
-                                const hour = parseInt(ev.startTime.split(':')[0], 10);
-                                return hour === h;
-                            });
-                            return (
-                                <div key={h} className="day-slot">
-                                    {evs.map(ev => (
-                                        <div key={ev.id} className={`event-item ${getTypeProps(ev.type).className}`} onClick={() => setSelectedEvent(ev)}>
-                                            <span className="slot-time">{ev.startTime}</span>
-                                            <span>{ev.title}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            );
-                        })}
+                    <div className="day-column" style={{ position: 'relative' }}>
+                        {hours.map(h => (<div key={h} className="day-slot" />))}
+                        {blocks.map(b => (
+                            <div
+                                key={b.event.id}
+                                className={`event-block ${getTypeProps(b.event.type).className}`}
+                                style={{ top: `${b.topPct}%`, height: `${b.heightPct}%`, left: `${b.leftPct}%`, width: `${b.widthPct}%`, position: 'absolute' }}
+                                onClick={() => setSelectedEvent(b.event)}
+                            >
+                                <div className="event-block-time">{b.event.startTime}{b.event.endTime ? ` - ${b.event.endTime}` : ''}</div>
+                                <div className="event-block-title">{b.event.title}</div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
