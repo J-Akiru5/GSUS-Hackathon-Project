@@ -68,13 +68,34 @@ export default function DivisionsPage() {
 		<div className="divisions-page">
 			<div className="section-header section-header--active divisions-header">
 				<div className="divisions-header-left">
-					<h2 className="divisions-title">Divisions</h2>
-					<p className="muted">Manage GSO divisions and teams</p>
+          <h2 className="divisions-title">Divisions Management</h2>
+          <p className="muted">Overview and management of all GSO divisions</p>
 				</div>
 				<div className="divisions-actions">
 					<button className="btn btn-primary" onClick={handleCreate}>Add Division</button>
 				</div>
 			</div>
+
+      {/* top stat tiles */}
+      <div className="divisions-stats-row container">
+        {(() => {
+          const totalDivisions = divisions.length;
+          const totalPersonnel = divisions.reduce((s, d) => s + ((d.stats && d.stats.personnel) || 0), 0);
+          const activeRequests = divisions.reduce((s, d) => s + ((d.stats && d.stats.activeRequests) || 0), 0);
+          const monthlyCompleted = divisions.reduce((s, d) => s + ((d.stats && d.stats.completedThisMonth) || 0), 0);
+          return [
+            { title: 'Total Divisions', value: totalDivisions },
+            { title: 'Total Personnel', value: totalPersonnel },
+            { title: 'Active Requests', value: activeRequests },
+            { title: 'Monthly Completed', value: monthlyCompleted },
+          ];
+        })().map((t, i) => (
+          <div key={i} className="stat-tile card">
+            <div className="stat-title">{t.title}</div>
+            <div className="stat-value">{t.value}</div>
+          </div>
+        ))}
+      </div>
 
 			<div className="divisions-content page-content">
 				{loading && <div className="muted">Loading divisions…</div>}
@@ -84,16 +105,20 @@ export default function DivisionsPage() {
 							{divisions.length === 0 && !loading && <div className="muted">No divisions yet — click Add Division to create one.</div>}
 							{divisions.map((d) => (
 						<article key={d.id || d.name} className="division-card" onClick={() => navigate(`/divisions/${d.id}`)}>
-							<header className="division-card-header">
-								<div className="division-avatar">{(d.name || '').split(' ').map(s => s[0]).slice(0,2).join('')}</div>
-								<div className="division-title">
-									<h3>{d.name}</h3>
-									<div className="division-sub">{d.id}</div>
-								</div>
-							</header>
+                  <header className="division-card-header large">
+                    <div className="division-avatar large">{(d.name || '').split(' ').map(s => s[0]).slice(0, 2).join('')}</div>
+                    <div className="division-main">
+                      <h3 className="division-main-title">{d.name}</h3>
+                      <div className="division-sub">{d.id}</div>
+                      <div className="division-lead">
+                        <div className="lead-name">{d.leadName || ''}</div>
+                        <div className="lead-role muted">{d.leadRole || ''}</div>
+                      </div>
+                    </div>
+                  </header>
 
-							<div className="division-body">
-								<p className="division-desc">{d.description}</p>
+                  <div className="division-body">
+                    <p className="division-desc">{d.description}</p>
 
 								<div className="division-stats">
 									<div className="stat">
@@ -114,10 +139,9 @@ export default function DivisionsPage() {
 									</div>
 								</div>
 
-								<div className="division-actions">
-									<button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); navigate(`/divisions/${d.id}`); }}>View</button>
-									<button className="btn" onClick={(e) => { e.stopPropagation(); handleEdit(d); }}>Edit</button>
-									<button className="btn btn-danger" onClick={(e) => { e.stopPropagation(); handleDelete(d.id); }}>Delete</button>
+                    <div className="division-actions actions-row">
+                      <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); navigate(`/divisions/${d.id}`); }}>View Details</button>
+                      <button className="btn btn-primary" onClick={(e) => { e.stopPropagation(); handleEdit(d); }}>Manage</button>
 								</div>
 							</div>
 						</article>

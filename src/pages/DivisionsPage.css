@@ -23,9 +23,9 @@
 .division-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: calc(var(--border-radius) - 2px);
+  border-radius: 12px;
   box-shadow: var(--shadow-sm);
-  padding: 1rem;
+  padding: 0.75rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -34,19 +34,91 @@
 }
 .division-card:hover { box-shadow: var(--shadow-md); transform: translateY(-4px); }
 
-.division-card-header { display:flex; align-items:center; gap:0.75rem; }
-.division-avatar { width:44px; height:44px; border-radius:10px; background: linear-gradient(180deg, rgba(16,185,129,0.08), rgba(16,185,129,0.04)); display:flex; align-items:center; justify-content:center; font-weight:700; color:var(--color-primary); }
-.division-title h3 { margin:0; font-size:1.05rem; }
-.division-sub { font-size:0.8rem; color:var(--color-text-muted); }
+.division-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
 
-.division-desc { color:var(--color-text-muted); margin:0.25rem 0; }
+.division-card-header.large {
+  padding: 0.5rem 0
+}
+
+.division-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.04));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.division-avatar.large {
+  width: 72px;
+  height: 72px
+}
+
+.division-title h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.division-sub {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-top: 4px
+}
+
+.division-desc {
+  color: var(--color-text-muted);
+  margin: 0.25rem 0 0.75rem 0;
+}
 
 .division-stats { display:flex; gap:0.75rem; flex-wrap:wrap; }
 .division-stats .stat { flex:1 1 25%; text-align:center; }
 .division-stats .value { font-weight:700; color:var(--color-text-dark); }
 .division-stats .label { font-size:0.8rem; color:var(--color-text-muted); }
 
-.division-actions { display:flex; gap:0.5rem; }
+.division-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* header & stat tiles */
+.divisions-title {
+  margin: 0;
+  font-size: 26px;
+}
+
+.divisions-stats-row.container {
+  display: flex;
+  gap: 1rem;
+  margin: 12px 0 18px 0;
+}
+
+.stat-tile.card {
+  flex: 1 1 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--color-surface);
+}
+
+.stat-title {
+  color: var(--color-text-muted);
+  font-size: 0.85rem
+}
+
+.stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
 
 .muted { color: var(--color-text-muted); }
 .error { color: var(--color-danger); }
