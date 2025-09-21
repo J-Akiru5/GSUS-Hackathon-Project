@@ -134,6 +134,31 @@ export function listenToUsers(callback) {
 }
 
 /**
+ * Real-time listener for the 'feedback' collection.
+ * Exposes an array of feedback documents ordered by submittedAt descending.
+ * @param {(data:Array<Object>, error:Error|null)=>void} callback
+ * @returns {() => void} unsubscribe
+ */
+export function listenToFeedback(callback) {
+  try {
+    const q = query(collection(db, 'feedback'), orderBy('submittedAt', 'desc'));
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => callback(mapSnapshot(snap), null),
+      (error) => {
+        console.error('listenToFeedback error:', error);
+        callback([], error);
+      }
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.error('listenToFeedback failed:', err);
+    callback([], err);
+    return () => { };
+  }
+}
+
+/**
  * Real-time listener for the 'bookings' collection.
  * @param {(data:Array<Object>, error:Error|null)=>void} callback
  * @returns {() => void} unsubscribe
@@ -185,6 +210,25 @@ export async function updateBooking(id, payload = {}) {
     });
   } catch (err) {
     console.error('updateBooking failed:', err);
+    throw err;
+  }
+}
+
+/**
+ * Update the status of a booking document.
+ * @param {string} bookingId - The ID of the booking to update
+ * @param {string} newStatus - The new status to set
+ * @returns {Promise<void>}
+ */
+export async function updateBookingStatus(bookingId, newStatus) {
+  try {
+    const ref = doc(db, 'bookings', bookingId);
+    await updateDoc(ref, {
+      status: newStatus,
+      updatedAt: serverTimestamp()
+    });
+  } catch (err) {
+    console.error('updateBookingStatus failed:', err);
     throw err;
   }
 }
@@ -246,16 +290,52 @@ export async function deleteRequest(id) {
  * @param {string} newStatus
  * @returns {Promise<void>}
  */
-export async function updateRequestStatus(requestId, newStatus) {
+export async function updateRequestStatus(requestId, newStatus, assignedTo = null) {
   try {
     const ref = doc(db, "requests", requestId);
     await updateDoc(ref, {
       status: newStatus,
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
+      ...(assignedTo && { assignedTo }),
+      ...(newStatus === 'In Progress' && { startedAt: serverTimestamp() }),
+      ...(newStatus === 'Completed' && { completedAt: serverTimestamp() })
     });
   } catch (err) {
     console.error("updateRequestStatus failed:", err);
     throw err;
+  }
+}
+
+/**
+ * Real-time listener for requests assigned to specific personnel
+ * @param {string} personnelId - The ID of the personnel to filter by
+ * @param {(data:Array<Object>, error:Error|null)=>void} callback
+ * @returns {() => void} unsubscribe
+ */
+export function listenToPersonnelTasks(personnelId, callback) {
+  try {
+    if (!personnelId) {
+      callback([], new Error('Personnel ID required'));
+      return () => { };
+    }
+    const q = query(
+      collection(db, "requests"),
+      where("assignedTo", "==", personnelId),
+      orderBy("updatedAt", "desc")
+    );
+    const unsubscribe = onSnapshot(
+      q,
+      (snap) => callback(mapSnapshot(snap), null),
+      (error) => {
+        console.error("listenToPersonnelTasks error:", error);
+        callback([], error);
+      }
+    );
+    return unsubscribe;
+  } catch (err) {
+    console.error("listenToPersonnelTasks failed:", err);
+    callback([], err);
+    return () => { };
   }
 }
 

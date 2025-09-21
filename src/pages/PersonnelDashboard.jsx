@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { Clock, CheckCircle, Play, MessageSquare, User, Calendar, MapPin } from 'lucide-react';
-import './PersonnelDashboard.css'; // <-- IMPORT OUR NEW CSS FILE
-import { listenToRequests } from '../services/firestoreService';
-import { formatDateShort, toDate } from '../utils/dateHelpers';
+import './PersonnelDashboard.css';
+import { listenToRequests, listenToBookings, updateRequestStatus, updateBookingStatus } from '../services/firestoreService';
+import { formatDateShort } from '../utils/dateHelpers';
 import { useAuth } from '../hooks/useAuth';
 import SectionHeader from '../components/SectionHeader';
 
@@ -23,53 +23,94 @@ const PriorityBadge = ({ priority }) => {
 export default function PersonnelDashboard() {
     const { user } = useAuth();
     const [requests, setRequests] = useState([]);
+    const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [updatingTaskId, setUpdatingTaskId] = useState(null);
 
+    // Listen to both requests and bookings
     useEffect(() => {
         setLoading(true);
-        const unsubscribe = listenToRequests((data, err) => {
-            if (err) {
-                setError(err);
-                setLoading(false);
+
+        // Subscribe to requests
+        const unsubRequests = listenToRequests((data, error) => {
+            if (error) {
+                setError(error.message);
                 return;
             }
             setRequests(data || []);
             setLoading(false);
         });
-        return () => { if (unsubscribe) unsubscribe(); };
+
+        // Subscribe to bookings
+        const unsubBookings = listenToBookings((data, error) => {
+            if (error) {
+                setError(error.message);
+                return;
+            }
+            setBookings(data || []);
+            setLoading(false);
+        });
+
+        return () => {
+            unsubRequests();
+            unsubBookings();
+        };
     }, []);
 
-    // Derive tasks assigned to current user (match by assignedTo or assignedTeam)
+    // Filter tasks assigned to current personnel
     const tasks = useMemo(() => {
-        if (!requests) return [];
-        const uname = user?.name?.toLowerCase() || '';
-        const urole = user?.role?.toLowerCase() || '';
-        return requests
-            .filter(r => {
-                const assigned = (r.assignedTo || r.assigned || r.assignedUser || '').toString().toLowerCase();
-                // match by exact name, role, or team token
-                return !!assigned && (assigned.includes(uname) || assigned.includes(urole) || assigned.includes('personnel'));
-            })
-            .map((r, idx) => ({
-                id: r.id || idx,
-                title: r.title || r.serviceType || r.summary || 'Task',
-                type: r.type || r.category || r.serviceType || 'General',
-                status: r.status || 'Assigned',
-                assignedDate: r.submittedAt || r.dateSubmitted || r.createdAt || r.details?.submittedAt || null,
-                requester: r.requesterName || r.requester || r.createdBy || r.userEmail || '—',
-                priority: r.priority || 'Medium',
-                description: r.description || r.notes || '',
-                dueDate: r.dueDate || r.expectedCompletion || null,
-                location: r.location || r.resourceLocation || ''
-            }));
-    }, [requests, user]);
+        if (!user) return [];
+
+        const assignedRequests = requests.filter(r =>
+            r.assignedTo === user.id ||
+            r.assignedPersonnel === user.id ||
+            (r.personnel && r.personnel.includes(user.id))
+        ).map(r => ({
+            ...r,
+            type: 'request',
+            title: r.serviceType || r.title || 'Service Request'
+        }));
+
+        const assignedBookings = bookings.filter(b =>
+            b.assignedTo === user.id ||
+            b.assignedPersonnel === user.id ||
+            (b.personnel && b.personnel.includes(user.id))
+        ).map(b => ({
+            ...b,
+            type: 'booking',
+            title: b.serviceType || b.title || 'Booking Request'
+        }));
+
+        return [...assignedRequests, ...assignedBookings].sort((a, b) => {
+            const dateA = a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+            const dateB = b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+            return dateB - dateA;
+        });
+    }, [requests, bookings, user]);
 
     const stats = {
         assigned: tasks.filter(t => t.status === "Assigned").length,
         inProgress: tasks.filter(t => t.status === "In Progress").length,
         awaitingFeedback: tasks.filter(t => t.status === "Awaiting Feedback").length,
         completed: tasks.filter(t => t.status === "Completed").length,
+    };
+
+    const handleStatusUpdate = async (task, newStatus) => {
+        if (updatingTaskId) return; // Prevent multiple updates
+        setUpdatingTaskId(task.id);
+        try {
+            if (task.type === 'request') {
+                await updateRequestStatus(task.id, newStatus);
+            } else {
+                // For bookings, preserve all fields and just update status
+                await updateBookingStatus(task.id, newStatus);
+            }
+        } catch (err) {
+            setError('Failed to update status: ' + err.message);
+        } finally {
+            setUpdatingTaskId(null);
+        }
     };
 
     return (
@@ -111,9 +152,34 @@ export default function PersonnelDashboard() {
                                 <span className="task-type-badge">{task.type}</span>
                             </div>
                             <div className="task-actions">
-                                {task.status === "Assigned" && <button className="btn btn-primary"><Play size={14} /> Start Task</button>}
-                                {task.status === "In Progress" && <button className="btn btn-primary"><MessageSquare size={14} /> Request Feedback</button>}
-                                <button className="btn btn-secondary"><CheckCircle size={14} /> Mark as Completed</button>
+                                {task.status === "Assigned" && (
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => handleStatusUpdate(task, "In Progress")}
+                                        disabled={updatingTaskId === task.id}
+                                    >
+                                        <Play size={14} /> Start Task
+                                    </button>
+                                )}
+                                {task.status === "In Progress" && (
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => handleStatusUpdate(task, "Awaiting Feedback")}
+                                        disabled={updatingTaskId === task.id}
+                                    >
+                                        <MessageSquare size={14} /> Request Feedback
+                                    </button>
+                                )}
+                                {task.status !== "Completed" && (
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => handleStatusUpdate(task, "Completed")}
+                                        disabled={updatingTaskId === task.id}
+                                    >
+                                        <CheckCircle size={14} /> Mark as Completed
+                                    </button>
+                                )}
+                                {updatingTaskId === task.id && <span className="status-updating">Updating...</span>}
                             </div>
                         </div>
                     ))}

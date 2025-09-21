@@ -181,27 +181,27 @@ body.sidebar-open .sidebar.offcanvas {
 /* --- Components --- */
 .card {
   background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
-    padding: 1.25rem;
+  padding: 1.25rem;
     border-radius: calc(var(--border-radius) - 2px);
     box-shadow: var(--shadow-sm);
     border: 1px solid rgba(16, 185, 129, 0.12);
-      transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-    }
-    
-    .card:hover {
-      box-shadow: var(--shadow-md);
-      transform: translateY(-4px);
+    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  }
+  
+  .card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
 }
 
 .btn {
   padding: 0.6rem 1rem;
-    font-size: 0.95rem;
+  font-size: 0.95rem;
   font-weight: 600;
   border-radius: 10px;
   border: 1px solid transparent;
   cursor: pointer;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-    display: inline-flex;
+  display: inline-flex;
     align-items: center;
     gap: 0.5rem;
   }
@@ -263,7 +263,7 @@ body.sidebar-open .sidebar.offcanvas {
 }
 
 .status-badge {
-    display: inline-block;
+  display: inline-block;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-weight: 500;

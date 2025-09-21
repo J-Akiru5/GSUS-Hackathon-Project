@@ -55,8 +55,7 @@ function App() {
     <Routes>
       <Route path="/" element={<LoginPage />} />
 
-      {/* Admin Protected Routes */}
-      {/* <Route element={<ProtectedRoute allowedRoles={['gso_head']} />}> */}
+      {/* Admin Routes */}
       <Route element={<AdminLayout />}>
           <Route path="/dashboard" element={<GSODashboard />} />
           <Route path="/requests" element={<AllRequestsPage />} />
@@ -66,15 +65,12 @@ function App() {
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
       </Route>
-      {/* </Route> */}
 
-      {/* Personnel Protected Routes */}
-      {/* <Route element={<ProtectedRoute allowedRoles={['personnel']} />}> */}
+      {/* Personnel Routes */}
       <Route element={<PersonnelLayout />}>
         <Route path="/my-tasks" element={<PersonnelDashboard />} />
         {/* Add routes for My Schedule and Profile here if you build them */}
       </Route>
-      {/* </Route> */}
     </Routes>
   );
 }

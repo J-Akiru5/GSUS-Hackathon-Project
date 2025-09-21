@@ -35,7 +35,7 @@
 }
 
 .gsus-banner {
-  width: 50%;
+  width: 30%;
   display: flex;
   justify-content: center;
   height: 100%;
@@ -50,7 +50,7 @@
 }
 .gsus-banner-inner {
   width: 100%;
-  max-width: 1260px;
+  max-width: 1400px;
   height: 100%;
   position: sticky;
   top: 0;

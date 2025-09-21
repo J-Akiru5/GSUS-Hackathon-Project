@@ -7,6 +7,17 @@ import './AnalyticsPage.css';
 import SectionHeader from '../components/SectionHeader';
 import { listenToRequests, listenToFeedback } from '../services/firestoreService';
 
+// Helper to format various date-like inputs into a short, consistent label for charts
+const formatDateKey = (input) => {
+  if (!input) return 'Unknown';
+  let d = input;
+  // Firestore Timestamp
+  if (typeof input === 'object' && typeof input.toDate === 'function') d = input.toDate();
+  const dt = new Date(d);
+  if (isNaN(dt)) return 'Unknown';
+  return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+};
+
 // Initialize empty arrays for feedback and requestRatings
 const initialRequestRatings = [];
 const initialFeedback = [];
