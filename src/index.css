@@ -101,8 +101,9 @@ body.sidebar-open .sidebar.offcanvas {
 }
 .app-container {
   width: 100%;
-  max-width: none;
-  margin: 0;
+  /* keep a max content width but offset to the right to account for fixed sidebar */
+  max-width: calc(var(--content-max-width) - var(--sidebar-width));
+  margin-left: var(--sidebar-width);
   padding: 0 1rem;
 }
 
