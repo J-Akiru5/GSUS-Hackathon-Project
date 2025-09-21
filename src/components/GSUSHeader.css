@@ -23,10 +23,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-    /* children flush to the right */
   gap: 1rem;
   position: absolute;
-    /* keep header height unchanged */
   right: 0;
   left: auto;
   top: 0;
@@ -35,28 +33,18 @@
 }
 
 .gsus-banner {
-  width: 30%;
-  display: flex;
-  justify-content: center;
+  width: 100%;
   height: 100%;
   overflow: hidden;
-  margin: 0 auto;
 }
 
-@media (max-width: 720px) {
-  .gsus-banner {
-    width: 90%;
-  }
-}
-.gsus-banner-inner {
+.gsus-banner-img {
   width: 100%;
-  max-width: 1400px;
   height: 100%;
-  position: sticky;
-  top: 0;
-  z-index: 60;
+  display: block;
+  object-fit: cover;
+  object-position: center;
 }
-.gsus-banner-img { width: 100%; height: 100%; display: block; object-fit: cover; object-position: center; }
 
 /* When a page requests the banner hidden (e.g. calendar/chat), hide the banner area */
 body.hide-banner .gsus-banner,

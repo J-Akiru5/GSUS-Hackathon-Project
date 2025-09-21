@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSidebar } from '../contexts/SidebarContext';
 import { NavLink } from 'react-router-dom';
 import './GSUSHeader.css';
-import bannerSrc from '../assets/GSUS_Header.svg';
+import bannerSrc from '../assets/GSUSBanner.svg';
 
 export default function GSUSHeader() {
   const [now, setNow] = useState(new Date());
@@ -17,9 +17,7 @@ export default function GSUSHeader() {
     <header className="gsus-header">
       {/* Banner image visible at the top of the header */}
       <div className="gsus-banner">
-        <div className="gsus-banner-inner">
-          <img src={bannerSrc} alt="GSUS banner" className="gsus-banner-img" />
-        </div>
+        <img src={bannerSrc} alt="GSUS banner" className="gsus-banner-img" />
       </div>
 
       <div className="gsus-header-inner">
