@@ -188,6 +188,10 @@
     gap: 0.25rem;
 }
 
+.card-field { display: flex; gap: 0.5rem; align-items: baseline; }
+.card-label { font-size: 0.75rem; color: var(--color-text-light); font-weight: 700; text-transform: uppercase; }
+.card-value { font-size: 0.95rem; color: var(--color-text-dark); font-weight: 600; }
+
 .card-id {
     font-weight: 700;
     color: var(--color-primary);
