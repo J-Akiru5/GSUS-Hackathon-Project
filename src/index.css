@@ -66,8 +66,9 @@ body {
 .main-layout {
   display: flex;
   width: 100%;
-  max-width: var(--content-max-width);
-  margin: 0 auto;
+  /* remove max-width centering so main area can use full right-side space after sidebar */
+  max-width: none;
+  margin: 0;
   gap: var(--gap-lg);
   align-items: flex-start;
 }
@@ -100,8 +101,8 @@ body.sidebar-open .sidebar.offcanvas {
 }
 .app-container {
   width: 100%;
-  max-width: calc(var(--content-max-width) - var(--sidebar-width));
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   padding: 0 1rem;
 }
 

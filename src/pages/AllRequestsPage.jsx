@@ -32,6 +32,8 @@ export default function AllRequestsPage() {
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [viewMode, setViewMode] = useState('cards'); // 'cards' or 'table'
+    const [detailsOpen, setDetailsOpen] = useState(false);
+    const [detailsItem, setDetailsItem] = useState(null);
 
     useEffect(() => {
         setLoading(true);
@@ -82,6 +84,14 @@ export default function AllRequestsPage() {
         );
     };
 
+    // simple HTML sanitizer: strip tags
+    const stripHtml = (input) => {
+        if (!input) return '';
+        try {
+            return input.replace(/<[^>]*>/g, '');
+        } catch (e) { return String(input); }
+    };
+
     // Small presentational card component with expand/collapse for description and hover actions
     const RequestCard = ({ request, setEditing, setFormOpen, formatDate }) => {
         const [expanded, setExpanded] = React.useState(false);
@@ -116,11 +126,12 @@ export default function AllRequestsPage() {
                 <div className="card-actions">
                     {request.status === 'Pending' && <button className="btn btn-primary" onClick={() => { setEditing(request); setFormOpen(true); }}>Start</button>}
                     {request.status === 'In Progress' && <button className="btn btn-primary" onClick={() => { setEditing(request); setFormOpen(true); }}>Continue</button>}
-                    {request.status === 'Completed' && <button className="btn" onClick={() => {/* show details */ }}>Details</button>}
+                    <button className="btn" onClick={() => { setDetailsItem(request); setDetailsOpen(true); }}>Details</button>
                 </div>
             </div>
         );
     };
+
 
     return (
     <div className="page-content all-requests-page">
@@ -272,6 +283,25 @@ export default function AllRequestsPage() {
                         }
                         setFormOpen(false);
                     }} onCancel={() => setFormOpen(false)} />
+                </GlobalModal>
+                <GlobalModal open={detailsOpen} title={detailsItem ? `Request ${detailsItem.id}` : 'Request Details'} onClose={() => { setDetailsOpen(false); setDetailsItem(null); }}>
+                    {detailsItem ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div><strong>Requester:</strong> {detailsItem.requesterName || detailsItem.requester || '—'}</div>
+                            <div><strong>Type:</strong> {detailsItem.serviceType || detailsItem.type || '—'}</div>
+                            <div><strong>Assigned To:</strong> {detailsItem.assignedTo || 'Unassigned'}</div>
+                            <div><strong>Status:</strong> <StatusBadge status={detailsItem.status} /></div>
+                            <div><strong>Priority:</strong> <PriorityBadge priority={detailsItem.priority || 'Medium'} /></div>
+                            <div><strong>Date:</strong> {formatDate(detailsItem.submittedAt || detailsItem.dateSubmitted || detailsItem.createdAt)}</div>
+                            <div><strong>Description:</strong>
+                                <div style={{ marginTop: 6, color: 'var(--color-text-default)' }}>{stripHtml(detailsItem.description || detailsItem.details?.description || '')}</div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                                <button className="btn btn-primary" onClick={() => { setEditing(detailsItem); setFormOpen(true); setDetailsOpen(false); }}>Edit</button>
+                                <button className="btn" onClick={() => { setDetailsOpen(false); setDetailsItem(null); }}>Close</button>
+                            </div>
+                        </div>
+                    ) : null}
                 </GlobalModal>
                 </div>
         </div>

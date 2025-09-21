@@ -4,3 +4,4 @@
 .gm-header h3 { margin: 0; font-size: 1.125rem; }
 .gm-close { background: transparent; border: none; font-size: 1.2rem; cursor: pointer; }
 .gm-body { padding: 1.25rem; max-height: 70vh; overflow: auto; }
+.gm-body strong { color: var(--color-text-dark); }
