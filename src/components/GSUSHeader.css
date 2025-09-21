@@ -1,22 +1,19 @@
 .gsus-header {
   position: -webkit-sticky;
-    /* Safari */
+  /* Safari */
   position: sticky;
   top: 0;
   left: 0;
-    width: 100%;
-    z-index: 60;
-      /* keep header near same plane as content */
+  width: 100%;
+  z-index: 1000; /* ensure header + controls are above the banner */
   color: var(--color-text-dark);
-  background: #ffffff;
-    /* solid white background */
+  background: transparent; /* transparent wrapper so banner shows through behind controls */
   height: var(--header-height); /* ensure header element height matches banner */
-  overflow: hidden;
+  overflow: visible;
   will-change: transform;
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    transition: box-shadow 180ms, background-color 180ms, transform 220ms cubic-bezier(.2, .8, .2, 1);
-
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: box-shadow 180ms, background-color 180ms, transform 220ms cubic-bezier(.2, .8, .2, 1);
 }
 .gsus-header-inner {
   max-width: var(--content-max-width);
@@ -41,9 +38,9 @@
   overflow: hidden;
   position: sticky;
   top: 0;
-  z-index: 55; /* keep banner below header controls but above page content */
-  background: linear-gradient(180deg, rgba(15,122,63,0.06), rgba(15,122,63,0.03));
-  /* allow absolute children */
+  z-index: 0; /* sit behind header and action controls */
+  background: transparent; /* keep banner background transparent so overlay controls are clear */
+  pointer-events: none; /* let interactive controls above receive clicks */
 }
 
 .gsus-banner-img {
@@ -126,7 +123,7 @@
   align-items: center;
   gap: 0.75rem;
   pointer-events: auto;
-  z-index: 60;
+  z-index: 1010; /* ensure actionable cluster sits above the banner */
   max-width: 45%;
   justify-content: flex-end;
 }
