@@ -26,6 +26,11 @@ export default function GSUSHeader() {
     return () => { if (typeof unsub === 'function') unsub(); };
   }, []);
 
+  // determine whether to show the personnel block in the header (even when banner is hidden)
+  const showHeaderPersonnel = !(location && location.pathname && (location.pathname === '/' || location.pathname.startsWith('/dashboard'))) && (
+    (typeof document !== 'undefined' && document.body.classList.contains('hide-banner')) || ['/calendar', '/chat', '/settings'].includes(location.pathname)
+  );
+
   return (
     <header className="gsus-header">
       {/* Banner image visible at the top of the header */}
@@ -56,6 +61,22 @@ export default function GSUSHeader() {
       {/* Full-width overlay bar across the banner: left = section title. Right/top controls are separated and absolute. */}
       <div className="gsus-header-bar">
         <div className="gsus-section-left" />
+        {/* Right-side: render actionable controls so they're visible even when the banner is hidden */}
+        <div className="gsus-section-right">
+          {/* Show personnel/action controls in header when banner is hidden or on specific pages */}
+          {showHeaderPersonnel && (
+            <>
+              <div className="header-personnel">
+                <div className="personnel-label">Personnel</div>
+                <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
+                {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                  <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+                )}
+              </div>
+              <div className="gsus-actions-slot" />
+            </>
+          )}
+        </div>
       </div>
 
       {/* Top-right datetime pill: rendered into document.body so it's always visible regardless of header/banner state */}
