@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getDivisionById, updateDivision, deleteDivision } from '../services/firestoreService';
 import './DivisionsPage.css';
 import { Division } from './DivisionsPage';
+import DivisionFormModal from '../components/DivisionFormModal';
 
 export default function DivisionDetail(): React.ReactElement {
   const { id } = useParams();
@@ -32,18 +33,8 @@ export default function DivisionDetail(): React.ReactElement {
   }, [id]);
 
   const handleEdit = async () => {
-    if (!division || !division.id) return;
-    const name = window.prompt('Division name', division.name);
-    if (!name) return;
-    try {
-      await updateDivision(division.id, { name });
-      // refresh
-      const updated = await getDivisionById(division.id);
-      setDivision(updated as Division | null);
-    } catch (e) {
-      console.error('update failed', e);
-      alert('Failed to update division');
-    }
+    // open modal (handled below)
+    setModalOpen(true);
   };
 
   const handleDelete = async () => {
@@ -55,6 +46,22 @@ export default function DivisionDetail(): React.ReactElement {
     } catch (e) {
       console.error('delete failed', e);
       alert('Failed to delete division');
+    }
+  };
+
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+
+  const handleModalSave = async (payload: { name: string; description?: string }) => {
+    if (!division || !division.id) return;
+    setSaving(true);
+    try {
+      await updateDivision(division.id, payload);
+      const updated = await getDivisionById(division.id);
+      setDivision(updated as Division | null);
+      setModalOpen(false);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -87,6 +94,7 @@ export default function DivisionDetail(): React.ReactElement {
           <div className="stat"><div className="value">{division.stats?.completedThisMonth ?? '-'}</div><div className="label">Completed</div></div>
         </div>
       </div>
+      <DivisionFormModal open={modalOpen} initial={division || undefined} onClose={() => setModalOpen(false)} onSave={handleModalSave} saving={saving} />
     </div>
   );
 }

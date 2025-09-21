@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listenToDivisions, createDivision, updateDivision, deleteDivision } from '../services/firestoreService';
+import DivisionFormModal from '../components/DivisionFormModal';
 import './DivisionsPage.css';
 
 export type Division = {
@@ -35,19 +36,14 @@ export default function DivisionsPage(): React.ReactElement {
       setDivisions(Array.isArray(data) ? data as Division[] : []);
       setLoading(false);
     });
-    return () => unsub && typeof unsub === 'function' && unsub();
+    return () => {
+      if (unsub && typeof unsub === 'function') unsub();
+    };
   }, []);
 
   const handleCreate = async () => {
-    const name = window.prompt('Division name');
-    if (!name) return;
-    try {
-      const id = await createDivision({ name, description: '', stats: {} });
-      navigate(`/divisions/${id}`);
-    } catch (e) {
-      console.error('create division failed', e);
-      alert('Failed to create division');
-    }
+    setModalInitial({});
+    setModalOpen(true);
   };
 
   const handleDelete = async (id?: string) => {
@@ -62,13 +58,27 @@ export default function DivisionsPage(): React.ReactElement {
   };
 
   const handleEdit = async (d: Division) => {
-    const name = window.prompt('Division name', d.name);
-    if (!name) return;
+    setModalInitial(d);
+    setModalOpen(true);
+  };
+
+  // modal state
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [modalInitial, setModalInitial] = React.useState<Partial<Division> | undefined>(undefined);
+  const [saving, setSaving] = React.useState(false);
+
+  const handleModalSave = async (payload: { name: string; description?: string }) => {
+    setSaving(true);
     try {
-      await updateDivision(d.id as string, { name });
-    } catch (e) {
-      console.error('update division failed', e);
-      alert('Failed to update division');
+      if (modalInitial && modalInitial.id) {
+        await updateDivision(modalInitial.id as string, payload);
+        // no navigation needed; real-time listener will refresh
+      } else {
+        const id = await createDivision({ ...payload, stats: {} });
+        navigate(`/divisions/${id}`);
+      }
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -122,15 +132,16 @@ export default function DivisionsPage(): React.ReactElement {
                 </div>
 
                 <div className="division-actions">
-                  <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); navigate(`/divisions/${d.id}`); }}>View</button>
-                  <button className="btn" onClick={(e) => { e.stopPropagation(); handleEdit(d); }}>Edit</button>
-                  <button className="btn btn-danger" onClick={(e) => { e.stopPropagation(); handleDelete(d.id); }}>Delete</button>
+            <button className="btn btn-secondary" onClick={(e) => { e.stopPropagation(); navigate(`/divisions/${d.id}`); }}>View</button>
+            <button className="btn" onClick={(e) => { e.stopPropagation(); handleEdit(d); }}>Edit</button>
+            <button className="btn btn-danger" onClick={(e) => { e.stopPropagation(); handleDelete(d.id); }}>Delete</button>
                 </div>
               </div>
             </article>
           ))}
         </div>
       </div>
+      <DivisionFormModal open={modalOpen} initial={modalInitial} onClose={() => setModalOpen(false)} onSave={handleModalSave} saving={saving} />
     </div>
   );
 }
