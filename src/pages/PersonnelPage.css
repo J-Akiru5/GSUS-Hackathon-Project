@@ -20,10 +20,12 @@
     align-items: center;
 }
 
+/* inline variant used on AllRequestsPage; reused here */
+.filters-grid--inline { display: block; }
+
 @media (min-width: 720px) {
-    .filters-grid {
-        grid-template-columns: 1fr 220px 220px;
-    }
+    .filters-grid { grid-template-columns: 1fr 220px 220px; }
+    .filters-grid--inline { display: block; }
 }
 .search-input-wrapper { position: relative; }
 .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--color-text-light); }
@@ -66,3 +68,17 @@ tbody tr:hover { background-color: #F8FAFC; }
 
 .empty-state { text-align: center; padding: 2rem; color: var(--color-text-light); }
 .empty-state svg { margin: 0 auto 0.5rem auto; }
+
+/* Personnel cards (card view) */
+.personnel-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+.person-card { border: 1px solid var(--color-border); border-radius: 8px; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; background: white; }
+.person-card-main { display: flex; gap: 0.75rem; align-items: center; }
+.person-avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--color-primary); color: white; display:flex; align-items:center; justify-content:center; font-weight:600; }
+.person-card-body { flex: 1; }
+.person-card-name { font-weight: 600; color: var(--color-text-dark); }
+.person-card-sub { font-size: 0.85rem; color: var(--color-text-light); margin-top: 4px; }
+.person-card-contact { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.contact-item { display:flex; align-items:center; gap:6px; font-size:0.9rem; color:var(--color-text-default); }
+.person-card-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; }
+.person-join { font-size:0.8rem; color:var(--color-text-light); }
+.person-card-actions { display:flex; gap:8px; justify-content:flex-end; }

@@ -1,7 +1,7 @@
 // src/pages/PersonnelPage.jsx
 
 import React, { useEffect, useState } from "react";
-import { Users, Search, Filter, Plus, Edit, Mail, Phone, MapPin, Shield, UserCheck, UserX } from "lucide-react";
+import { Users, Search, Filter, Edit, Mail, Phone, MapPin, Shield, UserCheck, UserX, Eye, FileText } from "lucide-react";
 import './PersonnelPage.css'; // <-- IMPORT OUR NEW CSS FILE
 import { listenToUsers } from '../services/firestoreService';
 import SectionHeader from '../components/SectionHeader';
@@ -18,6 +18,7 @@ export default function PersonnelPage() {
     const [roleFilter, setRoleFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [divisionFilter, setDivisionFilter] = useState("all");
+    const [viewMode, setViewMode] = useState('cards'); // 'cards' or 'table'
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -69,6 +70,31 @@ export default function PersonnelPage() {
         return <Users size={16} />;
     };
 
+    // Card component for personnel
+    const PersonnelCard = ({ person }) => (
+        <div className="person-card" tabIndex={0}>
+            <div className="person-card-main">
+                <div className="person-avatar">{getInitials(person.name)}</div>
+                <div className="person-card-body">
+                    <div className="person-card-name">{person.name}</div>
+                    <div className="person-card-sub">{person.role} · {person.assignedDivision}</div>
+                    <div className="person-card-contact">
+                        <div className="contact-item"><Mail size={14} /> {person.email || '—'}</div>
+                        <div className="contact-item"><Phone size={14} /> {person.phone || '—'}</div>
+                    </div>
+                </div>
+                <div className="person-card-right">
+                    <StatusBadge status={person.status} />
+                    <div className="person-join">{formatDate(person.joinDate)}</div>
+                </div>
+            </div>
+            <div className="person-card-actions">
+                <button className="btn btn-secondary"><Edit size={14} /> Edit</button>
+                <button className="btn"><Eye size={14} /> Details</button>
+            </div>
+        </div>
+    );
+
     return (
         <div className="page-content personnel-page">
             <SectionHeader title="Personnel Management" subtitle="Manage GSO staff and division assignments" />
@@ -82,52 +108,90 @@ export default function PersonnelPage() {
             </div>
 
             <div className="card filters-card">
-                <div className="card-header"><Filter className="icon" /><h3>Filters</h3></div>
-                <div className="card-content filters-grid">
-                    <div className="search-input-wrapper"><Search className="search-icon" /><input type="text" placeholder="Search personnel..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="search-input"/></div>
-                    <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} className="filter-select"><option value="all">All Roles</option><option value="GSO Head">GSO Head</option><option value="Division Head">Division Head</option><option value="Driver">Driver</option><option value="Technician">Technician</option></select>
-                    <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="filter-select"><option value="all">All Statuses</option><option value="Active">Active</option><option value="Inactive">Inactive</option><option value="On Leave">On Leave</option></select>
-                    <select value={divisionFilter} onChange={e => setDivisionFilter(e.target.value)} className="filter-select"><option value="all">All Divisions</option><option value="transportation">Transportation</option><option value="facilities">Facilities</option><option value="maintenance">Maintenance</option></select>
+                <div className="card-header">
+                    <Filter className="icon" />
+                    <h3>Filters</h3>
+                </div>
+                <div className="card-content filters-grid--inline">
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', width: '100%' }}>
+                        <div style={{ flex: 1 }} className="search-input-wrapper">
+                            <Search className="search-icon" />
+                            <input
+                                type="text"
+                                placeholder="Search personnel..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="search-input"
+                            />
+                        </div>
+
+                        <select value={divisionFilter} onChange={(e) => setDivisionFilter(e.target.value)} className="filter-select" style={{ width: 220 }}>
+                            <option value="all">All Divisions</option>
+                            <option value="facilities">Facilities</option>
+                            <option value="transportation">Transportation</option>
+                            <option value="maintenance">Maintenance</option>
+                        </select>
+
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <button className={`btn ${viewMode === 'cards' ? 'btn-primary' : ''}`} onClick={() => setViewMode('cards')}>Card View</button>
+                            <button className={`btn ${viewMode === 'table' ? 'btn-primary' : ''}`} onClick={() => setViewMode('table')}>Table View</button>
+                        </div>
+                    </div>
+
+                    {/* status pills */}
+                    <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                        {['all', 'Active', 'On Leave', 'Inactive'].map(s => (
+                            <button key={s} className={`btn status-pill ${statusFilter === s ? 'active' : ''}`} onClick={() => setStatusFilter(s)}>{s === 'all' ? 'All' : s}</button>
+                        ))}
+                    </div>
                 </div>
             </div>
 
             <div className="card table-card">
                  <div className="card-header"><Users className="icon" /><h3>Personnel Directory</h3></div>
                 <div className="card-content">
-                    <div className="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr><th>Personnel</th><th>Contact</th><th>Role</th><th>Division</th><th>Status</th><th>Join Date</th><th>Actions</th></tr>
-                            </thead>
-                            <tbody>
-                                {filteredPersonnel.map((person) => (
-                                    <tr key={person.id}>
-                                        <td>
-                                            <div className="personnel-cell">
-                                                <div className="avatar">{getInitials(person.name)}</div>
-                                                <div>
-                                                    <div className="person-name">{person.name}</div>
-                                                    <div className="person-id">{person.id}</div>
+                    {viewMode === 'cards' ? (
+                        <div className="personnel-cards">
+                            {filteredPersonnel.map(person => (
+                                <PersonnelCard key={person.id} person={person} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr><th>Personnel</th><th>Contact</th><th>Role</th><th>Division</th><th>Status</th><th>Join Date</th><th>Actions</th></tr>
+                                </thead>
+                                <tbody>
+                                    {filteredPersonnel.map((person) => (
+                                        <tr key={person.id}>
+                                            <td>
+                                                <div className="personnel-cell">
+                                                    <div className="avatar">{getInitials(person.name)}</div>
+                                                    <div>
+                                                        <div className="person-name">{person.name}</div>
+                                                        <div className="person-id">{person.id}</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="contact-cell"><Mail size={14} /> {person.email}</div>
-                                            <div className="contact-cell"><Phone size={14} /> {person.phone}</div>
-                                        </td>
-                                        <td><div className="role-cell">{getRoleIcon(person.role)} {person.role}</div></td>
-                                        <td>
-                                            <div className="division-name">{person.assignedDivision}</div>
-                                            <div className="location-cell"><MapPin size={14} /> {person.location}</div>
-                                        </td>
-                                        <td><StatusBadge status={person.status} /></td>
-                                        <td className="date-cell">{formatDate(person.joinDate)}</td>
-                                        <td><button className="btn btn-secondary"><Edit size={14} /> Edit</button></td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                            </td>
+                                            <td>
+                                                <div className="contact-cell"><Mail size={14} /> {person.email}</div>
+                                                <div className="contact-cell"><Phone size={14} /> {person.phone}</div>
+                                            </td>
+                                            <td><div className="role-cell">{getRoleIcon(person.role)} {person.role}</div></td>
+                                            <td>
+                                                <div className="division-name">{person.assignedDivision}</div>
+                                                <div className="location-cell"><MapPin size={14} /> {person.location}</div>
+                                            </td>
+                                            <td><StatusBadge status={person.status} /></td>
+                                            <td className="date-cell">{formatDate(person.joinDate)}</td>
+                                            <td><button className="btn btn-secondary"><Edit size={14} /> Edit</button></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                      {filteredPersonnel.length === 0 && ( <div className="empty-state"><Users size={48} /><p>No personnel found.</p></div> )}
                 </div>
             </div>
