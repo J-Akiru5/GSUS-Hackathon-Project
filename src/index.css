@@ -24,6 +24,7 @@
   --content-max-width: 1400px;
   --sidebar-width: 260px;
   --sidebar-compact-width: 80px;
+  --layout-side-gap: 8px;
     --header-height: 200px;
       /* reduced banner offset so the section header can rise earlier */
       --banner-offset: 220px;
@@ -102,24 +103,25 @@ body.sidebar-open .sidebar.offcanvas {
 }
 /* App container: center content and allow sidebar offsets to push it */
 .app-container {
-  width: calc(100vw - var(--sidebar-width));
+  /* reserve a small side gap (8px) on left and right so content never touches sidebar or viewport edge */
+  width: calc(100vw - var(--sidebar-width) - (var(--layout-side-gap) * 2));
   max-width: var(--content-max-width);
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 var(--layout-side-gap);
   transition: margin-left 240ms var(--transition-medium), max-width 240ms var(--transition-medium), width 240ms var(--transition-medium);
 }
 /* When the sidebar is fully open, offset the app container so content doesn't sit under the sidebar */
 html.sidebar-open .app-container {
-  margin-left: var(--sidebar-width);
-  width: calc(100vw - var(--sidebar-width));
-  max-width: calc(var(--content-max-width) - var(--sidebar-width));
+  margin-left: calc(var(--sidebar-width) + var(--layout-side-gap));
+  width: calc(100vw - var(--sidebar-width) - (var(--layout-side-gap) * 2));
+  max-width: calc(var(--content-max-width) - var(--sidebar-width) - var(--layout-side-gap));
 }
 
 /* Compact sidebar mode uses a smaller left offset */
 html.sidebar-compact .app-container {
-  margin-left: var(--sidebar-compact-width);
-  width: calc(100vw - var(--sidebar-compact-width));
-  max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
+  margin-left: calc(var(--sidebar-compact-width) + var(--layout-side-gap));
+  width: calc(100vw - var(--sidebar-compact-width) - (var(--layout-side-gap) * 2));
+  max-width: calc(var(--content-max-width) - var(--sidebar-compact-width) - var(--layout-side-gap));
 }
 
 /* Prevent global horizontal scroll when sidebar moves off-canvas */
