@@ -102,21 +102,23 @@ body.sidebar-open .sidebar.offcanvas {
 }
 /* App container: center content and allow sidebar offsets to push it */
 .app-container {
-  width: 100%;
+  width: calc(100vw - var(--sidebar-width));
   max-width: var(--content-max-width);
   margin: 0 auto;
-    padding: 0 1rem;
-  transition: margin-left 240ms var(--transition-medium), max-width 240ms var(--transition-medium);
+  padding: 0 1rem;
+  transition: margin-left 240ms var(--transition-medium), max-width 240ms var(--transition-medium), width 240ms var(--transition-medium);
 }
 /* When the sidebar is fully open, offset the app container so content doesn't sit under the sidebar */
 html.sidebar-open .app-container {
   margin-left: var(--sidebar-width);
+  width: calc(100vw - var(--sidebar-width));
   max-width: calc(var(--content-max-width) - var(--sidebar-width));
 }
 
 /* Compact sidebar mode uses a smaller left offset */
 html.sidebar-compact .app-container {
   margin-left: var(--sidebar-compact-width);
+  width: calc(100vw - var(--sidebar-compact-width));
   max-width: calc(var(--content-max-width) - var(--sidebar-compact-width));
 }
 

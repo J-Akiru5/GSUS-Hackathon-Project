@@ -279,31 +279,28 @@ body,
   overflow-x: hidden;
 }
 
-/* Footer: make bottom part white with dark text for contrast */
+/* Footer: keep footer consistent with the green sidebar (do not make it white) */
 .sidebar-footer {
-  background: #ffffff;
-  color: #07321a;
-  /* dark green/near-black text for contrast */
+  background: var(--color-primary);
+  color: #f7fff7;
   padding: 0.75rem 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
 .sidebar-footer .user-avatar {
-  background-color: var(--color-primary);
+  background-color: rgba(255,255,255,0.08);
   color: #fff;
   width: 44px;
   height: 44px;
   font-size: 0.9rem;
 }
 
-.sidebar-footer .user-name {
-  color: #06321a;
-}
+.sidebar-footer .user-name,
 .sidebar-footer .user-role {
-  color: #225a3d;
+  color: #f7fff7;
 }
 
 /* Nav label contrast and active emphasis */
