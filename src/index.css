@@ -36,6 +36,13 @@
     --transition-medium: 240ms ease;
 }
 
+/* When there's no banner (pages that set body.hide-banner), remove the banner offset
+   so section headers and page content can use the full viewport height. */
+body.hide-banner {
+  --banner-offset: 0px;
+  --header-height: 64px; /* shorten header when no banner is present */
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
