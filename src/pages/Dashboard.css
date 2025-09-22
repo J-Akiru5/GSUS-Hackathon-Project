@@ -34,19 +34,20 @@
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem; /* thinner */
   transition: all 0.18s ease;
-  border-radius: 12px;
+  border-radius: 10px;
+  min-height: 56px;
 }
 .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.stat-icon { display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; }
+.stat-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; }
 .stat-icon.icon-yellow { background-color: #FEF3C7; color: #D97706; }
 .stat-icon.icon-green { background-color: #D1FAE5; color: #059669; }
 .stat-icon.icon-blue { background-color: #DBEAFE; color: #2563EB; }
 .stat-icon.icon-purple { background-color: #E5E7FF; color: #4F46E5; }
-.stat-value { font-size: 1.75rem; font-weight: 700; color: var(--color-text-dark); }
-.stat-title { font-size: 0.9rem; color: var(--color-text-light); }
+.stat-value { font-size: 1.4rem; font-weight: 700; color: var(--color-text-dark); }
+.stat-title { font-size: 0.85rem; color: var(--color-text-light); }
 
 .dashboard-main-grid {
   display: grid;
@@ -55,7 +56,28 @@
   margin-top: 1.25rem;
   align-items: start;
 }
-.action-required-panel, .calendar-panel { padding-bottom: 0.5rem; }
+.action-required-panel, .calendar-panel {
+  padding-bottom: 0.5rem;
+}
+
+/* Limit action required panel to show 3 request items and make it scrollable */
+.action-required-panel {
+  display: flex;
+  flex-direction: column;
+  /* Show header + 3 items; 3 * 120px (desktop item height) + header approx 420px */
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.action-required-panel .request-item {
+  /* slightly reduce min height so 3 items fit better on smaller screens */
+  min-height: 100px;
+}
+
+/* scrollbar styling for readability */
+.action-required-panel::-webkit-scrollbar { width: 10px; }
+.action-required-panel::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 8px; }
+.action-required-panel::-webkit-scrollbar-track { background: transparent; }
 .card-header {
   padding: 1.25rem;
   padding-bottom: 0.75rem;
