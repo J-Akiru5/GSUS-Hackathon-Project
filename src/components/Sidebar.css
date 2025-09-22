@@ -330,3 +330,42 @@ body,
 .sidebar.compact .sidebar-close-btn {
   display: none;
 }
+
+/* Offcanvas/mobile specific overrides: make offcanvas body use green background and column layout */
+.offcanvas .offcanvas-body {
+  background: var(--color-primary);
+  color: #f7fff7;
+  padding: 0;
+}
+
+.offcanvas .offcanvas-body .offcanvas-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem;
+}
+
+.offcanvas .offcanvas-body .nav-item {
+  color: #f7fff7;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+}
+
+.offcanvas .offcanvas-body .nav-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+/* ensure user-profile and logout are on the same green background */
+.offcanvas .offcanvas-body .offcanvas-user,
+.offcanvas .offcanvas-body .btn {
+  color: #f7fff7;
+}
+
+/* small screens: hide the top banner spacing and keep layout stacked */
+@media (max-width: 900px) {
+  .offcanvas .offcanvas-header {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    background: var(--color-primary);
+    color: #fff;
+  }
+}
