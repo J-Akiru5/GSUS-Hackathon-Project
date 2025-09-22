@@ -34,20 +34,40 @@
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.6rem 0.75rem; /* thinner */
-  transition: all 0.18s ease;
+  gap: 0.6rem;
+    padding: 0.4rem 0.6rem;
+    /* even thinner */
+    transition: all 0.12s ease;
   border-radius: 10px;
-  min-height: 56px;
+  min-height: 48px;
+    /* match screenshot thinness */
 }
 .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
-.stat-icon { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; }
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
 .stat-icon.icon-yellow { background-color: #FEF3C7; color: #D97706; }
 .stat-icon.icon-green { background-color: #D1FAE5; color: #059669; }
 .stat-icon.icon-blue { background-color: #DBEAFE; color: #2563EB; }
 .stat-icon.icon-purple { background-color: #E5E7FF; color: #4F46E5; }
-.stat-value { font-size: 1.4rem; font-weight: 700; color: var(--color-text-dark); }
-.stat-title { font-size: 0.85rem; color: var(--color-text-light); }
+.stat-value {
+  font-size: 1.6rem;
+  /* slightly smaller so it fits thin card */
+  font-weight: 800;
+  color: var(--color-text-dark);
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.stat-title {
+  font-size: 0.85rem;
+  color: var(--color-text-light);
+}
 
 .dashboard-main-grid {
   display: grid;
@@ -56,29 +76,10 @@
   margin-top: 1.25rem;
   align-items: start;
 }
-.action-required-panel, .calendar-panel {
+.action-required-panel,
+.calendar-panel {
   padding-bottom: 0.5rem;
 }
-
-/* Limit action required panel to show 3 request items and make it scrollable */
-
-.action-required-panel {
-  display: flex;
-  flex-direction: column;
-  /* Max height = header height + 3 compact cards */
-  max-height: calc(var(--section-header-height) + (3 * var(--card-compact-height)));
-  overflow-y: auto;
-}
-
-.action-required-panel .request-item {
-  /* match the compact card height used elsewhere */
-  min-height: var(--card-compact-height);
-}
-
-/* scrollbar styling for readability */
-.action-required-panel::-webkit-scrollbar { width: 10px; }
-.action-required-panel::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 8px; }
-.action-required-panel::-webkit-scrollbar-track { background: transparent; }
 .card-header {
   padding: 1.25rem;
   padding-bottom: 0.75rem;
@@ -94,24 +95,60 @@
   padding-top: 0;
 }
 
+/* Make the dashboard fixed (non-scrollable) and the page-content always fill the main wrapper
+   NOTE: scoped to .gso-dashboard so other pages remain scrollable */
+.gso-dashboard.page-content {
+  display: block;
+  height: calc(100vh - var(--header-height));
+  overflow: hidden;
+  /* prevent internal scroll for dashboard only */
+  padding-bottom: 8px;
+  /* ensure small bottom padding as requested */
+}
+
+/* Make the two main panels equal height and scrollable when content overflows */
+@media (min-width: 768px) {
+  .dashboard-main-grid {
+    align-items: stretch;
+  }
+
+  .action-required-panel,
+  .calendar-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* pick a workable max-height for the panels (adjust as needed) */
+  .action-required-panel .card-content,
+  .calendar-panel .card-content {
+    max-height: 420px;
+    /* same for both panels */
+    overflow: auto;
+  }
+}
 /* Request item: make it a column so footer can sit at the bottom */
 .request-item {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 1rem;
+  padding: 0.6rem 0.75rem;
+    /* reduced padding for compactness */
   border-top: 1px solid var(--color-border);
-  gap: 0.5rem;
-  min-height: 100px;
+  gap: 0.4rem;
+    min-height: 72px;
+    /* smaller min-height */
 }
 
 .request-info h4 {
   font-weight: 500;
   margin: 0;
+  font-size: 0.95rem;
+    /* slightly smaller title */
 }
 
 .request-info p {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+    /* smaller metadata text */
   color: var(--color-text-light);
   margin: 0;
 }
@@ -121,16 +158,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.5rem;
+    /* tighter gap */
   margin-top: 0.25rem;
 }
 
 /* priority label */
 .priority-label {
   font-weight: 600;
-  padding: 0.15rem 0.4rem;
+  padding: 0.15rem 0.45rem;
+    /* slightly reduced */
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
 }
 
 .priority-high {
@@ -159,7 +198,14 @@
 /* keep compatibility with older class name */
 .request-actions { display: flex; align-items: center; gap: 0.5rem; }
 .btn svg { margin-right: 0.5rem; }
-.priority-badge { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; color: white; }
+.priority-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: white;
+}
 .clickable {
   cursor: pointer;
 }

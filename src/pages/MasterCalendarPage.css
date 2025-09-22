@@ -1,3 +1,27 @@
+/* Popover item styles */
+.popover-item {
+    padding: 0.35rem 0.4rem;
+    color: var(--color-text-default);
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    background: transparent;
+    border: none;
+}
+
+.popover-item:hover {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+/* Events container styles */
+.events-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    max-height: 6.5rem;
+    overflow: auto;
+    /* Changed from hidden to auto */
+}
 /* src/pages/MasterCalendarPage.css - cleaned and reformatted */
 
 .calendar-page {
@@ -265,7 +289,7 @@
     flex-direction: column;
     gap: 0.25rem;
     max-height: 6.5rem;
-        overflow: hidden;
+    overflow: auto;
 }
 
 .more-indicator {
@@ -295,6 +319,7 @@
     border-bottom: none;
 }
 
+/* legacy non-actionable popover entries removed; use .popover-item for clickable entries */
 .unscheduled-item {
     display: flex;
     align-items: center;
@@ -364,6 +389,47 @@
     border: 1px solid var(--color-border);
 }
 
+/* simplified request appearance to match bookings */
+.request-simple {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--color-text-default);
+}
+
+/* week/day compact block for requests: reduce internal details */
+.event-block.request-simple {
+    padding: 4px 6px;
+    font-size: 0.85rem;
+}
+
+/* compact structure inside request items shown on calendar month/week/day views */
+.request-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.request-mini .event-type-badge {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.7rem;
+    border-radius: 6px;
+}
+
+.request-mini .request-date {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+.request-mini .request-details {
+    font-size: 0.8rem;
+    color: var(--color-text-default);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px;
+}
 /* Dialog / Modal Styles */
 .dialog-overlay {
     position: fixed;

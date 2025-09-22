@@ -32,7 +32,7 @@ export default function DivisionsPage() {
 
 	// Listen for a global header event to open the division modal (so banner button can open it)
 	useEffect(() => {
-		const handler = (e) => {
+		const handler = () => {
 			// only open if currently on the divisions page — we can check location path
 			if (window.location && window.location.pathname && window.location.pathname.startsWith('/divisions')) {
 				setModalInitial({});
@@ -43,7 +43,7 @@ export default function DivisionsPage() {
 		return () => window.removeEventListener('gsus:open-division-modal', handler);
 	}, []);
 
-	const handleCreate = () => {
+	const _handleCreate = () => {
 		setModalInitial({});
 		setModalOpen(true);
 	};
@@ -53,13 +53,13 @@ export default function DivisionsPage() {
 		setModalOpen(true);
 	};
 
-	const handleDelete = async (id) => {
+	const _handleDelete = async (id) => {
 		if (!id) return;
 		if (!window.confirm('Delete this division? This action cannot be undone.')) return;
 		try {
 			await deleteDivision(id);
-		} catch (e) {
-			console.error('delete division failed', e);
+		} catch {
+			console.error('delete division failed');
 			alert('Failed to delete division');
 		}
 	};

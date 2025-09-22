@@ -5,6 +5,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { TrendingUp, TrendingDown, Clock, Users, Calendar, Activity, BarChart3, PieChart as PieChartIcon, MessageSquare } from "lucide-react";
 import './AnalyticsPage.css';
 import SectionHeader from '../components/SectionHeader';
+import AuditTrailPanel from '../components/features/dashboard/AuditTrailPanel';
 import { listenToRequests, listenToFeedback } from '../services/firestoreService';
 
 // Helper to format various date-like inputs into a short, consistent label for charts
@@ -418,6 +419,14 @@ export default function AnalyticsPage() {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Recent activity panel moved from Dashboard */}
+      <div className="card">
+        <div className="card-header"><MessageSquare className="icon" /> Recent Activity</div>
+        <div className="card-content">
+          <AuditTrailPanel compact={true} />
         </div>
       </div>
 

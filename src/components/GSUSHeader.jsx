@@ -58,26 +58,25 @@ export default function GSUSHeader() {
                 <div className="header-personnel">
                   <div className="personnel-label">Divisions</div>
                   <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
-                  {/* Button removed: SectionHeader will portal the Add Division action into the banner */}
-                </div>
-              ) : (
-                <div className="header-personnel">
-                  <div className="personnel-label">Personnel</div>
-                  <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
-                  {/* Hide Add Personnel on the All Requests page (/requests) */}
+                  {/* Hide Add Division on the All Requests page (/requests) - mirrors personnel logic */}
                   {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                    <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+                    <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
                   )}
                 </div>
+              ) : (
+                  // Only render the Personnel block when not on the All Requests page
+                  !(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                    <div className="header-personnel">
+                      <div className="personnel-label">Personnel</div>
+                      <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
+                      {/* Hide Add Personnel on the All Requests page (/requests) */}
+                      {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                        <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+                      )}
+                    </div>
+                  )
               )}
-              <div className="gsus-actions-slot">
-                {location && location.pathname && location.pathname.startsWith('/divisions') ? (
-                  <button className="btn btn-primary" onClick={() => {
-                    // Dispatch a custom event that pages can listen for to open the division modal
-                    try { window.dispatchEvent(new Event('gsus:open-division-modal')); } catch (e) { /* fallback */ navigate('/divisions'); }
-                  }}>Add Division</button>
-                ) : null}
-              </div>
+              <div className="gsus-actions-slot" />
             </>
           )}
         </div>
@@ -96,7 +95,9 @@ export default function GSUSHeader() {
                   <div className="header-personnel">
                     <div className="personnel-label">Divisions</div>
                     <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
-                    {/* Button removed: SectionHeader will portal the Add Division action into the header */}
+                    {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                      <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+                    )}
                   </div>
                   <div className="gsus-actions-slot" />
                 </>

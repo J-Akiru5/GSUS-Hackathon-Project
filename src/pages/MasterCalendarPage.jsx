@@ -1,6 +1,6 @@
 // src/pages/MasterCalendarPage.jsx
 
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Calendar, ChevronLeft, ChevronRight, Building, Car, MapPin, Clock, User } from "lucide-react";
 import './MasterCalendarPage.css'; // <-- IMPORT OUR NEW CSS FILE
 import { listenToBookings, listenToRequests, getUserById, getUserByEmail, getUserByAuthUid } from '../services/firestoreService';
@@ -16,12 +16,17 @@ export default function MasterCalendarPage() {
         document.body.classList.add('hide-banner');
         return () => document.body.classList.remove('hide-banner');
     }, []);
+
+
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [calendarEvents, setCalendarEvents] = useState([]);
-    const [unscheduledEvents, setUnscheduledEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [_unscheduledEvents, setUnscheduledEvents] = useState([]);
+    // keep normalized bookings and requests separately and combine deterministically
+    const [bookingsNorm, setBookingsNorm] = useState([]);
+    const [requestsNorm, setRequestsNorm] = useState([]);
+    const [_loading, setLoading] = useState(true);
+    const [_error, setError] = useState(null);
     const [formOpen, setFormOpen] = useState(false);
     const [editingEvent, setEditingEvent] = useState(null);
     const [filters, setFilters] = useState({ showBookings: true, showRequests: true, categories: { Venue: true, Vehicle: true, Equipment: true, Booking: true, Request: true } });
@@ -30,6 +35,19 @@ export default function MasterCalendarPage() {
     const [timeFormat24, setTimeFormat24] = useState(false);
     const [workHours, setWorkHours] = useState({ start: 8, end: 18 });
     const [showSettings, setShowSettings] = useState(false);
+
+    // combine bookings and requests when either normalized list updates
+    useEffect(() => {
+        const bookingsOnly = bookingsNorm || [];
+        // include all requests on the calendar overview; we'll normalize their type so they render like bookings
+        const requestsOnly = requestsNorm || [];
+        const combined = [...bookingsOnly.map(b => ({ ...b, source: 'booking' })), ...requestsOnly.map(r => ({ ...r, source: 'request' }))];
+        // scheduled events only
+        const scheduled = combined.filter(e => e.date && e.date.length > 0).sort((a, b) => a.date.localeCompare(b.date));
+        const unscheduled = combined.filter(e => !e.date || e.date.length === 0).sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+        setCalendarEvents(scheduled);
+        setUnscheduledEvents(unscheduled);
+    }, [bookingsNorm, requestsNorm]);
 
     useEffect(() => {
         // restore persisted settings
@@ -42,7 +60,7 @@ export default function MasterCalendarPage() {
                 if (typeof parsed.timeFormat24 === 'boolean') setTimeFormat24(parsed.timeFormat24);
                 if (parsed.workHours) setWorkHours(parsed.workHours);
             }
-        } catch (e) { /* ignore */ }
+        } catch { /* ignore */ }
 
         setLoading(true);
         const unsubBookings = listenToBookings((data, err) => {
@@ -104,22 +122,14 @@ export default function MasterCalendarPage() {
                         // fallback to raw value
                         out.requesterName = String(rawRequester);
                         return out;
-                    } catch (e) {
+                    } catch {
                         out.requesterName = String(rawRequester);
                         return out;
                     }
                 }));
 
-                setCalendarEvents(prev => {
-                    const requestsOnly = prev.filter(e => e.source === 'request');
-                    const combined = [...enriched, ...requestsOnly];
-                    // scheduled only
-                    return combined.filter(e => !!e.date);
-                });
-                setUnscheduledEvents(prev => {
-                    const requestsOnly = prev.filter(e => e.source === 'request');
-                    return [...enriched.filter(e => !e.date), ...requestsOnly];
-                });
+                // store normalized bookings and recompute combined list via effect
+                setBookingsNorm(enriched);
                 setLoading(false);
             })();
         });
@@ -136,12 +146,16 @@ export default function MasterCalendarPage() {
                 const start = toDate(rawStart);
                 const end = toDate(r.endDate || r.endTime || null);
                 const dateStr = start ? start.toISOString().split('T')[0] : (r.date || (r.createdAt ? (toDate(r.createdAt) ? toDate(r.createdAt).toISOString().split('T')[0] : '') : ''));
+                // try to infer a booking-like type so requests use the same event styles
+                const inferredType = (r.type || r.category || (r.purpose ? 'Venue' : '') || '').toString();
+                const normalizedType = inferredType || 'Request';
                 return {
                     id: `request-${r.id}`,
                     source: 'request',
                     origId: r.id,
                     title: r.title || r.summary || r.subject || 'Request',
-                    type: 'Request',
+                    // if a request has a category (Venue/Vehicle/Equipment) use that so CSS classes match bookings
+                    type: normalizedType,
                     date: dateStr || '',
                     startTime: start ? start.toTimeString().slice(0, 5) : (r.time || r.startTime || ''),
                     endTime: end ? end.toTimeString().slice(0, 5) : (r.endTime || ''),
@@ -179,21 +193,13 @@ export default function MasterCalendarPage() {
                         }
                         out.requesterName = String(rawRequester);
                         return out;
-                    } catch (e) {
+                    } catch {
                         out.requesterName = String(rawRequester);
                         return out;
                     }
                 }));
 
-                setCalendarEvents(prev => {
-                    const bookingsOnly = prev.filter(e => e.source === 'booking');
-                    const combined = [...bookingsOnly, ...enriched];
-                    return combined.filter(e => !!e.date);
-                });
-                setUnscheduledEvents(prev => {
-                    const bookingsOnly = prev.filter(e => e.source === 'booking');
-                    return [...bookingsOnly, ...enriched.filter(e => !e.date)];
-                });
+                setRequestsNorm(enriched);
                 setLoading(false);
             })();
         });
@@ -204,7 +210,7 @@ export default function MasterCalendarPage() {
     // persist settings when changed
     useEffect(() => {
         const payload = { viewMode, firstDayOfWeek, timeFormat24, workHours };
-        try { localStorage.setItem('masterCalendar.settings', JSON.stringify(payload)); } catch (e) { }
+        try { localStorage.setItem('masterCalendar.settings', JSON.stringify(payload)); } catch { /* ignore */ }
     }, [viewMode, firstDayOfWeek, timeFormat24, workHours]);
 
     const getDaysInMonth = (date) => {
@@ -383,7 +389,11 @@ export default function MasterCalendarPage() {
                                     {events.slice(0, 3).map((event) => {
                                         const { className, Icon } = getTypeProps(event.type);
                                         return (
-                                            <div key={event.id} className={`event-item ${className}`} onClick={() => setSelectedEvent(event)}>
+                                            <div
+                                                key={event.id}
+                                                className={`event-item ${className}`}
+                                                onClick={() => setSelectedEvent(event)}
+                                            >
                                                 <Icon size={14} />
                                                 <span title={event.title}>{event.title}</span>
                                             </div>
@@ -426,17 +436,20 @@ export default function MasterCalendarPage() {
                                 <div className="day-slots">
                                     {hours.map(h => (<div key={h} className="week-slot" />))}
                                 </div>
-                                {blocks.map(b => (
-                                    <div
-                                        key={b.event.id}
-                                        className={`event-block ${getTypeProps(b.event.type).className}`}
-                                        style={{ top: `${b.topPct}%`, height: `${b.heightPct}%`, left: `${b.leftPct}%`, width: `${b.widthPct}%`, position: 'absolute' }}
-                                        onClick={() => setSelectedEvent(b.event)}
-                                    >
-                                        <div className="event-block-time">{b.event.startTime}{b.event.endTime ? ` - ${b.event.endTime}` : ''}</div>
-                                        <div className="event-block-title">{b.event.title}</div>
-                                    </div>
-                                ))}
+                                {blocks.map(b => {
+                                    const { className, Icon } = getTypeProps(b.event.type);
+                                    return (
+                                        <div
+                                            key={b.event.id}
+                                            className={`event-block ${className}`}
+                                            style={{ top: `${b.topPct}%`, height: `${b.heightPct}%`, left: `${b.leftPct}%`, width: `${b.widthPct}%`, position: 'absolute' }}
+                                            onClick={() => setSelectedEvent(b.event)}
+                                        >
+                                            <div className="event-block-time">{b.event.startTime}{b.event.endTime ? ` - ${b.event.endTime}` : ''}</div>
+                                            <div className="event-block-title"><Icon size={12} /> {b.event.title}</div>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         );
                     })}
