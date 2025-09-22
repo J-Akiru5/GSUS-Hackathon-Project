@@ -239,8 +239,8 @@ body.hide-banner .gsus-header {
 
 @media (max-width: 900px) {
   /* keep the banner visible on mobile, but reduce its height so it sits above the compact heading */
-  .gsus-banner { display: block !important; height: 110px; }
-  .gsus-banner-img { object-position: top; }
+  .gsus-banner { display: block !important; height: auto; }
+  .gsus-banner-img { object-fit: contain; height: auto; max-height: 160px; object-position: top center; }
   .mobile-page-heading { display: flex; }
   /* allow the header to expand to contain banner + mobile heading */
   .gsus-header { height: auto; }
