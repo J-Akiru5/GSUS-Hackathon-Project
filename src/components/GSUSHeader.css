@@ -248,10 +248,10 @@ body.hide-banner .gsus-header {
 
 /* Mobile sidebar button placed at top-left inside header, visible only on mobile */
 .mobile-sidebar-btn {
-  position: absolute;
+  position: fixed; /* fixed so it remains visible when header/banner are hidden */
   left: 12px;
   top: 12px;
-  z-index: 10010;
+  z-index: 100005; /* above most UI layers (datetime-pill is 99999) */
   display: none; /* show only on small screens below */
   background: transparent;
   border: none;
