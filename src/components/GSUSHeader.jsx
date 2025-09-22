@@ -5,7 +5,6 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './GSUSHeader.css';
 import bannerSrc from '../assets/GSUSBanner.svg';
 import { listenToUsers, listenToDivisions } from '../services/firestoreService';
-import { useSidebar } from '../contexts/SidebarContext';
 
 // Small mobile-only button to toggle the offcanvas sidebar
 function MobileSidebarButton() {
