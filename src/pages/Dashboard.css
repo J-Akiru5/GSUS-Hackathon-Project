@@ -101,7 +101,7 @@
   display: block;
   height: calc(100vh - var(--header-height));
   overflow: hidden;
-  /* prevent internal scroll for dashboard only */
+  /* prevent internal scroll for dashboard on desktop */
   padding-bottom: 8px;
   /* ensure small bottom padding as requested */
 }
@@ -124,6 +124,28 @@
     max-height: 420px;
     /* same for both panels */
     overflow: auto;
+  }
+}
+
+/* Mobile: let the page itself scroll instead of trapping scroll inside panels */
+@media (max-width: 767px) {
+  .gso-dashboard.page-content {
+    height: auto;
+    overflow: auto; /* allow page-level scroll */
+    padding-bottom: 4rem; /* ensure floating elements don't overlap content */
+  }
+
+  /* disable internal panel scrolling so content flows naturally */
+  .action-required-panel .card-content,
+  .calendar-panel .card-content {
+    max-height: none;
+    overflow: visible;
+  }
+
+  /* ensure dashboard grid stacks cleanly and uses natural flow */
+  .dashboard-main-grid {
+    display: block;
+    gap: 0.75rem;
   }
 }
 /* Request item: make it a column so footer can sit at the bottom */
