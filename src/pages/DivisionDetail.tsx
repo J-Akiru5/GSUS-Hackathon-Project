@@ -2,8 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getDivisionById, updateDivision, deleteDivision } from '../services/firestoreService';
 import './DivisionsPage.css';
-import { Division } from './DivisionsPage';
 import DivisionFormModal from '../components/DivisionFormModal';
+
+// local Division shape (loose) — avoid importing a type from DivisionsPage so both jsx/tsx variants work
+interface Division {
+  id?: string;
+  name?: string;
+  description?: string;
+  leadName?: string;
+  leadRole?: string;
+  stats?: { personnel?: number; activeRequests?: number; completedThisMonth?: number; avgResponseTime?: string } | null;
+}
 
 export default function DivisionDetail(): React.ReactElement {
   const { id } = useParams();
