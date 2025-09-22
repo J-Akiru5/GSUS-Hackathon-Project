@@ -4,7 +4,7 @@ import { useSidebar } from '../contexts/SidebarContext';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './GSUSHeader.css';
 import bannerSrc from '../assets/GSUSBanner.svg';
-import { listenToUsers, listenToDivisions } from '../services/firestoreService';
+import { listenToUsers, listenToDivisions, listenToRequests, listenToBookings, listenToFeedback } from '../services/firestoreService';
 
 // Small mobile-only button to toggle the offcanvas sidebar
 function MobileSidebarButton() {
@@ -33,6 +33,10 @@ export default function GSUSHeader() {
   const location = useLocation();
   const [personnelCount, setPersonnelCount] = useState(null);
   const [divisionsCount, setDivisionsCount] = useState(null);
+  const [requestsCount, setRequestsCount] = useState(null);
+  const [bookingsCount, setBookingsCount] = useState(null);
+  const [feedbackCount, setFeedbackCount] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const unsubP = listenToUsers((data, err) => {
@@ -43,7 +47,43 @@ export default function GSUSHeader() {
       if (err) { setDivisionsCount(null); return; }
       setDivisionsCount(Array.isArray(data) ? data.length : 0);
     });
-    return () => { if (typeof unsubP === 'function') unsubP(); if (typeof unsubD === 'function') unsubD(); };
+    const unsubR = listenToRequests((data, err) => {
+      if (err) { setRequestsCount(null); return; }
+      setRequestsCount(Array.isArray(data) ? data.length : 0);
+    });
+    const unsubB = listenToBookings((data, err) => {
+      if (err) { setBookingsCount(null); return; }
+      setBookingsCount(Array.isArray(data) ? data.length : 0);
+    });
+    const unsubF = listenToFeedback((data, err) => {
+      if (err) { setFeedbackCount(null); return; }
+      setFeedbackCount(Array.isArray(data) ? data.length : 0);
+    });
+    return () => {
+      if (typeof unsubP === 'function') unsubP();
+      if (typeof unsubD === 'function') unsubD();
+      if (typeof unsubR === 'function') unsubR();
+      if (typeof unsubB === 'function') unsubB();
+      if (typeof unsubF === 'function') unsubF();
+    };
+  }, []);
+
+  // simple responsive detection so we can move actions off the banner onto the mobile heading
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      setIsMobile(false);
+      return;
+    }
+    const mq = window.matchMedia('(max-width: 767px)');
+    const onChange = () => setIsMobile(mq.matches);
+    // initialize
+    onChange();
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else mq.addListener(onChange);
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener('change', onChange);
+      else mq.removeListener(onChange);
+    };
   }, []);
 
   // determine whether to show header actions (when banner is hidden or on certain pages)
@@ -79,8 +119,8 @@ export default function GSUSHeader() {
           <img src={bannerSrc} alt="GSUS banner" className="gsus-banner-img" />
         </div>
 
-        {/* Bottom-right actionable cluster inside the banner - show Divisions actions only */}
-        {!hideBannerActions && (
+        {/* Bottom-right actionable cluster inside the banner - only show on desktop/tablet; mobile shows actions on mobile heading */}
+        {!hideBannerActions && !isMobile && (
           <div className="gsus-right-bottom">
             {location && location.pathname && location.pathname.startsWith('/divisions') && (
               <div className="header-personnel">
@@ -112,14 +152,44 @@ export default function GSUSHeader() {
           {pageSubtitle && <div className="mobile-page-subtitle">{pageSubtitle}</div>}
         </div>
         <div className="mobile-heading-actions">
-          {/* replicate actions: hide on configured routes; on divisions show Add Division only */}
-          {!hideBannerActions && (
+          {/* On mobile, render the small label/count + action buttons inside the mobile heading */}
+          {!hideBannerActions && isMobile && (
             <>
               {path.startsWith('/divisions') && (
-                <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+                <div className="mobile-action-block">
+                  <div className="mobile-action-label">Divisions</div>
+                  <div className="mobile-action-count">{divisionsCount === null ? '...' : divisionsCount}</div>
+                  {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                    <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+                  )}
+                </div>
               )}
               {path.startsWith('/personnel') && (
-                <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+                <div className="mobile-action-block">
+                  <div className="mobile-action-label">Personnel</div>
+                  <div className="mobile-action-count">{personnelCount === null ? '...' : personnelCount}</div>
+                  {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                    <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+                  )}
+                </div>
+              )}
+              {path.startsWith('/requests') && (
+                <div className="mobile-action-block">
+                  <div className="mobile-action-label">{requestsCount === null ? '...' : `${requestsCount} requests`}</div>
+                  <button className="mobile-action-btn btn btn-primary" onClick={() => window.dispatchEvent(new CustomEvent('gsus:open-add-request'))}>Add Request</button>
+                </div>
+              )}
+              {path.startsWith('/calendar') && (
+                <div className="mobile-action-block">
+                  <div className="mobile-action-label">{bookingsCount === null ? '...' : `${bookingsCount} bookings`}</div>
+                  <button className="mobile-action-btn btn btn-primary" onClick={() => window.dispatchEvent(new CustomEvent('gsus:open-add-booking'))}>Add Booking</button>
+                </div>
+              )}
+              {path.startsWith('/analytics') && (
+                <div className="mobile-action-block">
+                  <div className="mobile-action-label">{feedbackCount === null ? '...' : `${feedbackCount} feedback`}</div>
+                  <button className="mobile-action-btn btn btn-primary" onClick={() => window.print()}>Print Feedback</button>
+                </div>
               )}
             </>
           )}

@@ -334,6 +334,36 @@ body.hide-banner .gsus-header {
   font-size: 0.85rem;
 }
 
+/* Compact mobile action block used inside .mobile-heading-actions */
+.mobile-action-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.mobile-action-label {
+  font-size: 0.82rem;
+  color: rgba(2,6,23,0.85);
+  font-weight: 600;
+}
+.mobile-action-count {
+  background: rgba(2,6,23,0.06);
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+.mobile-action-btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}
+
+@media (max-width: 420px) {
+  .mobile-action-label { font-size: 0.78rem; }
+  .mobile-action-count { font-size: 0.72rem; padding: 0.2rem 0.4rem; }
+  .mobile-action-btn { padding: 0.3rem 0.5rem; font-size: 0.78rem; }
+}
+
 /* Ensure the actions slot to the very right is interactive */
 .gsus-actions-slot {
   pointer-events: auto;
