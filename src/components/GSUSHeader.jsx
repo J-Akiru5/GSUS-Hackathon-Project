@@ -55,11 +55,25 @@ export default function GSUSHeader() {
     (typeof document !== 'undefined' && document.body.classList.contains('hide-banner')) || ['/calendar', '/chat', '/settings'].includes(location.pathname)
   );
 
+  // compute a compact page title and optional subtitle for mobile heading
+  const routeTitleMap = {
+    '/': ['Home', ''],
+    '/dashboard': ['Dashboard', 'Overview & stats'],
+    '/requests': ['All Requests', 'View and manage requests'],
+    '/calendar': ['Master Calendar', 'Unified bookings & requests'],
+    '/divisions': ['Divisions', 'Manage organizational divisions'],
+    '/personnel': ['Personnel', 'Manage staff & roles'],
+    '/analytics': ['Analytics', 'Reports & activity'],
+    '/chat': ['Chat', 'Conversations']
+  };
+  const path = location?.pathname || '/';
+  const [pageTitle, pageSubtitle] = routeTitleMap[path] || [path.replace('/', '') || 'Page', ''];
+
   return (
     <header className="gsus-header">
       {/* Mobile toolbar: sidebar toggle for small viewports */}
       <MobileSidebarButton />
-      {/* Banner image visible at the top of the header */}
+      {/* Banner image visible at the top of the header (hidden on mobile; replaced by compact heading) */}
       <div className="gsus-banner">
         <div className="gsus-banner-inner">
           <img src={bannerSrc} alt="GSUS banner" className="gsus-banner-img" />
@@ -95,6 +109,22 @@ export default function GSUSHeader() {
               )}
               <div className="gsus-actions-slot" />
             </>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile compact page heading: replaces banner on small viewports */}
+      <div className="mobile-page-heading" role="region" aria-label="Page heading">
+        <div className="mobile-heading-left">
+          <h2 className="mobile-page-title">{pageTitle}</h2>
+          {pageSubtitle && <div className="mobile-page-subtitle">{pageSubtitle}</div>}
+        </div>
+        <div className="mobile-heading-actions">
+          {/* replicate actions: on divisions show Add Division button, else Add Personnel when appropriate */}
+          {path.startsWith('/divisions') ? (
+            <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+          ) : (
+            !path.startsWith('/requests') && <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
           )}
         </div>
       </div>

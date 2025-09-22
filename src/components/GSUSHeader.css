@@ -200,6 +200,44 @@ body.hide-banner .gsus-header {
   .gsus-header-inner { padding: 0.5rem; }
 }
 
+/* Mobile compact heading that replaces the large banner */
+.mobile-page-heading {
+  display: none; /* visible only on mobile */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(2,6,23,0.04);
+  align-items: center;
+  justify-content: space-between;
+}
+.mobile-heading-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+}
+.mobile-page-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text-dark);
+}
+.mobile-page-subtitle {
+  font-size: 0.82rem;
+  color: rgba(2,6,23,0.6);
+}
+.mobile-heading-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  /* hide the large banner on mobile viewports */
+  .gsus-banner { display: none !important; }
+  .mobile-page-heading { display: flex; }
+}
+
 /* Mobile sidebar button placed at top-left inside header, visible only on mobile */
 .mobile-sidebar-btn {
   position: absolute;
