@@ -31,16 +31,7 @@ export default function GSUSHeader() {
   // Header no longer controls sidebar toggle; the control lives in the sidebar itself
   const navigate = useNavigate();
   const location = useLocation();
-  const [personnelCount, setPersonnelCount] = useState(null);
   const [divisionsCount, setDivisionsCount] = useState(null);
-
-  useEffect(() => {
-    const unsub = listenToUsers((data, err) => {
-      if (err) { setPersonnelCount(null); return; }
-      setPersonnelCount(Array.isArray(data) ? data.length : 0);
-    });
-    return () => { if (typeof unsub === 'function') unsub(); };
-  }, []);
 
   useEffect(() => {
     const unsub = listenToDivisions((data, err) => {
@@ -50,8 +41,8 @@ export default function GSUSHeader() {
     return () => { if (typeof unsub === 'function') unsub(); };
   }, []);
 
-  // determine whether to show the personnel block in the header (even when banner is hidden)
-  const showHeaderPersonnel = !(location && location.pathname && (location.pathname === '/' || location.pathname.startsWith('/dashboard'))) && (
+  // determine whether to show header actions (when banner is hidden or on certain pages)
+  const showHeaderActions = !(location && location.pathname && (location.pathname === '/' || location.pathname.startsWith('/dashboard'))) && (
     (typeof document !== 'undefined' && document.body.classList.contains('hide-banner')) || ['/calendar', '/chat', '/settings'].includes(location.pathname)
   );
 
@@ -119,27 +110,16 @@ export default function GSUSHeader() {
         <div className="gsus-section-left" />
         {/* Right-side: render actionable controls so they're visible even when the banner is hidden */}
         <div className="gsus-section-right">
-          {/* Show personnel/action controls in header when banner is hidden or on specific pages */}
-          {showHeaderPersonnel && (
+          {/* Show Divisions controls in header when banner is hidden or on specific pages */}
+          {showHeaderActions && (
             <>
-              {location && location.pathname && location.pathname.startsWith('/divisions') ? (
+              {location && location.pathname && location.pathname.startsWith('/divisions') && (
                 <>
                   <div className="header-personnel">
                     <div className="personnel-label">Divisions</div>
                     <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
                     {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
                       <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
-                    )}
-                  </div>
-                  <div className="gsus-actions-slot" />
-                </>
-              ) : (
-                <>
-                  <div className="header-personnel">
-                    <div className="personnel-label">Personnel</div>
-                    <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
-                    {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                      <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
                     )}
                   </div>
                   <div className="gsus-actions-slot" />
