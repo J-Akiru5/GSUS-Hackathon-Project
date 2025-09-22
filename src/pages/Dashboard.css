@@ -61,17 +61,18 @@
 }
 
 /* Limit action required panel to show 3 request items and make it scrollable */
+
 .action-required-panel {
   display: flex;
   flex-direction: column;
-  /* Show header + 3 items; 3 * 120px (desktop item height) + header approx 420px */
-  max-height: 420px;
+  /* Max height = header height + 3 compact cards */
+  max-height: calc(var(--section-header-height) + (3 * var(--card-compact-height)));
   overflow-y: auto;
 }
 
 .action-required-panel .request-item {
-  /* slightly reduce min height so 3 items fit better on smaller screens */
-  min-height: 100px;
+  /* match the compact card height used elsewhere */
+  min-height: var(--card-compact-height);
 }
 
 /* scrollbar styling for readability */

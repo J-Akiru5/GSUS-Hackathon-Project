@@ -31,6 +31,7 @@
   gap: 0.75rem;
   cursor: pointer;
   transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  min-height: var(--card-compact-height);
 }
 .division-card:hover { box-shadow: var(--shadow-md); transform: translateY(-4px); }
 
