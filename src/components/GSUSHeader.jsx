@@ -5,6 +5,22 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './GSUSHeader.css';
 import bannerSrc from '../assets/GSUSBanner.svg';
 import { listenToUsers, listenToDivisions } from '../services/firestoreService';
+import { useSidebar } from '../contexts/SidebarContext';
+
+// Small mobile-only button to toggle the offcanvas sidebar
+function MobileSidebarButton() {
+  const { toggle, isDesktop } = useSidebar();
+  if (isDesktop) return null; // only show on mobile
+  return (
+    <button className="mobile-sidebar-btn" onClick={() => toggle()} aria-label="Open menu" title="Open menu">
+      <svg width="22" height="16" viewBox="0 0 22 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+        <rect width="22" height="2" y="0" rx="1" fill="currentColor" />
+        <rect width="22" height="2" y="7" rx="1" fill="currentColor" />
+        <rect width="22" height="2" y="14" rx="1" fill="currentColor" />
+      </svg>
+    </button>
+  );
+}
 
 export default function GSUSHeader() {
   const [now, setNow] = useState(new Date());
@@ -42,6 +58,8 @@ export default function GSUSHeader() {
 
   return (
     <header className="gsus-header">
+      {/* Mobile toolbar: sidebar toggle for small viewports */}
+      <MobileSidebarButton />
       {/* Banner image visible at the top of the header */}
       <div className="gsus-banner">
         <div className="gsus-banner-inner">
