@@ -20,6 +20,7 @@ function renderIcon(name, props = { size: 18, className: 'icon' }) {
   return Icon ? <Icon {...props} /> : null;
 }
 import GlobalModal from '../components/GlobalModal';
+import Card from '../components/Card';
 import './Dashboard.css'; // <-- Use our existing CSS file
 import SectionHeader from '../components/SectionHeader';
 import { listenToPendingRequests, updateRequestStatus, listenToBookings, listenToUsers } from '../services/firestoreService'; // add service imports
@@ -214,9 +215,7 @@ export default function GSODashboard() {
         <StatCard title="Avg Response Time" value="2.3 hours" icon="📄" onClick={() => navigate('/analytics')} />
       </div>
       <div className="dashboard-main-grid">
-        <div className="card action-required-panel">
-          <h3>Action Required</h3>
-          <div className="card-content">
+        <Card title="Action Required" className="action-required-panel">
 
           {loading && <p style={{ color: 'var(--color-text-light)' }}>Loading pending requests...</p>}
           {error && <p style={{ color: 'var(--color-danger)' }}>Error loading requests.</p>}
@@ -264,12 +263,9 @@ export default function GSODashboard() {
             );
           })}
 
-          </div>
-        </div>
+        </Card>
 
-        <div className="card calendar-panel">
-          <h3>Calendar</h3>
-          <div className="card-content">
+        <Card title="Calendar" className="calendar-panel">
 
           {loadingBookings && <p style={{ textAlign: 'center', color: 'var(--color-text-light)', marginTop: '1rem' }}>Loading calendar...</p>}
           {bookingsError && <p style={{ textAlign: 'center', color: 'var(--color-danger)', marginTop: '1rem' }}>Failed to load calendar.</p>}
@@ -297,8 +293,7 @@ export default function GSODashboard() {
 
           {!loadingBookings && bookings.length === 0 && <p style={{ textAlign: 'center', color: 'var(--color-text-light)', marginTop: '2rem' }}>No upcoming bookings.</p>}
 
-          </div>
-        </div>
+        </Card>
       </div>
 
       {/* Audit trail moved to Analytics page per request */}
