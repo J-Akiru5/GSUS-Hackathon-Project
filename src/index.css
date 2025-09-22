@@ -25,13 +25,12 @@
   --sidebar-width: 260px;
   --sidebar-compact-width: 80px;
   --layout-side-gap: 8px;
-    --header-height: 200px;
+  --header-height: 200px;
       /* reduced banner offset so the section header can rise earlier */
       --banner-offset: 220px;
       /* increase overlap so the section header visually sits into the banner area */
       --section-overlap: 28px;
     --section-header-height: 64px;
-    --card-compact-height: 120px;
     --gap-lg: 1.5rem;
     --gap-md: 1rem;
     --gap-sm: 0.5rem;
@@ -220,6 +219,26 @@ body,
     margin-left: 0;
     padding: 0 0.5rem;
   }
+}
+
+/* Mobile responsive tweaks */
+@media (max-width: 640px) {
+  :root {
+    --header-height: 120px; /* shorten header for small screens */
+    --section-header-height: 56px;
+    --sidebar-width: 220px;
+  }
+
+  .gsus-banner-inner, .gsus-header-bar { left: 0; max-width: 100%; }
+
+  /* Make cards full-width within app container for easier tapping */
+  .app-container .card, .app-container .requests-cards { padding: 0.9rem; border-radius: 10px; }
+
+  /* Ensure the floating activity expands to full width near bottom and uses a compact header */
+  .floating-activity { right: 12px; left: 12px; width: auto; bottom: 12px; }
+  .floating-activity .floating-header { padding: 8px; border-radius: 10px; }
+  .floating-activity .floating-list .floating-card { margin-top: 6px; padding: 8px; }
+  .floating-open-btn { padding: 8px; border-radius: 8px; }
 }
 
 /* Layout push logic: on desktop the sidebar participates in layout by default (pushes header and content) */

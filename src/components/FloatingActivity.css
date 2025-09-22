@@ -56,3 +56,21 @@
 
 /* ensure buttons are clickable */
 .floating-activity button { pointer-events: auto; }
+
+/* Mobile: make floating widget wide and pinned at bottom for easy access */
+@media (max-width: 640px) {
+  .floating-activity {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    width: auto;
+    max-width: none;
+    z-index: 10000;
+  }
+
+  .floating-list { max-height: 40vh; overflow: auto; }
+
+  .floating-header { border-radius: 12px; padding: 10px; }
+  .floating-card { margin-top: 6px; padding: 10px; }
+  .floating-empty { padding: 12px; }
+}
