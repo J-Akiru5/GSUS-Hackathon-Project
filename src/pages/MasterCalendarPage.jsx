@@ -12,10 +12,7 @@ import FilterBar from '../components/FilterBar';
 import Popover from '../components/Popover';
 
 export default function MasterCalendarPage() {
-    useEffect(() => {
-        document.body.classList.add('hide-banner');
-        return () => document.body.classList.remove('hide-banner');
-    }, []);
+    // keep banner visible on all pages (do not toggle body.hide-banner here)
 
 
     const [currentDate, setCurrentDate] = useState(new Date());

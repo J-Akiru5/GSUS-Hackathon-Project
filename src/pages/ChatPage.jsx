@@ -10,8 +10,7 @@ import { collection, query, orderBy, addDoc, onSnapshot, serverTimestamp, doc, s
 
 export default function ChatPage() {
   useEffect(() => {
-    document.body.classList.add('hide-banner');
-    return () => document.body.classList.remove('hide-banner');
+    // keep banner visible on chat page
   }, []);
   const [messages, setMessages] = useState([]);
   const [gsoHead, setGsoHead] = useState(null);
