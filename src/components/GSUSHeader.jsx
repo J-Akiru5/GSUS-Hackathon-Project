@@ -69,6 +69,8 @@ export default function GSUSHeader() {
   const path = location?.pathname || '/';
   const [pageTitle, pageSubtitle] = routeTitleMap[path] || [path.replace('/', '') || 'Page', ''];
 
+  const isCalendar = path.startsWith('/calendar');
+
   return (
     <header className="gsus-header">
       {/* Mobile toolbar: sidebar toggle for small viewports */}
@@ -79,38 +81,40 @@ export default function GSUSHeader() {
           <img src={bannerSrc} alt="GSUS banner" className="gsus-banner-img" />
         </div>
 
-        {/* Bottom-right actionable cluster inside the banner */}
-        <div className="gsus-right-bottom">
-          {/* Hide the personnel block on dashboard pages */}
-          {!(location && location.pathname && (location.pathname === '/' || location.pathname.startsWith('/dashboard'))) && (
-            <>
-              {/* Show Divisions block when on /divisions, otherwise show Personnel block */}
-              {location && location.pathname && location.pathname.startsWith('/divisions') ? (
-                <div className="header-personnel">
-                  <div className="personnel-label">Divisions</div>
-                  <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
-                  {/* Hide Add Division on the All Requests page (/requests) - mirrors personnel logic */}
-                  {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                    <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
-                  )}
-                </div>
-              ) : (
-                  // Only render the Personnel block when not on the All Requests page
-                  !(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                    <div className="header-personnel">
-                      <div className="personnel-label">Personnel</div>
-                      <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
-                      {/* Hide Add Personnel on the All Requests page (/requests) */}
-                      {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                        <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
-                      )}
-                    </div>
-                  )
-              )}
-              <div className="gsus-actions-slot" />
-            </>
-          )}
-        </div>
+        {/* Bottom-right actionable cluster inside the banner - hidden on calendar page */}
+        {!isCalendar && (
+          <div className="gsus-right-bottom">
+            {/* Hide the personnel block on dashboard pages */}
+            {!(location && location.pathname && (location.pathname === '/' || location.pathname.startsWith('/dashboard'))) && (
+              <>
+                {/* Show Divisions block when on /divisions, otherwise show Personnel block */}
+                {location && location.pathname && location.pathname.startsWith('/divisions') ? (
+                  <div className="header-personnel">
+                    <div className="personnel-label">Divisions</div>
+                    <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
+                    {/* Hide Add Division on the All Requests page (/requests) - mirrors personnel logic */}
+                    {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                      <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+                    )}
+                  </div>
+                ) : (
+                    // Only render the Personnel block when not on the All Requests page
+                    !(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                      <div className="header-personnel">
+                        <div className="personnel-label">Personnel</div>
+                        <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
+                        {/* Hide Add Personnel on the All Requests page (/requests) */}
+                        {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                          <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+                        )}
+                      </div>
+                    )
+                )}
+                <div className="gsus-actions-slot" />
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Mobile compact page heading: replaces banner on small viewports */}
@@ -120,12 +124,12 @@ export default function GSUSHeader() {
           {pageSubtitle && <div className="mobile-page-subtitle">{pageSubtitle}</div>}
         </div>
         <div className="mobile-heading-actions">
-          {/* replicate actions: on divisions show Add Division button, else Add Personnel when appropriate */}
-          {path.startsWith('/divisions') ? (
+          {/* replicate actions: hide on calendar; on divisions show Add Division, else Add Personnel when appropriate */}
+          {!isCalendar && (path.startsWith('/divisions') ? (
             <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
           ) : (
             !path.startsWith('/requests') && <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
-          )}
+          ))}
         </div>
       </div>
 
