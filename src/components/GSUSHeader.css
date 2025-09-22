@@ -153,6 +153,11 @@
   margin: 0;
 }
 
+/* Hide the portal title/subtitle inside the banner on small screens so the compact heading appears instead */
+@media (max-width: 900px) {
+  .gsus-section-left .section-header-title-portal { display: none !important; }
+}
+
 /* Right-side container: allow interactions and pin to viewport right */
 .gsus-section-right {
   pointer-events: auto;
