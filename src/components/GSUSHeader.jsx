@@ -83,38 +83,19 @@ export default function GSUSHeader() {
           <img src={bannerSrc} alt="GSUS banner" className="gsus-banner-img" />
         </div>
 
-  {/* Bottom-right actionable cluster inside the banner - hidden on selected pages */}
-  {!hideBannerActions && (
+        {/* Bottom-right actionable cluster inside the banner - show Divisions actions only */}
+        {!hideBannerActions && (
           <div className="gsus-right-bottom">
-            {/* Hide the personnel block on dashboard pages */}
-            {!(location && location.pathname && (location.pathname === '/' || location.pathname.startsWith('/dashboard'))) && (
-              <>
-                {/* Show Divisions block when on /divisions, otherwise show Personnel block */}
-                {location && location.pathname && location.pathname.startsWith('/divisions') ? (
-                  <div className="header-personnel">
-                    <div className="personnel-label">Divisions</div>
-                    <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
-                    {/* Hide Add Division on the All Requests page (/requests) - mirrors personnel logic */}
-                    {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                      <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
-                    )}
-                  </div>
-                ) : (
-                    // Only render the Personnel block when not on the All Requests page
-                    !(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                      <div className="header-personnel">
-                        <div className="personnel-label">Personnel</div>
-                        <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
-                        {/* Hide Add Personnel on the All Requests page (/requests) */}
-                        {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                          <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
-                        )}
-                      </div>
-                    )
+            {location && location.pathname && location.pathname.startsWith('/divisions') && (
+              <div className="header-personnel">
+                <div className="personnel-label">Divisions</div>
+                <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
+                {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                  <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
                 )}
-                <div className="gsus-actions-slot" />
-              </>
+              </div>
             )}
+            <div className="gsus-actions-slot" />
           </div>
         )}
       </div>
@@ -126,12 +107,10 @@ export default function GSUSHeader() {
           {pageSubtitle && <div className="mobile-page-subtitle">{pageSubtitle}</div>}
         </div>
         <div className="mobile-heading-actions">
-          {/* replicate actions: hide on configured routes; on divisions show Add Division, else Add Personnel when appropriate */}
-          {!hideBannerActions && (path.startsWith('/divisions') ? (
+          {/* replicate actions: hide on configured routes; on divisions show Add Division only */}
+          {!hideBannerActions && path.startsWith('/divisions') && (
             <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
-          ) : (
-            !path.startsWith('/requests') && <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
-          ))}
+          )}
         </div>
       </div>
 
