@@ -31,14 +31,19 @@ export default function GSUSHeader() {
   // Header no longer controls sidebar toggle; the control lives in the sidebar itself
   const navigate = useNavigate();
   const location = useLocation();
+  const [personnelCount, setPersonnelCount] = useState(null);
   const [divisionsCount, setDivisionsCount] = useState(null);
 
   useEffect(() => {
-    const unsub = listenToDivisions((data, err) => {
+    const unsubP = listenToUsers((data, err) => {
+      if (err) { setPersonnelCount(null); return; }
+      setPersonnelCount(Array.isArray(data) ? data.length : 0);
+    });
+    const unsubD = listenToDivisions((data, err) => {
       if (err) { setDivisionsCount(null); return; }
       setDivisionsCount(Array.isArray(data) ? data.length : 0);
     });
-    return () => { if (typeof unsub === 'function') unsub(); };
+    return () => { if (typeof unsubP === 'function') unsubP(); if (typeof unsubD === 'function') unsubD(); };
   }, []);
 
   // determine whether to show header actions (when banner is hidden or on certain pages)
@@ -86,6 +91,15 @@ export default function GSUSHeader() {
                 )}
               </div>
             )}
+            {location && location.pathname && location.pathname.startsWith('/personnel') && (
+              <div className="header-personnel">
+                <div className="personnel-label">Personnel</div>
+                <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
+                {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
+                  <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+                )}
+              </div>
+            )}
             <div className="gsus-actions-slot" />
           </div>
         )}
@@ -99,8 +113,15 @@ export default function GSUSHeader() {
         </div>
         <div className="mobile-heading-actions">
           {/* replicate actions: hide on configured routes; on divisions show Add Division only */}
-          {!hideBannerActions && path.startsWith('/divisions') && (
-            <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+          {!hideBannerActions && (
+            <>
+              {path.startsWith('/divisions') && (
+                <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+              )}
+              {path.startsWith('/personnel') && (
+                <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+              )}
+            </>
           )}
         </div>
       </div>
