@@ -69,7 +69,9 @@ export default function GSUSHeader() {
   const path = location?.pathname || '/';
   const [pageTitle, pageSubtitle] = routeTitleMap[path] || [path.replace('/', '') || 'Page', ''];
 
-  const isCalendar = path.startsWith('/calendar');
+  // routes where banner actions should be hidden (configurable)
+  const hideBannerActionsOn = ['/calendar', '/settings'];
+  const hideBannerActions = hideBannerActionsOn.some(p => path.startsWith(p));
 
   return (
     <header className="gsus-header">
@@ -81,8 +83,8 @@ export default function GSUSHeader() {
           <img src={bannerSrc} alt="GSUS banner" className="gsus-banner-img" />
         </div>
 
-        {/* Bottom-right actionable cluster inside the banner - hidden on calendar page */}
-        {!isCalendar && (
+  {/* Bottom-right actionable cluster inside the banner - hidden on selected pages */}
+  {!hideBannerActions && (
           <div className="gsus-right-bottom">
             {/* Hide the personnel block on dashboard pages */}
             {!(location && location.pathname && (location.pathname === '/' || location.pathname.startsWith('/dashboard'))) && (
@@ -124,8 +126,8 @@ export default function GSUSHeader() {
           {pageSubtitle && <div className="mobile-page-subtitle">{pageSubtitle}</div>}
         </div>
         <div className="mobile-heading-actions">
-          {/* replicate actions: hide on calendar; on divisions show Add Division, else Add Personnel when appropriate */}
-          {!isCalendar && (path.startsWith('/divisions') ? (
+          {/* replicate actions: hide on configured routes; on divisions show Add Division, else Add Personnel when appropriate */}
+          {!hideBannerActions && (path.startsWith('/divisions') ? (
             <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
           ) : (
             !path.startsWith('/requests') && <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
