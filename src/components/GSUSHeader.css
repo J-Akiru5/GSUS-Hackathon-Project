@@ -153,6 +153,11 @@
   margin: 0;
 }
 
+/* Hide the portal title/subtitle inside the banner on small screens so the compact heading appears instead */
+@media (max-width: 900px) {
+  .gsus-section-left .section-header-title-portal { display: none !important; }
+}
+
 /* Right-side container: allow interactions and pin to viewport right */
 .gsus-section-right {
   pointer-events: auto;
@@ -198,6 +203,65 @@ body.hide-banner .gsus-header {
 @media (max-width: 720px) {
   .gsus-nav { display: none; }
   .gsus-header-inner { padding: 0.5rem; }
+}
+
+/* Mobile compact heading that replaces the large banner */
+.mobile-page-heading {
+  display: none; /* visible only on mobile */
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(2,6,23,0.04);
+  align-items: center;
+  justify-content: space-between;
+}
+.mobile-heading-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
+}
+.mobile-page-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--color-text-dark);
+}
+.mobile-page-subtitle {
+  font-size: 0.82rem;
+  color: rgba(2,6,23,0.6);
+}
+.mobile-heading-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  /* keep the banner visible on mobile, but reduce its height so it sits above the compact heading */
+  .gsus-banner { display: block !important; height: auto; }
+  .gsus-banner-img { object-fit: contain; height: auto; max-height: 160px; object-position: top center; }
+  .mobile-page-heading { display: flex; }
+  /* allow the header to expand to contain banner + mobile heading */
+  .gsus-header { height: auto; }
+}
+
+/* Mobile sidebar button placed at top-left inside header, visible only on mobile */
+.mobile-sidebar-btn {
+  position: fixed; /* fixed so it remains visible when header/banner are hidden */
+  left: 12px;
+  top: 12px;
+  z-index: 100005; /* above most UI layers (datetime-pill is 99999) */
+  display: none; /* show only on small screens below */
+  background: transparent;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+  .mobile-sidebar-btn { display: inline-flex; }
 }
 
 .gsus-header-actions {
@@ -268,6 +332,36 @@ body.hide-banner .gsus-header {
 .header-personnel .btn {
   padding: 0.45rem 0.6rem;
   font-size: 0.85rem;
+}
+
+/* Compact mobile action block used inside .mobile-heading-actions */
+.mobile-action-block {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.mobile-action-label {
+  font-size: 0.82rem;
+  color: rgba(2,6,23,0.85);
+  font-weight: 600;
+}
+.mobile-action-count {
+  background: rgba(2,6,23,0.06);
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+.mobile-action-btn {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}
+
+@media (max-width: 420px) {
+  .mobile-action-label { font-size: 0.78rem; }
+  .mobile-action-count { font-size: 0.72rem; padding: 0.2rem 0.4rem; }
+  .mobile-action-btn { padding: 0.3rem 0.5rem; font-size: 0.78rem; }
 }
 
 /* Ensure the actions slot to the very right is interactive */
