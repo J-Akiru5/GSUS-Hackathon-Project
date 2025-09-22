@@ -128,8 +128,9 @@
 /* priority label */
 .priority-label {
   font-weight: 600;
-  padding: 0.25rem 0.5rem;
+  padding: 0.15rem 0.4rem;
   border-radius: 6px;
+  font-size: 0.75rem;
 }
 
 .priority-high {
@@ -158,7 +159,7 @@
 /* keep compatibility with older class name */
 .request-actions { display: flex; align-items: center; gap: 0.5rem; }
 .btn svg { margin-right: 0.5rem; }
-.priority-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 600; font-size: 0.8rem; color: white; }
+.priority-badge { display: inline-block; padding: 0.15rem 0.45rem; border-radius: 9999px; font-weight: 600; font-size: 0.75rem; color: white; }
 .clickable {
   cursor: pointer;
 }
