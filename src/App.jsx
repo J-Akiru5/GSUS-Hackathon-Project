@@ -25,17 +25,26 @@ import DivisionsPage from './pages/DivisionsPage';
 const HeaderWrapper = ({ children }) => {
   const location = useLocation();
   const hidePaths = ['/calendar', '/chat', '/settings'];
-  // hide for path prefixes so subpaths like /chat/123 are included
-  const hideHeader = hidePaths.some(p => location.pathname.startsWith(p));
+  // detect mobile viewport so we can force header visible on small screens
+  const [isMobile, setIsMobile] = React.useState(() => (typeof window !== 'undefined' ? window.matchMedia('(max-width: 900px)').matches : false));
 
   React.useEffect(() => {
-    if (hideHeader) {
-      document.body.classList.add('hide-banner');
-    } else {
-      document.body.classList.remove('hide-banner');
-    }
+    const mq = window.matchMedia('(max-width: 900px)');
+    const onChange = (e) => setIsMobile(e.matches);
+    try { mq.addEventListener('change', onChange); } catch { mq.addListener(onChange); }
+    return () => { try { mq.removeEventListener('change', onChange); } catch { mq.removeListener(onChange); } };
+  }, []);
+
+  // On mobile we always show the header. On web, use the hidePaths logic.
+  const hideHeaderOnWeb = hidePaths.some(p => location.pathname.startsWith(p));
+  const hideHeader = !isMobile && hideHeaderOnWeb;
+
+  // Only manipulate the body class for web - mobile should always display banner/header
+  React.useEffect(() => {
+    if (!isMobile && hideHeaderOnWeb) document.body.classList.add('hide-banner');
+    else document.body.classList.remove('hide-banner');
     return () => { document.body.classList.remove('hide-banner'); };
-  }, [hideHeader]);
+  }, [isMobile, hideHeaderOnWeb]);
 
   return (
     <div>
