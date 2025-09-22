@@ -14,6 +14,7 @@ import ChatPage from './pages/ChatPage';
 import GSUSHeader from './components/GSUSHeader'; // <-- new import
 import DivisionsPage from './pages/DivisionsPage';
 import DivisionDetail from './pages/DivisionDetail.jsx';
+import FloatingActivity from './components/FloatingActivity';
 
 // This component is now safely inside the Router, so useLocation will work.
 export default function Layout() {
@@ -39,6 +40,7 @@ export default function Layout() {
           <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </main>
+      <FloatingActivity />
     </>
   );
 }
