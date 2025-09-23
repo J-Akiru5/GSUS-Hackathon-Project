@@ -14,16 +14,16 @@
 }
 
 /* High-level layout: make calendar occupy the full viewport while keeping SectionHeader above */
-.calendar-page {
+.calendar-grid {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
         font-size: 1.03rem;
         height: 100vh;
         /* full viewport */
-        min-height: 0;
-        overflow: hidden;
-        /* we'll make inner areas scroll */
+    height: 100%;
+    min-height: 0;
+    overflow: visible; /* make month view non-scrollable */
 }
 
 /* card becomes the flexible container that fills remaining space under SectionHeader */
@@ -162,9 +162,9 @@
     display: flex;
     flex-direction: column;
     gap: 0.45rem;
-    max-height: calc(100% - 1.2rem);
-        overflow: auto;
-    }
+    max-height: none; /* no internal scrolling; we only render two items */
+    overflow: visible;
+}
     
     .event-item {
         display: flex;
@@ -217,6 +217,17 @@
     border-radius: 4px;
     background: rgba(0,0,0,0.03);
     display: inline-block;
+}
+
+/* smaller inline more button positioned beside the day label */
+.more-indicator-inline {
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    margin-left: 6px;
+    background: transparent;
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    border: 1px solid rgba(0,0,0,0.06);
 }
 
 /* Popover for "more" items should float above */
