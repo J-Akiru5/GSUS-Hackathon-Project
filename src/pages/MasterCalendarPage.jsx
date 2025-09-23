@@ -373,15 +373,17 @@ export default function MasterCalendarPage() {
 
     const renderMonthView = () => (
         <div className="calendar-grid">
-            {dayNames.map((day) => (<div key={day} className="day-header">{day}</div>))}
             {days.map((day, index) => {
                 const events = getEventsForDate(day);
                 const isToday = day && day.toDateString() === new Date().toDateString();
                 return (
                     <div key={index} className={`day-cell ${!day ? "disabled" : ""} ${isToday ? "today" : ""}`}>
-                        {day && (
+                        {day ? (
                             <>
-                                <div className="day-number">{day.getDate()}</div>
+                                <div className="day-number">
+                                    <span className="date-num">{day.getDate()}</span>
+                                    <span className="weekday-label">{dayNames[day.getDay()]}</span>
+                                </div>
                                 <div className="events-container" style={{ position: 'relative' }}>
                                     {events.slice(0, 3).map((event) => {
                                         const { className, Icon } = getTypeProps(event.type);
@@ -401,6 +403,8 @@ export default function MasterCalendarPage() {
                                     )}
                                 </div>
                             </>
+                        ) : (
+                            <div className="day-number"><span className="date-num">&nbsp;</span></div>
                         )}
                     </div>
                 );
@@ -492,7 +496,7 @@ export default function MasterCalendarPage() {
     return (
         <>
             <div className="page-content calendar-page">
-                {/* build filters for center area */}
+                {/* keep SectionHeader outside the scrolling calendar body so it stays visible */}
                 {(() => {
                     const centerFilters = (
                         <FilterBar
@@ -519,7 +523,7 @@ export default function MasterCalendarPage() {
                     );
                 })()}
 
-                <div className="card calendar-card full-viewport">
+                <div className="card calendar-card">
                     <div className="calendar-controls">
                         <div className="calendar-title">
                             <Calendar className="icon" />
