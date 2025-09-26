@@ -1,62 +1,60 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import './DivisionFormModal.css';
 
-export default function DivisionFormModal({ open, initial = {}, onClose, onSave, saving = false }) {
-  const [name, setName] = useState(initial.name || '');
-  const [description, setDescription] = useState(initial.description || '');
-  const [error, setError] = useState(null);
+export default function DivisionFormModal({ open, initial, onClose, onSave, saving }) {
+  const [form, setForm] = useState({ name: '', description: '', leadName: '', leadRole: '' });
 
   useEffect(() => {
-    setName(initial.name || '');
-    setDescription(initial.description || '');
-    setError(null);
+    if (initial) setForm({
+      name: initial.name || '',
+      description: initial.description || '',
+      leadName: initial.leadName || '',
+      leadRole: initial.leadRole || ''
+    });
+    else setForm({ name: '', description: '', leadName: '', leadRole: '' });
   }, [initial, open]);
 
   if (!open) return null;
 
-  const handleSubmit = async (e) => {
+  const change = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  const submit = async (e) => {
     e.preventDefault();
-    setError(null);
-    if (!name || !name.trim()) {
-      setError('Name is required');
-      return;
-    }
-    try {
-      await onSave({ name: name.trim(), description: description.trim() });
-      onClose();
-    } catch (err) {
-      setError((err && err.message) || 'Save failed');
-    }
+    if (typeof onSave === 'function') await onSave({ name: form.name, description: form.description, leadName: form.leadName, leadRole: form.leadRole });
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-card">
-        <form onSubmit={handleSubmit}>
+    <div className="division-modal-backdrop" onMouseDown={onClose} role="dialog" aria-modal="true">
+      <form className="division-modal" onMouseDown={(e) => e.stopPropagation()} onSubmit={submit}>
+        <header className="division-modal-header">
           <h3>{initial && initial.id ? 'Edit Division' : 'New Division'}</h3>
-          <div className="form-row">
-            <label htmlFor="division-name">Name</label>
-            <input id="division-name" placeholder="e.g. Facilities Team" value={name} onChange={e => setName(e.target.value)} />
-          </div>
-          <div className="form-row">
-            <label htmlFor="division-desc">Description</label>
-            <textarea id="division-desc" placeholder="Short description" value={description} onChange={e => setDescription(e.target.value)} />
-          </div>
-          {error && <div className="form-error">{error}</div>}
-          <div className="form-actions">
-            <button type="button" className="btn" onClick={onClose} disabled={saving}>Cancel</button>
-            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
-          </div>
-        </form>
-      </div>
+          <button type="button" className="modal-close" onClick={onClose} aria-label="Close">×</button>
+        </header>
+        <div className="division-modal-body">
+          <label className="field">
+            <div className="label">Name</div>
+            <input value={form.name} onChange={change('name')} required />
+          </label>
+          <label className="field">
+            <div className="label">Description</div>
+            <textarea value={form.description} onChange={change('description')} rows={3} />
+          </label>
+          <label className="field two-up">
+            <div>
+              <div className="label">Lead name</div>
+              <input value={form.leadName} onChange={change('leadName')} />
+            </div>
+            <div>
+              <div className="label">Lead role</div>
+              <input value={form.leadRole} onChange={change('leadRole')} />
+            </div>
+          </label>
+        </div>
+        <footer className="division-modal-footer">
+          <button type="button" className="btn" onClick={onClose}>Cancel</button>
+          <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Saving…' : (initial && initial.id ? 'Save' : 'Create')}</button>
+        </footer>
+      </form>
     </div>
   );
 }
-
-DivisionFormModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  initial: PropTypes.object,
-  onClose: PropTypes.func.isRequired,
-  onSave: PropTypes.func.isRequired,
-  saving: PropTypes.bool,
-};

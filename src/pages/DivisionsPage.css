@@ -161,7 +161,7 @@
 .form-row { display:flex; flex-direction:column; gap:6px; margin-bottom:0.75rem; }
 .form-row input, .form-row textarea { padding:8px 10px; border:1px solid var(--color-border); border-radius:8px; font-size:0.95rem; }
 .form-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:0.5rem; }
-.form-error { color: var(--color-danger); margin-bottom:0.5rem; }
-
-
-
+.form-error {
+  color: var(--color-danger);
+  margin-bottom: 0.5rem;
+}

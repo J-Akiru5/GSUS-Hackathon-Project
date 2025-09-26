@@ -306,6 +306,29 @@ export default function MasterCalendarPage() {
         );
     }
 
+    // inline variant used beside date label for month view
+    function MoreIndicatorInline({ events }) {
+        const [open, setOpen] = useState(false);
+        const anchorRef = useRef(null);
+        return (
+            <>
+                <button ref={anchorRef} className="more-indicator-inline" onClick={() => setOpen(v => !v)} aria-haspopup="dialog" aria-expanded={open} aria-controls="more-popover">+{events.length}</button>
+                <Popover
+                    anchorRef={anchorRef}
+                    open={open}
+                    onClose={() => setOpen(false)}
+                    ariaLabel={`More events (${events.length})`}
+                >
+                    <div id="more-popover" className="popover-list" role="list">
+                        {events.map(ev => (
+                            <button key={ev.id} className="popover-item" onClick={() => { setSelectedEvent(ev); setOpen(false); }}>{ev.title}</button>
+                        ))}
+                    </div>
+                </Popover>
+            </>
+        );
+    }
+
     const formatHourLabel = (h) => {
         if (timeFormat24) return `${String(h).padStart(2, '0')}:00`;
         const am = h < 12; const hour = ((h + 11) % 12) + 1; return `${hour}:00 ${am ? 'AM' : 'PM'}`;
@@ -373,17 +396,24 @@ export default function MasterCalendarPage() {
 
     const renderMonthView = () => (
         <div className="calendar-grid">
-            {dayNames.map((day) => (<div key={day} className="day-header">{day}</div>))}
             {days.map((day, index) => {
                 const events = getEventsForDate(day);
                 const isToday = day && day.toDateString() === new Date().toDateString();
+                const visible = events.slice(0, 2); // show max 2 items
+                const hidden = events.slice(2);
                 return (
                     <div key={index} className={`day-cell ${!day ? "disabled" : ""} ${isToday ? "today" : ""}`}>
-                        {day && (
+                        {day ? (
                             <>
-                                <div className="day-number">{day.getDate()}</div>
+                                <div className="day-number">
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <span className="date-num">{day.getDate()}</span>
+                                        <span className="weekday-label">{dayNames[day.getDay()]}</span>
+                                        {hidden.length > 0 && <MoreIndicatorInline events={hidden} />}
+                                    </div>
+                                </div>
                                 <div className="events-container" style={{ position: 'relative' }}>
-                                    {events.slice(0, 3).map((event) => {
+                                    {visible.map((event) => {
                                         const { className, Icon } = getTypeProps(event.type);
                                         return (
                                             <div
@@ -392,15 +422,14 @@ export default function MasterCalendarPage() {
                                                 onClick={() => setSelectedEvent(event)}
                                             >
                                                 <Icon size={14} />
-                                                <span title={event.title}>{event.title}</span>
+                                                <div className="event-title" title={event.title}>{event.title}</div>
                                             </div>
                                         );
                                     })}
-                                    {events.length > 3 && (
-                                        <MoreIndicator events={events.slice(3)} />
-                                    )}
                                 </div>
                             </>
+                        ) : (
+                            <div className="day-number"><span className="date-num">&nbsp;</span></div>
                         )}
                     </div>
                 );
@@ -492,7 +521,7 @@ export default function MasterCalendarPage() {
     return (
         <>
             <div className="page-content calendar-page">
-                {/* build filters for center area */}
+                {/* keep SectionHeader outside the scrolling calendar body so it stays visible */}
                 {(() => {
                     const centerFilters = (
                         <FilterBar
@@ -519,7 +548,7 @@ export default function MasterCalendarPage() {
                     );
                 })()}
 
-                <div className="card calendar-card full-viewport">
+                <div className="card calendar-card">
                     <div className="calendar-controls">
                         <div className="calendar-title">
                             <Calendar className="icon" />
