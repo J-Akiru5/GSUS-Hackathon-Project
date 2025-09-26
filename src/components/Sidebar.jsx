@@ -10,7 +10,7 @@ import Offcanvas from 'react-bootstrap/Offcanvas';
 
 // Small local component: hamburger that toggles compact on desktop and toggles offcanvas on mobile
 const SidebarToggle = () => {
-  const { toggle, toggleCompact, isDesktop } = useSidebar();
+  const { toggleCompact, isDesktop, toggle } = useSidebar();
   return (
     <button
       className="sidebar-toggle"
@@ -35,7 +35,8 @@ const Sidebar = () => {
 
   const sidebarRef = useRef(null);
   // use the SidebarContext provided by SidebarProvider in main.jsx
-  const { open, close, toggle, openSidebar, compact, isDesktop } = useSidebar();
+  // open/close/compact/isDesktop are used; keep named for clarity
+  const { open, close, compact, isDesktop } = useSidebar();
   const [unreadCount, setUnreadCount] = useState(0);
 
   // monitor unread messages for current user vs GSO Head
@@ -67,7 +68,7 @@ const Sidebar = () => {
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape' && open) {
-        try { close(); } catch (err) { /* noop */ }
+        try { close(); } catch { /* ignore close errors */ }
       }
     };
     window.addEventListener('keydown', onKey);
@@ -83,7 +84,7 @@ const Sidebar = () => {
       const prev = document.activeElement;
       el.focus();
       return () => {
-        try { prev?.focus?.(); } catch (e) { }
+        try { prev?.focus?.(); } catch { /* ignore focus restore errors */ }
       };
     }
   }, [open]);
@@ -102,14 +103,22 @@ const Sidebar = () => {
                 <h1 className="logo-text">GSUS</h1>
               </div>
               <nav className="sidebar-nav">
-                <NavLink to="/dashboard" className="nav-item" title="Dashboard"><FiGrid className="nav-icon" /><span className="nav-label">Dashboard</span></NavLink>
-                <NavLink to="/requests" className="nav-item" title="All Requests"><FiFileText className="nav-icon" /><span className="nav-label">All Requests</span></NavLink>
-                <NavLink to="/calendar" className="nav-item" title="Master Calendar"><FiCalendar className="nav-icon" /><span className="nav-label">Master Calendar</span></NavLink>
-                <NavLink to="/divisions" className="nav-item" title="Divisions"><FiUsers className="nav-icon" /><span className="nav-label">Divisions</span></NavLink>
-                <NavLink to="/chat" className="nav-item" title="Chat"><FiMessageSquare className="nav-icon" /> <span className="nav-label">Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</span></NavLink>
-                <NavLink to="/personnel" className="nav-item" title="Personnel"><FiUsers className="nav-icon" /><span className="nav-label">Personnel</span></NavLink>
-                <NavLink to="/analytics" className="nav-item" title="Analytics"><FiBarChart2 className="nav-icon" /><span className="nav-label">Analytics</span></NavLink>
-                <NavLink to="/settings" className="nav-item" title="Settings"><FiSettings className="nav-icon" /><span className="nav-label">Settings</span></NavLink>
+                <div className="nav-section">
+                  <div className="nav-section-title">MAIN NAVIGATION</div>
+                  <NavLink to="/dashboard" className="nav-item" title="Dashboard"><FiGrid className="nav-icon" /><span className="nav-label">Dashboard</span></NavLink>
+                  <NavLink to="/requests" className="nav-item" title="All Requests"><FiFileText className="nav-icon" /><span className="nav-label">All Requests</span></NavLink>
+                  <NavLink to="/analytics" className="nav-item" title="Analytics"><FiBarChart2 className="nav-icon" /><span className="nav-label">Analytics</span></NavLink>
+                  <NavLink to="/divisions" className="nav-item" title="Divisions"><FiUsers className="nav-icon" /><span className="nav-label">Divisions</span></NavLink>
+                  <NavLink to="/personnel" className="nav-item" title="Personnel"><FiUsers className="nav-icon" /><span className="nav-label">Personnel</span></NavLink>
+                  <NavLink to="/chat" className="nav-item" title="Chat"><FiMessageSquare className="nav-icon" /> <span className="nav-label">Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</span></NavLink>
+                </div>
+
+                <div className="nav-section">
+                  <div className="nav-section-title">QUICK ACTIONS</div>
+                  <NavLink to="/calendar" className="nav-item" title="Master Calendar"><FiCalendar className="nav-icon" /><span className="nav-label">Master Calendar</span></NavLink>
+                  <NavLink to="/settings" className="nav-item" title="Settings"><FiSettings className="nav-icon" /><span className="nav-label">Settings</span></NavLink>
+                  <NavLink to="/help" className="nav-item" title="Help"><FiSettings className="nav-icon" /><span className="nav-label">Help</span></NavLink>
+                </div>
               </nav>
             </div>
           <div className="sidebar-footer">
@@ -137,14 +146,21 @@ const Sidebar = () => {
           </Offcanvas.Header>
           <Offcanvas.Body>
             <nav className="sidebar-nav offcanvas-nav">
-              <NavLink to="/dashboard" className="nav-item" title="Dashboard" onClick={() => close()}><FiGrid className="nav-icon" /><span className="nav-label">Dashboard</span></NavLink>
-              <NavLink to="/requests" className="nav-item" title="All Requests" onClick={() => close()}><FiFileText className="nav-icon" /><span className="nav-label">All Requests</span></NavLink>
-              <NavLink to="/calendar" className="nav-item" title="Master Calendar" onClick={() => close()}><FiCalendar className="nav-icon" /><span className="nav-label">Master Calendar</span></NavLink>
-              <NavLink to="/divisions" className="nav-item" title="Divisions" onClick={() => close()}><FiUsers className="nav-icon" /><span className="nav-label">Divisions</span></NavLink>
-              <NavLink to="/chat" className="nav-item" title="Chat" onClick={() => close()}><FiMessageSquare className="nav-icon" /> <span className="nav-label">Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</span></NavLink>
-              <NavLink to="/personnel" className="nav-item" title="Personnel" onClick={() => close()}><FiUsers className="nav-icon" /><span className="nav-label">Personnel</span></NavLink>
-              <NavLink to="/analytics" className="nav-item" title="Analytics" onClick={() => close()}><FiBarChart2 className="nav-icon" /><span className="nav-label">Analytics</span></NavLink>
-              <NavLink to="/settings" className="nav-item" title="Settings" onClick={() => close()}><FiSettings className="nav-icon" /><span className="nav-label">Settings</span></NavLink>
+              <div className="nav-section">
+                <div className="nav-section-title">MAIN NAVIGATION</div>
+                <NavLink to="/dashboard" className="nav-item" title="Dashboard" onClick={() => close()}><FiGrid className="nav-icon" /><span className="nav-label">Dashboard</span></NavLink>
+                <NavLink to="/requests" className="nav-item" title="All Requests" onClick={() => close()}><FiFileText className="nav-icon" /><span className="nav-label">All Requests</span></NavLink>
+                <NavLink to="/analytics" className="nav-item" title="Analytics" onClick={() => close()}><FiBarChart2 className="nav-icon" /><span className="nav-label">Analytics</span></NavLink>
+                <NavLink to="/divisions" className="nav-item" title="Divisions" onClick={() => close()}><FiUsers className="nav-icon" /><span className="nav-label">Divisions</span></NavLink>
+                <NavLink to="/personnel" className="nav-item" title="Personnel" onClick={() => close()}><FiUsers className="nav-icon" /><span className="nav-label">Personnel</span></NavLink>
+                <NavLink to="/chat" className="nav-item" title="Chat" onClick={() => close()}><FiMessageSquare className="nav-icon" /> <span className="nav-label">Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</span></NavLink>
+              </div>
+              <div className="nav-section">
+                <div className="nav-section-title">QUICK ACTIONS</div>
+                <NavLink to="/calendar" className="nav-item" title="Master Calendar" onClick={() => close()}><FiCalendar className="nav-icon" /><span className="nav-label">Master Calendar</span></NavLink>
+                <NavLink to="/settings" className="nav-item" title="Settings" onClick={() => close()}><FiSettings className="nav-icon" /><span className="nav-label">Settings</span></NavLink>
+                <NavLink to="/help" className="nav-item" title="Help" onClick={() => close()}><FiSettings className="nav-icon" /><span className="nav-label">Help</span></NavLink>
+              </div>
             </nav>
             <div style={{ marginTop: 12 }}>
               <div className="user-profile offcanvas-user">
