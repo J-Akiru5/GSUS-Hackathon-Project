@@ -20,6 +20,7 @@ import SettingsPage from './pages/SettingsPage';
 import PersonnelDashboard from './pages/PersonnelDashboard'; // Your "My Tasks" page
 import ChatPage from './pages/ChatPage';
 import DivisionsPage from './pages/DivisionsPage';
+import FeedbacksPage from './pages/FeedbacksPage';
 
 // --- Layout Components ---
 const HeaderWrapper = ({ children }) => {
@@ -100,6 +101,7 @@ function App() {
           <Route path="/personnel" element={<PersonnelPage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/feedbacks" element={<FeedbacksPage />} />
       </Route>
 
       {/* Personnel Routes */}
