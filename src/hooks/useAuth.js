@@ -42,7 +42,7 @@ export const useAuth = () => {
                 if (profile) {
                     // ensure profile stores authUid for future matches
                     if (!profile.authUid || profile.authUid !== fbUser.uid) {
-                        try { await updateUser(profile.id, { authUid: fbUser.uid }); } catch (e) { /* ignore */ }
+                        try { await updateUser(profile.id, { authUid: fbUser.uid }); } catch { /* ignore */ }
                         profile.authUid = fbUser.uid;
                     }
                     setUser(profile);
@@ -66,7 +66,7 @@ export const useAuth = () => {
         // If caller passes just a string role, keep backward compatibility
         if (typeof creds === 'string') creds = { role: creds };
 
-        const { email = '', password = '', role = 'personnel', name } = creds;
+        const { email = '', password: _password = '', role = 'personnel', name } = creds;
 
         // If email is provided, try to find Firestore user — otherwise create a demo local user
         if (email) {
@@ -83,7 +83,7 @@ export const useAuth = () => {
                 // This is gated by VITE_ALLOW_ANON_SIGNIN to avoid accidental anonymous
                 // sign-ins in production. Set VITE_ALLOW_ANON_SIGNIN=true for local/dev only.
                 if (auth && import.meta.env.VITE_ALLOW_ANON_SIGNIN === 'true') {
-                    try { await signInAnonymously(auth); } catch (e) { /* ignore if not permitted */ }
+                    try { await signInAnonymously(auth); } catch { /* ignore if not permitted */ }
                 }
 
                 // navigate based on role
@@ -113,7 +113,7 @@ export const useAuth = () => {
         try {
             // Sign out of Firebase if possible
             if (auth) {
-                try { await signOut(auth); } catch (e) { /* ignore */ }
+                try { await signOut(auth); } catch { /* ignore */ }
             }
         } finally {
             localStorage.removeItem('gsus-user');

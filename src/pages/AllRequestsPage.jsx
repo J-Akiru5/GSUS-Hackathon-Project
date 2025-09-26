@@ -105,7 +105,7 @@ export default function AllRequestsPage() {
         if (!input) return '';
         try {
             return input.replace(/<[^>]*>/g, '');
-        } catch (e) { return String(input); }
+        } catch { return String(input); }
     };
 
     // Small presentational card component with expand/collapse for description and hover actions

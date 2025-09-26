@@ -1,0 +1,19 @@
+.help-page .card { margin-bottom: 1rem; }
+.help-page .card-header { font-weight: 700; }
+.help-page .card-content { color: var(--color-text-dark); }
+
+.faq-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+.faq-item { padding: 0.6rem; border-radius: 8px; background: #fff; }
+.faq-q { font-weight: 700; color: #062514; }
+.faq-a { color: #334155; margin-top: 0.35rem; }
+
+.troubleshoot-block { margin-bottom: 0.75rem; }
+.troubleshoot-title { font-weight: 700; margin-bottom: 0.4rem; }
+
+.video-list { display: grid; gap: 0.5rem; }
+.video-item { padding: 0.5rem; background: #fff; border-radius: 8px; }
+.video-title a { font-weight: 700; color: var(--color-primary); }
+
+.contact-form input, .contact-form textarea { width: 100%; padding: 0.55rem; border: 1px solid #e6edf0; border-radius: 8px; margin-bottom: 0.5rem; }
+.contact-form textarea { min-height: 100px; resize: vertical; }
+.sent-ok { margin-left: 0.75rem; color: var(--color-primary); font-weight: 700; }

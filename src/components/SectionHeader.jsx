@@ -1,10 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import './SectionHeader.css';
 
 export default function SectionHeader({ title, subtitle, actions = null, center = null }) {
   const sentinelRef = useRef(null);
   const [active, setActive] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -15,7 +17,7 @@ export default function SectionHeader({ title, subtitle, actions = null, center 
       const val = getComputedStyle(document.documentElement).getPropertyValue('--header-height');
       const parsed = parseInt(val, 10);
       if (!isNaN(parsed)) headerHeight = parsed;
-    } catch (e) { }
+    } catch (err) { void err; }
 
     const obs = new IntersectionObserver((entries) => {
       entries.forEach(entry => setActive(!entry.isIntersecting));
@@ -34,8 +36,8 @@ export default function SectionHeader({ title, subtitle, actions = null, center 
 
   const titleNode = (
     <div className="section-header-title-portal">
-      <h1 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-text-dark)', fontWeight: 700 }}>{title}</h1>
-      {subtitle ? <div style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>{subtitle}</div> : null}
+      <h1 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-text-dark)', fontWeight: 700 }}>{typeof title === 'string' ? t(title) : title}</h1>
+      {subtitle ? <div style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>{typeof subtitle === 'string' ? t(subtitle) : subtitle}</div> : null}
     </div>
   );
 
@@ -56,8 +58,8 @@ export default function SectionHeader({ title, subtitle, actions = null, center 
       <div className={`section-header ${active ? 'section-header--active' : ''}`} aria-hidden="false">
         <div className="section-header-left">
           <div className="section-header-title">
-            <h1 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-text-dark)', fontWeight: 700 }}>{title}</h1>
-            {subtitle ? <div style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>{subtitle}</div> : null}
+            <h1 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--color-text-dark)', fontWeight: 700 }}>{typeof title === 'string' ? t(title) : title}</h1>
+            {subtitle ? <div style={{ fontSize: '0.95rem', color: 'var(--color-text-muted)' }}>{typeof subtitle === 'string' ? t(subtitle) : subtitle}</div> : null}
           </div>
         </div>
 

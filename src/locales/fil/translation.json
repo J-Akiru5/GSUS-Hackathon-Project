@@ -1,0 +1,70 @@
+{
+  "Settings": "Mga Setting",
+  "Manage your account and system preferences": "I-manage ang iyong account at mga kagustuhan ng sistema",
+  "Profile Settings": "Mga Setting ng Profile",
+  "Full Name": "Buong Pangalan",
+  "Position": "Posisyon",
+  "Email Address": "Email Address",
+  "Phone Number": "Numero ng Telepono",
+  "Department": "Kagawaran",
+  "Change Password": "Palitan ang Password",
+  "Log Out": "Mag-logout",
+  "Save Profile": "I-save ang Profile",
+  "Notification Preferences": "Mga Kagustuhan sa Abiso",
+  "Email on New Request": "Email sa Bagong Request",
+  "Email on Approval": "Email sa Pag-apruba",
+  "SMS for Urgent Requests": "SMS para sa Mahalagang Mga Request",
+  "Push Notifications": "Push Notifications",
+  "Email Digest Frequency": "Dalas ng Email Digest",
+  "System Settings": "Mga Setting ng Sistema",
+  "Theme": "Tema",
+  "Language": "Wika",
+  "English": "Ingles",
+  "Filipino": "Filipino",
+  "Auto Logout (mins)": "Auto Logout (minuto)",
+  "Session Timeout (mins)": "Session Timeout (minuto)",
+  "System settings saved!": "Nai-save ang mga setting ng sistema!",
+  "Save System Settings": "I-save ang Mga Setting ng Sistema",
+  "Security Settings": "Mga Setting ng Seguridad",
+  "Two-Factor Authentication": "Two-Factor Authentication",
+  "Login Alerts": "Login Alerts",
+  "Password Expiry (days)": "Password Expiry (araw)",
+  "Help & Support": "Tulong at Suporta"
+  ,"Main Navigation": "PANGUNAHING NABIGASYON"
+  ,"Quick Actions": "MGA MADALING GAWAIN"
+  ,"Dashboard": "Dashboard"
+  ,"All Requests": "Lahat ng Request"
+  ,"Analytics": "Analytics"
+  ,"Divisions": "Mga Dibisyon"
+  ,"Personnel": "Kawani"
+  ,"Chat": "Chat"
+  ,"Feedbacks": "Feedbacks"
+  ,"Master Calendar": "Master Calendar"
+  ,"Help": "Tulong"
+  ,"Add Division": "Magdagdag ng Dibisyon"
+  ,"Add Personnel": "Magdagdag ng Kawani"
+  ,"Last updated": "Huling in-update"
+  ,"requests": "mga request"
+  ,"bookings": "mga booking"
+  ,"feedback": "feedback"
+  ,"Print Feedback": "I-print ang Feedback"
+  ,"Getting started": "Pagsisimula"
+  ,"If you need help using GSUS, start with these resources:": "Kung kailangan mo ng tulong sa paggamit ng GSUS, magsimula sa mga ito:"
+  ,"create and manage requests and feedback": "gumawa at pamahalaan ang mga request at feedback"
+  ,"view bookings and schedule resources": "tingnan ang bookings at i-iskedyul ang mga resources"
+  ,"review performance metrics and feedback": "suriin ang performance metrics at feedback"
+  ,"Frequently asked questions": "Mga Madalas na Itanong"
+  ,"Troubleshooting": "Pag-troubleshoot"
+  ,"Video Guides": "Mga Video Guide"
+  ,"Contact support": "Makipag-ugnay sa suporta"
+  ,"Your name": "Ang iyong pangalan"
+  ,"Your email": "Ang iyong email"
+  ,"How can we help?": "Paano kami makakatulong?"
+  ,"Send": "Ipadala"
+  ,"Message queued (mock)": "Naka-queue ang mensahe (mock)"
+  ,"Recent Feedback": "Kamakailang Feedback"
+  ,"messages": "mga mensahe"
+  ,"Loading feedback...": "Nilo-load ang feedback..."
+  ,"No feedback available": "Walang feedback"
+  ,"Submitted": "Isinumite"
+}

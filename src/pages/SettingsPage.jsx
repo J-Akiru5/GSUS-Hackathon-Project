@@ -1,13 +1,16 @@
 // src/pages/SettingsPage.jsx
 
-import React, { useState } from "react";
+import React from "react";
 import { User, Bell, Shield, Database, Save, Key, Mail, Phone } from "lucide-react";
 import './SettingsPage.css'; // <-- IMPORT OUR NEW CSS FILE
 import { useAuth } from '../hooks/useAuth'; // <-- added
 import SectionHeader from '../components/SectionHeader';
+import { useTranslation } from 'react-i18next';
+import '../i18n';
 
 export default function SettingsPage() {
     const { logout } = useAuth(); // <-- new
+    const { t, i18n } = useTranslation();
     // For the sprint, we'll just log to the console to show it works
     const showToast = (message, type) => {
         console.log(`[${type.toUpperCase()}] ${message}`);
@@ -16,7 +19,7 @@ export default function SettingsPage() {
 
     return (
         <div className="page-content settings-page">
-            <SectionHeader title="Settings" subtitle="Manage your account and system preferences" />
+            <SectionHeader title={t('Settings')} subtitle={t('Manage your account and system preferences')} />
 
             <div className="settings-grid">
                 {/* Profile Settings */}
@@ -63,8 +66,11 @@ export default function SettingsPage() {
                     <div className="card-header"><Database className="icon" /><h3>System Settings</h3></div>
                     <div className="card-content">
                         <div className="form-grid">
-                            <div className="form-group"><label>Theme</label><select className="filter-select"><option>Light</option><option>Dark</option></select></div>
-                            <div className="form-group"><label>Language</label><select className="filter-select"><option>English</option><option>Filipino</option></select></div>
+                            <div className="form-group"><label>{t('Theme')}</label><select className="filter-select"><option>Light</option><option>Dark</option></select></div>
+                            <div className="form-group"><label>{t('Language')}</label><select className="filter-select" onChange={e => i18n.changeLanguage(e.target.value === 'Filipino' ? 'fil' : 'en')}>
+                                <option>{t('English')}</option>
+                                <option>{t('Filipino')}</option>
+                            </select></div>
                             <div className="form-group"><label>Auto Logout (mins)</label><input type="number" defaultValue="30"/></div>
                             <div className="form-group"><label>Session Timeout (mins)</label><input type="number" defaultValue="60"/></div>
                         </div>

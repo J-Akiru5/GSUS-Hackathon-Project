@@ -21,10 +21,7 @@ const normalizeDocData = (raw) => {
       try {
         out[k] = v.toDate();
         return;
-      } catch (e) {
-        out[k] = v;
-        return;
-      }
+      } catch (err) { void err; out[k] = v; return; }
     }
     out[k] = v;
   });
@@ -107,9 +104,7 @@ export function listenToUsers(callback) {
     let q;
     try {
       q = query(collection(db, "users"), orderBy("fullName", "asc"));
-    } catch (e) {
-      q = query(collection(db, "users"));
-    }
+    } catch (err) { void err; q = query(collection(db, "users")); }
     const unsubscribe = onSnapshot(
       q,
       (snap) => callback(mapSnapshot(snap), null),
@@ -120,17 +115,11 @@ export function listenToUsers(callback) {
           const q2 = query(collection(db, 'users'));
           const unsub2 = onSnapshot(q2, (s2) => callback(mapSnapshot(s2), null), (err2) => { console.error('listenToUsers fallback error:', err2); callback([], err2); });
           return unsub2;
-        } catch (err2) {
-          callback([], error);
-        }
+        } catch (err2) { void err2; callback([], error); }
       }
     );
     return unsubscribe;
-  } catch (err) {
-    console.error("listenToUsers failed:", err);
-    callback([], err);
-    return () => {};
-  }
+  } catch (err) { console.error("listenToUsers failed:", err); callback([], err); return () => { }; }
 }
 
 /**
@@ -410,10 +399,7 @@ export function listenToConversation(userA, userB, callback) {
     let q;
     try {
       q = query(collection(db, 'messages'), where('conversationId', '==', convId), orderBy('timestamp', 'asc'));
-    } catch (e) {
-      // fallback to a broad query if conversationId field not indexed or absent
-      q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'));
-    }
+    } catch (err) { void err; q = query(collection(db, 'messages'), orderBy('timestamp', 'asc')); }
     const unsubscribe = onSnapshot(
       q,
       (snap) => {

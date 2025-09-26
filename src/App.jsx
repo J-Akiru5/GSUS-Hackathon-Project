@@ -21,6 +21,7 @@ import PersonnelDashboard from './pages/PersonnelDashboard'; // Your "My Tasks" 
 import ChatPage from './pages/ChatPage';
 import DivisionsPage from './pages/DivisionsPage';
 import FeedbacksPage from './pages/FeedbacksPage';
+import HelpPage from './pages/HelpPage';
 
 // --- Layout Components ---
 const HeaderWrapper = ({ children }) => {
@@ -102,6 +103,7 @@ function App() {
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
       <Route path="/feedbacks" element={<FeedbacksPage />} />
+        <Route path="/help" element={<HelpPage />} />
       </Route>
 
       {/* Personnel Routes */}

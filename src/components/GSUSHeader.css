@@ -118,6 +118,29 @@
   justify-content: flex-end;
 }
 
+/* Banner-mounted last-updated pill (visible on analytics desktop/tablet) */
+.banner-last-updated {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  top: auto;
+  z-index: 1015;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--color-text-dark);
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 16px rgba(2, 6, 23, 0.06);
+  pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+
+  /* hide the banner-mounted last-updated on small screens where the compact heading is used */
+  .banner-last-updated {
+    display: none;
+  }
+}
 /* Respect the left sidebar on wide screens by shifting the header bar's left edge */
 @media (min-width: 901px) {
   .gsus-header-bar {

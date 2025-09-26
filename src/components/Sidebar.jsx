@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { FiGrid, FiFileText, FiCalendar, FiUsers, FiBarChart2, FiSettings, FiMessageSquare } from 'react-icons/fi';
+import { FiGrid, FiFileText, FiCalendar, FiUsers, FiBarChart2, FiSettings, FiMessageSquare, FiMail } from 'react-icons/fi';
 import './Sidebar.css';
 import { useAuth } from '../hooks/useAuth';
 import { listenToUsers } from '../services/firestoreService';
 import { listenToConversation } from '../services/firestoreService';
 import { useSidebar } from '../contexts/SidebarContext';
 import Offcanvas from 'react-bootstrap/Offcanvas';
+import { useTranslation } from 'react-i18next';
 
 // Small local component: hamburger that toggles compact on desktop and toggles offcanvas on mobile
 const SidebarToggle = () => {
@@ -32,6 +33,7 @@ const Sidebar = () => {
   const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'GH';
   const displayName = user?.name || 'GSO Head';
   const displayRole = user?.role === 'personnel' ? 'Team Member' : 'Administrator';
+  const { t } = useTranslation();
 
   const sidebarRef = useRef(null);
   // use the SidebarContext provided by SidebarProvider in main.jsx
@@ -104,20 +106,21 @@ const Sidebar = () => {
               </div>
               <nav className="sidebar-nav">
                 <div className="nav-section">
-                  <div className="nav-section-title">MAIN NAVIGATION</div>
-                  <NavLink to="/dashboard" className="nav-item" title="Dashboard"><FiGrid className="nav-icon" /><span className="nav-label">Dashboard</span></NavLink>
-                  <NavLink to="/requests" className="nav-item" title="All Requests"><FiFileText className="nav-icon" /><span className="nav-label">All Requests</span></NavLink>
-                  <NavLink to="/analytics" className="nav-item" title="Analytics"><FiBarChart2 className="nav-icon" /><span className="nav-label">Analytics</span></NavLink>
-                  <NavLink to="/divisions" className="nav-item" title="Divisions"><FiUsers className="nav-icon" /><span className="nav-label">Divisions</span></NavLink>
-                  <NavLink to="/personnel" className="nav-item" title="Personnel"><FiUsers className="nav-icon" /><span className="nav-label">Personnel</span></NavLink>
-                  <NavLink to="/chat" className="nav-item" title="Chat"><FiMessageSquare className="nav-icon" /> <span className="nav-label">Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</span></NavLink>
+                  <div className="nav-section-title">{t('Main Navigation', 'MAIN NAVIGATION')}</div>
+                  <NavLink to="/dashboard" className="nav-item" title={t('Dashboard')}><FiGrid className="nav-icon" /><span className="nav-label">{t('Dashboard')}</span></NavLink>
+                  <NavLink to="/requests" className="nav-item" title={t('All Requests')}><FiFileText className="nav-icon" /><span className="nav-label">{t('All Requests')}</span></NavLink>
+                  <NavLink to="/analytics" className="nav-item" title={t('Analytics')}><FiBarChart2 className="nav-icon" /><span className="nav-label">{t('Analytics')}</span></NavLink>
+                  <NavLink to="/divisions" className="nav-item" title={t('Divisions')}><FiUsers className="nav-icon" /><span className="nav-label">{t('Divisions')}</span></NavLink>
+                  <NavLink to="/personnel" className="nav-item" title={t('Personnel')}><FiUsers className="nav-icon" /><span className="nav-label">{t('Personnel')}</span></NavLink>
+                  <NavLink to="/chat" className="nav-item" title={t('Chat')}><FiMessageSquare className="nav-icon" /> <span className="nav-label">{t('Chat')} {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</span></NavLink>
                 </div>
 
                 <div className="nav-section">
-                  <div className="nav-section-title">QUICK ACTIONS</div>
-                  <NavLink to="/calendar" className="nav-item" title="Master Calendar"><FiCalendar className="nav-icon" /><span className="nav-label">Master Calendar</span></NavLink>
-                  <NavLink to="/settings" className="nav-item" title="Settings"><FiSettings className="nav-icon" /><span className="nav-label">Settings</span></NavLink>
-                  <NavLink to="/help" className="nav-item" title="Help"><FiSettings className="nav-icon" /><span className="nav-label">Help</span></NavLink>
+                  <div className="nav-section-title">{t('Quick Actions', 'QUICK ACTIONS')}</div>
+                  <NavLink to="/feedbacks" className="nav-item" title={t('Feedbacks')}><FiMail className="nav-icon" /><span className="nav-label">{t('Feedbacks')}</span></NavLink>
+                  <NavLink to="/calendar" className="nav-item" title={t('Master Calendar')}><FiCalendar className="nav-icon" /><span className="nav-label">{t('Master Calendar')}</span></NavLink>
+                  <NavLink to="/settings" className="nav-item" title={t('Settings')}><FiSettings className="nav-icon" /><span className="nav-label">{t('Settings')}</span></NavLink>
+                  <NavLink to="/help" className="nav-item" title={t('Help')}><FiSettings className="nav-icon" /><span className="nav-label">{t('Help')}</span></NavLink>
                 </div>
               </nav>
             </div>
@@ -127,13 +130,13 @@ const Sidebar = () => {
                 <div className="user-avatar">{initials}</div>
               </NavLink>
               <div className="user-info">
-                <span className="user-name">{displayName}</span>
-                <span className="user-role">{displayRole}</span>
-              </div>
+                  <span className="user-name">{displayName}</span>
+                  <span className="user-role">{displayRole}</span>
+                </div>
             </div>
 
             <div className="sidebar-logout">
-              <button className="btn btn-secondary logout-btn" onClick={logout} style={{ padding: '0.5rem', width: '100%', fontSize: '0.9rem' }}>Log out</button>
+                <button className="btn btn-secondary logout-btn" onClick={logout} style={{ padding: '0.5rem', width: '100%', fontSize: '0.9rem' }}>{t('Log Out')}</button>
             </div>
           </div>
           </aside>
@@ -151,6 +154,7 @@ const Sidebar = () => {
                 <NavLink to="/dashboard" className="nav-item" title="Dashboard" onClick={() => close()}><FiGrid className="nav-icon" /><span className="nav-label">Dashboard</span></NavLink>
                 <NavLink to="/requests" className="nav-item" title="All Requests" onClick={() => close()}><FiFileText className="nav-icon" /><span className="nav-label">All Requests</span></NavLink>
                 <NavLink to="/analytics" className="nav-item" title="Analytics" onClick={() => close()}><FiBarChart2 className="nav-icon" /><span className="nav-label">Analytics</span></NavLink>
+                  <NavLink to="/feedbacks" className="nav-item" title="Feedbacks" onClick={() => close()}><FiMail className="nav-icon" /><span className="nav-label">Feedbacks</span></NavLink>
                 <NavLink to="/divisions" className="nav-item" title="Divisions" onClick={() => close()}><FiUsers className="nav-icon" /><span className="nav-label">Divisions</span></NavLink>
                 <NavLink to="/personnel" className="nav-item" title="Personnel" onClick={() => close()}><FiUsers className="nav-icon" /><span className="nav-label">Personnel</span></NavLink>
                 <NavLink to="/chat" className="nav-item" title="Chat" onClick={() => close()}><FiMessageSquare className="nav-icon" /> <span className="nav-label">Chat {unreadCount > 0 && (<span className="unread-badge">{unreadCount}</span>)}</span></NavLink>

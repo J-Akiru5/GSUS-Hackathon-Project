@@ -31,9 +31,7 @@ function AuthForm({ onLogin }) {
     if (newRole === 'personnel') {
       try {
         await onLogin({ role: 'personnel' });
-      } catch (e) {
-        // ignore errors in demo convenience flow
-      }
+      } catch (e) { void e; }
       navigate('/my-tasks');
     }
   };
@@ -66,9 +64,7 @@ function AuthForm({ onLogin }) {
             // quick access: demo login as Personnel then navigate to the Personnel Dashboard
             try {
               await onLogin({ role: 'personnel' });
-            } catch (e) {
-              // ignore errors here (demo path)
-            }
+            } catch (e) { void e; }
             navigate('/my-tasks');
           }}>Personnel Dashboard</Button>
         </div>

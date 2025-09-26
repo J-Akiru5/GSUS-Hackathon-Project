@@ -1,11 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const SidebarContext = createContext(null);
 
 export const SidebarProvider = ({ children }) => {
-  // open: entirely visible (overlay on small screens)
-  // compact: narrow icon-only sidebar on desktop
-  // initialize state depending on viewport: on desktop we want the sidebar expanded by default
+  // open/compact state and storage are managed inside the provider
   const STORAGE_KEY = 'gsus:sidebar';
   const isDesktop = typeof window !== 'undefined' ? window.innerWidth > 900 : true;
 
@@ -16,9 +15,7 @@ export const SidebarProvider = ({ children }) => {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) stored = JSON.parse(raw);
     }
-  } catch (e) {
-    // ignore storage errors
-  }
+  } catch (err) { void err; }
 
   // default states based on viewport, but prefer stored values when present
   const [open, setOpen] = useState(stored && typeof stored.open === 'boolean' ? stored.open : isDesktop);
@@ -36,7 +33,7 @@ export const SidebarProvider = ({ children }) => {
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ open, compact }));
       }
-    } catch (e) {
+    } catch {
       // ignore storage errors
     }
 
@@ -83,4 +80,4 @@ export const useSidebar = () => {
   return ctx;
 };
 
-export default SidebarContext;
+// Intentionally do not default-export context to satisfy react-refresh rules.

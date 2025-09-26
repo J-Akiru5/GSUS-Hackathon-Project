@@ -3,7 +3,7 @@ export function toDate(raw) {
   if (!raw && raw !== 0) return null;
   if (raw instanceof Date) return raw;
   if (raw && typeof raw.toDate === 'function') {
-    try { return raw.toDate(); } catch (e) { return null; }
+    try { return raw.toDate(); } catch { return null; }
   }
   // attempt parse
   const parsed = new Date(raw);

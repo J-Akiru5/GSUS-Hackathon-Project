@@ -17,17 +17,19 @@
     border-right: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  /* keep items stacked from the top; footer will use margin-top:auto to stick to bottom */
+    justify-content: flex-start;
   position: fixed;
     top: 0;
     left: 0;
     bottom: 0;
     z-index: 1200;
-  height: 100vh;
+  height: auto;
   padding: 0;
   flex-shrink: 0;
   transition: width var(--transition-medium), background-color var(--transition-fast);
     color: #f7fff7;
+    position: fixed;
 }
 
 .sidebar.compact {
@@ -65,7 +67,7 @@
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 2rem;
     padding: 0.5rem 0.5rem;
 }
 
@@ -130,6 +132,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    /* allow footer to stick to bottom without using space-between on the container */
+      margin-top: auto;
 }
 .user-profile {
   display: flex;
@@ -144,7 +148,7 @@
   width: 48px;
   height: 48px;
     border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.12);
+  background-color: rgba(136, 136, 136, 0.12);
     color: #fff;
     display: flex;
     align-items: center;
@@ -201,6 +205,9 @@
   }
   
   /* compact mode: icon-only and hide some elements */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .sidebar.compact .nav-section-title {
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  display: none;
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
   .sidebar.compact .nav-item {
     justify-content: center;
     padding: 0.6rem 0.4rem;
@@ -251,6 +258,8 @@
     border-right: none;
     border-bottom: 1px solid rgba(0, 0, 0, 0.06);
     padding: 0.5rem;
+    /* prevent 100vh spacing pushing nav items apart on small screens */
+      height: 100vh;
   }
 
   .sidebar.compact {

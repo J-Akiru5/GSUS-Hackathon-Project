@@ -46,7 +46,7 @@ export default function Popover({ anchorRef, open, onClose, children, prefer = '
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('keydown', onKey);
-      try { previouslyFocused.current && previouslyFocused.current.focus(); } catch (e) {}
+      try { previouslyFocused.current && previouslyFocused.current.focus(); } catch (err) { void err; }
     };
   }, [open, onClose]);
 

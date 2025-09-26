@@ -5,22 +5,8 @@ import { Clock, CheckCircle, AlertTriangle, FileText, ThumbsUp, ThumbsDown, Eye,
 
 // Utility to render one of the imported icons by key.
 // Usage: renderIcon('clock', { size: 20, className: 'my-icon' })
-function renderIcon(name, props = { size: 18, className: 'icon' }) {
-  const icons = {
-    clock: Clock,
-    checkCircle: CheckCircle,
-    alertTriangle: AlertTriangle,
-    fileText: FileText,
-    thumbsUp: ThumbsUp,
-    thumbsDown: ThumbsDown,
-    eye: Eye,
-    calendar: Calendar,
-  };
-  const Icon = icons[name];
-  return Icon ? <Icon {...props} /> : null;
-}
+// Note: removed unused renderIcon helper to satisfy lint rules
 import GlobalModal from '../components/GlobalModal';
-import Card from '../components/Card';
 import './Dashboard.css'; // <-- Use our existing CSS file
 import SectionHeader from '../components/SectionHeader';
 import { listenToPendingRequests, updateRequestStatus, listenToBookings, listenToUsers } from '../services/firestoreService'; // add service imports
@@ -58,6 +44,8 @@ export default function GSODashboard() {
   // --- users map to enrich requests with requester details ---
   const [usersById, setUsersById] = useState({});
   const [usersByEmail, setUsersByEmail] = useState({});
+  // loadingUsers is intentionally unused here (kept for future enhancements)
+  /* eslint-disable-next-line no-unused-vars */
   const [loadingUsers, setLoadingUsers] = useState(true);
   const navigate = useNavigate();
 
@@ -146,6 +134,7 @@ export default function GSODashboard() {
       if (d && typeof d.toDate === 'function') return d.toDate().toLocaleString();
       return new Date(d).toLocaleString();
     } catch (e) {
+      console.error('safeFormatDate error', e);
       return '—';
     }
   };
@@ -215,7 +204,9 @@ export default function GSODashboard() {
         <StatCard title="Avg Response Time" value="2.3 hours" icon="📄" onClick={() => navigate('/analytics')} />
       </div>
       <div className="dashboard-main-grid">
-        <Card title="Action Required" className="action-required-panel">
+        <div className="card action-required-panel">
+          <h3>Action Required</h3>
+          <div className="card-content">
 
           {loading && <p style={{ color: 'var(--color-text-light)' }}>Loading pending requests...</p>}
           {error && <p style={{ color: 'var(--color-danger)' }}>Error loading requests.</p>}
@@ -227,6 +218,7 @@ export default function GSODashboard() {
           {!loading && !error && pendingRequests.map(req => {
             const requester = getRequesterInfo(req);
             const dateLabel = safeFormatDate(req.requestedDate || req.createdAt || req.submittedAt || req.created);
+            void dateLabel; // currently not shown in list but kept for future UI
             return (
               <div key={req.id} className="request-item clickable" onClick={() => navigate('/requests')}>
                 <div>
@@ -263,9 +255,12 @@ export default function GSODashboard() {
             );
           })}
 
-        </Card>
+          </div>
+        </div>
 
-        <Card title="Calendar" className="calendar-panel">
+        <div className="card calendar-panel">
+          <h3>Calendar</h3>
+          <div className="card-content">
 
           {loadingBookings && <p style={{ textAlign: 'center', color: 'var(--color-text-light)', marginTop: '1rem' }}>Loading calendar...</p>}
           {bookingsError && <p style={{ textAlign: 'center', color: 'var(--color-danger)', marginTop: '1rem' }}>Failed to load calendar.</p>}
@@ -293,7 +288,8 @@ export default function GSODashboard() {
 
           {!loadingBookings && bookings.length === 0 && <p style={{ textAlign: 'center', color: 'var(--color-text-light)', marginTop: '2rem' }}>No upcoming bookings.</p>}
 
-        </Card>
+          </div>
+        </div>
       </div>
 
       {/* Audit trail moved to Analytics page per request */}

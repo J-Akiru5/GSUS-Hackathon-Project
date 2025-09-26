@@ -5,6 +5,7 @@ import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import './GSUSHeader.css';
 import bannerSrc from '../assets/GSUSBanner.svg';
 import { listenToUsers, listenToDivisions, listenToRequests, listenToBookings, listenToFeedback } from '../services/firestoreService';
+import { useTranslation } from 'react-i18next';
 
 // Small mobile-only button to toggle the offcanvas sidebar
 function MobileSidebarButton() {
@@ -36,7 +37,9 @@ export default function GSUSHeader() {
   const [requestsCount, setRequestsCount] = useState(null);
   const [bookingsCount, setBookingsCount] = useState(null);
   const [feedbackCount, setFeedbackCount] = useState(null);
+  const [lastActivityAt, setLastActivityAt] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const unsubP = listenToUsers((data, err) => {
@@ -47,13 +50,38 @@ export default function GSUSHeader() {
       if (err) { setDivisionsCount(null); return; }
       setDivisionsCount(Array.isArray(data) ? data.length : 0);
     });
+    // helper to extract latest timestamp from an array of documents
+    const getLatestTimestamp = (arr) => {
+      if (!Array.isArray(arr) || !arr.length) return null;
+      let latest = 0;
+      for (const d of arr) {
+        // check multiple possible timestamp fields
+        const candidates = [d.submittedAt, d.createdAt, d.updatedAt, d.dateSubmitted, d.timestamp, d.submitted_at];
+        for (const c of candidates) {
+          if (c == null) continue;
+          try {
+            let t = c;
+            if (typeof t === 'object' && typeof t.toDate === 'function') t = t.toDate();
+            const ms = (t instanceof Date) ? t.getTime() : Number(new Date(t).getTime());
+            if (!Number.isNaN(ms) && ms > latest) latest = ms;
+          } catch (e) { void e; }
+        }
+      }
+      return latest > 0 ? new Date(latest) : null;
+    };
+
     const unsubR = listenToRequests((data, err) => {
       if (err) { setRequestsCount(null); return; }
       setRequestsCount(Array.isArray(data) ? data.length : 0);
+      const t = getLatestTimestamp(data);
+      if (t) setLastActivityAt(prev => (prev && prev.getTime() >= t.getTime()) ? prev : t);
     });
+
     const unsubB = listenToBookings((data, err) => {
       if (err) { setBookingsCount(null); return; }
       setBookingsCount(Array.isArray(data) ? data.length : 0);
+      const t = getLatestTimestamp(data);
+      if (t) setLastActivityAt(prev => (prev && prev.getTime() >= t.getTime()) ? prev : t);
     });
     const unsubF = listenToFeedback((data, err) => {
       if (err) { setFeedbackCount(null); return; }
@@ -124,32 +152,36 @@ export default function GSUSHeader() {
           <div className="gsus-right-bottom">
             {location && location.pathname && location.pathname.startsWith('/divisions') && (
               <div className="header-personnel">
-                <div className="personnel-label">Divisions</div>
+                <div className="personnel-label">{t('Divisions')}</div>
                 <div className="personnel-count">{divisionsCount === null ? '...' : divisionsCount}</div>
                 {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                  <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+                  <button className="btn btn-primary" onClick={() => navigate('/divisions')}>{t('Add Division')}</button>
                 )}
               </div>
             )}
             {location && location.pathname && location.pathname.startsWith('/personnel') && (
               <div className="header-personnel">
-                <div className="personnel-label">Personnel</div>
+                <div className="personnel-label">{t('Personnel')}</div>
                 <div className="personnel-count">{personnelCount === null ? '...' : personnelCount}</div>
                 {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                  <button className="btn btn-primary" onClick={() => navigate('/personnel')}>Add Personnel</button>
+                  <button className="btn btn-primary" onClick={() => navigate('/personnel')}>{t('Add Personnel')}</button>
                 )}
               </div>
             )}
             <div className="gsus-actions-slot" />
           </div>
         )}
+        {/* If on analytics page show last-updated on the banner */}
+        {path.startsWith('/analytics') && (
+          <div className="banner-last-updated">{t('Last updated')}: {lastActivityAt ? lastActivityAt.toLocaleString() : '—'}</div>
+        )}
       </div>
 
       {/* Mobile compact page heading: replaces banner on small viewports */}
       <div className="mobile-page-heading" role="region" aria-label="Page heading">
         <div className="mobile-heading-left">
-          <h2 className="mobile-page-title">{pageTitle}</h2>
-          {pageSubtitle && <div className="mobile-page-subtitle">{pageSubtitle}</div>}
+          <h2 className="mobile-page-title">{t(pageTitle)}</h2>
+          {pageSubtitle && <div className="mobile-page-subtitle">{t(pageSubtitle)}</div>}
         </div>
         <div className="mobile-heading-actions">
           {/* On mobile, render the small label/count + action buttons inside the mobile heading */}
@@ -157,10 +189,10 @@ export default function GSUSHeader() {
             <>
               {path.startsWith('/divisions') && (
                 <div className="mobile-action-block">
-                  <div className="mobile-action-label">Divisions</div>
+                  <div className="mobile-action-label">{t('Divisions')}</div>
                   <div className="mobile-action-count">{divisionsCount === null ? '...' : divisionsCount}</div>
                   {!(location && location.pathname && location.pathname.startsWith('/requests')) && (
-                    <button className="btn btn-primary" onClick={() => navigate('/divisions')}>Add Division</button>
+                    <button className="btn btn-primary" onClick={() => navigate('/divisions')}>{t('Add Division')}</button>
                   )}
                 </div>
               )}
@@ -175,20 +207,20 @@ export default function GSUSHeader() {
               )}
               {path.startsWith('/requests') && (
                 <div className="mobile-action-block">
-                  <div className="mobile-action-label">{requestsCount === null ? '...' : `${requestsCount} requests`}</div>
+                  <div className="mobile-action-label">{requestsCount === null ? '...' : `${requestsCount} ${t('requests')}`}</div>
                   <button className="mobile-action-btn btn btn-primary" onClick={() => window.dispatchEvent(new CustomEvent('gsus:open-add-request'))}>Add Request</button>
                 </div>
               )}
               {path.startsWith('/calendar') && (
                 <div className="mobile-action-block">
-                  <div className="mobile-action-label">{bookingsCount === null ? '...' : `${bookingsCount} bookings`}</div>
+                  <div className="mobile-action-label">{bookingsCount === null ? '...' : `${bookingsCount} ${t('bookings')}`}</div>
                   <button className="mobile-action-btn btn btn-primary" onClick={() => window.dispatchEvent(new CustomEvent('gsus:open-add-booking'))}>Add Booking</button>
                 </div>
               )}
               {path.startsWith('/analytics') && (
                 <div className="mobile-action-block">
-                  <div className="mobile-action-label">{feedbackCount === null ? '...' : `${feedbackCount} feedback`}</div>
-                  <button className="mobile-action-btn btn btn-primary" onClick={() => window.print()}>Print Feedback</button>
+                  <div className="mobile-action-label">{feedbackCount === null ? '...' : `${feedbackCount} ${t('feedback')}`}</div>
+                  <button className="mobile-action-btn btn btn-primary" onClick={() => window.print()}>{t('Print Feedback')}</button>
                 </div>
               )}
             </>

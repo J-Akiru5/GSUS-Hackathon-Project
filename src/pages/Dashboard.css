@@ -107,11 +107,9 @@
 }
 
 /* Make the two main panels equal height and scrollable when content overflows */
-@media (min-width: 640px) {
-  /* Make dashboard panels flow into a responsive grid similar to Divisions page */
+@media (min-width: 768px) {
   .dashboard-main-grid {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    align-items: start;
+    align-items: stretch;
   }
 
   .action-required-panel,
@@ -120,10 +118,11 @@
     flex-direction: column;
   }
 
-  /* allow inner card content to scroll when tall */
+    /* pick a workable max-height for the panels (adjust as needed) */
   .action-required-panel .card-content,
   .calendar-panel .card-content {
-    max-height: 520px;
+    max-height: 420px;
+      /* same for both panels */
     overflow: auto;
   }
 }

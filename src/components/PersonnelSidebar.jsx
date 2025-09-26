@@ -9,7 +9,7 @@ import { useSidebar } from '../contexts/SidebarContext';
 
 const PersonnelSidebar = () => {
     const { user, logout } = useAuth();
-    const { open, close, toggleCompact } = useSidebar();
+    const { open, close } = useSidebar();
     const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase() : 'PT';
     const displayName = user?.name || 'Personnel';
     const displayRole = user?.role === 'personnel' ? 'Team Member' : (user?.role || 'Personnel');

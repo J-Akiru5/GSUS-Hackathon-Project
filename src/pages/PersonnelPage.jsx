@@ -20,11 +20,12 @@ const StatusBadge = ({ status }) => {
 export default function PersonnelPage() {
     const [personnelData, setPersonnelData] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [roleFilter, setRoleFilter] = useState("all");
+    const [roleFilter, _setRoleFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [divisionFilter, setDivisionFilter] = useState("all");
     const [viewMode, setViewMode] = useState('cards'); // 'cards' or 'table'
     const [loading, setLoading] = useState(true);
+    /* eslint-disable-next-line no-unused-vars */
     const [error, setError] = useState(null);
 
     useEffect(() => {

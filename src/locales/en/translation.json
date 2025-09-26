@@ -1,0 +1,70 @@
+{
+  "Settings": "Settings",
+  "Manage your account and system preferences": "Manage your account and system preferences",
+  "Profile Settings": "Profile Settings",
+  "Full Name": "Full Name",
+  "Position": "Position",
+  "Email Address": "Email Address",
+  "Phone Number": "Phone Number",
+  "Department": "Department",
+  "Change Password": "Change Password",
+  "Log Out": "Log Out",
+  "Save Profile": "Save Profile",
+  "Notification Preferences": "Notification Preferences",
+  "Email on New Request": "Email on New Request",
+  "Email on Approval": "Email on Approval",
+  "SMS for Urgent Requests": "SMS for Urgent Requests",
+  "Push Notifications": "Push Notifications",
+  "Email Digest Frequency": "Email Digest Frequency",
+  "System Settings": "System Settings",
+  "Theme": "Theme",
+  "Language": "Language",
+  "English": "English",
+  "Filipino": "Filipino",
+  "Auto Logout (mins)": "Auto Logout (mins)",
+  "Session Timeout (mins)": "Session Timeout (mins)",
+  "System settings saved!": "System settings saved!",
+  "Save System Settings": "Save System Settings",
+  "Security Settings": "Security Settings",
+  "Two-Factor Authentication": "Two-Factor Authentication",
+  "Login Alerts": "Login Alerts",
+  "Password Expiry (days)": "Password Expiry (days)",
+  "Help & Support": "Help & Support"
+  ,"Main Navigation": "MAIN NAVIGATION"
+  ,"Quick Actions": "QUICK ACTIONS"
+  ,"Dashboard": "Dashboard"
+  ,"All Requests": "All Requests"
+  ,"Analytics": "Analytics"
+  ,"Divisions": "Divisions"
+  ,"Personnel": "Personnel"
+  ,"Chat": "Chat"
+  ,"Feedbacks": "Feedbacks"
+  ,"Master Calendar": "Master Calendar"
+  ,"Help": "Help"
+  ,"Add Division": "Add Division"
+  ,"Add Personnel": "Add Personnel"
+  ,"Last updated": "Last updated"
+  ,"requests": "requests"
+  ,"bookings": "bookings"
+  ,"feedback": "feedback"
+  ,"Print Feedback": "Print Feedback"
+  ,"Getting started": "Getting started"
+  ,"If you need help using GSUS, start with these resources:": "If you need help using GSUS, start with these resources:"
+  ,"create and manage requests and feedback": "create and manage requests and feedback"
+  ,"view bookings and schedule resources": "view bookings and schedule resources"
+  ,"review performance metrics and feedback": "review performance metrics and feedback"
+  ,"Frequently asked questions": "Frequently asked questions"
+  ,"Troubleshooting": "Troubleshooting"
+  ,"Video Guides": "Video Guides"
+  ,"Contact support": "Contact support"
+  ,"Your name": "Your name"
+  ,"Your email": "Your email"
+  ,"How can we help?": "How can we help?"
+  ,"Send": "Send"
+  ,"Message queued (mock)": "Message queued (mock)"
+  ,"Recent Feedback": "Recent Feedback"
+  ,"messages": "messages"
+  ,"Loading feedback...": "Loading feedback..."
+  ,"No feedback available": "No feedback available"
+  ,"Submitted": "Submitted"
+}

@@ -18,14 +18,14 @@ const timeAgo = (date) => {
 
 const FloatingActivity = () => {
   const [open, setOpen] = useState(() => {
-    try { return localStorage.getItem(STORAGE_KEY) !== 'false'; } catch (e) { return true; }
+    try { return localStorage.getItem(STORAGE_KEY) !== 'false'; } catch { /* ignore localStorage errors */ return true; }
   });
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, open ? 'true' : 'false'); } catch (e) { }
+    try { localStorage.setItem(STORAGE_KEY, open ? 'true' : 'false'); } catch { /* ignore */ }
   }, [open]);
 
   useEffect(() => {

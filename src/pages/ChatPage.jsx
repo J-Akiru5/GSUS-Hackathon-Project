@@ -1,19 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { listenToUsers, getUserByAuthUid, createUser, getUserById, listenToChat, sendChatMessage, markChatRead, makeChatId } from '../services/firestoreService';
-import { auth, db } from '../../firebaseConfig';
+import { listenToUsers, getUserByAuthUid, createUser, getUserById, listenToChat, sendChatMessage } from '../services/firestoreService';
+import { auth } from '../../firebaseConfig';
 import { signInAnonymously } from 'firebase/auth';
 import { useAuth } from '../hooks/useAuth';
 import './ChatPage.css';
 import SectionHeader from '../components/SectionHeader';
 import { User, Send } from 'lucide-react';
-import { collection, query, orderBy, addDoc, onSnapshot, serverTimestamp, doc, setDoc } from 'firebase/firestore';
+// firebase/firestore helpers are not needed in this component (chat uses service wrapper)
 
 export default function ChatPage() {
   useEffect(() => {
     // keep banner visible on chat page
   }, []);
   const [messages, setMessages] = useState([]);
-  const [gsoHead, setGsoHead] = useState(null);
+  // gsoHead tracked via users list when required
+  const [_gsoHead, setGsoHead] = useState(null);
   const [users, setUsers] = useState([]);
   const [activeUser, setActiveUser] = useState(null);
   const [newMessage, setNewMessage] = useState('');
