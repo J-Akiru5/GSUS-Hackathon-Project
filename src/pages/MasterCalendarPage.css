@@ -14,16 +14,14 @@
 }
 
 /* High-level layout: make calendar occupy the full viewport while keeping SectionHeader above */
-.calendar-grid {
+.calendar-page {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-        font-size: 1.03rem;
-        height: 100vh;
-        /* full viewport */
-    height: 100%;
-    min-height: 0;
-    overflow: visible; /* make month view non-scrollable */
+    font-size: 1.03rem;
+    height: 100vh; /* full viewport */
+    min-height: 100vh; /* keep full viewport even when zoomed */
+    overflow: hidden; /* inner areas will manage scrolling */
 }
 
 /* card becomes the flexible container that fills remaining space under SectionHeader */
@@ -92,13 +90,14 @@
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     grid-auto-rows: 1fr;
-        /* each row stretches to evenly fill the grid area */
+    /* each row stretches to evenly fill the grid area */
     gap: 0.25rem;
     padding: 1px;
-        /* reduce padding so grid can occupy more space */
-        height: 100%;
-        min-height: 0;
-    overflow: auto;
+    /* reduce padding so grid can occupy more space */
+    flex: 1 1 auto; /* fill available vertical space */
+    height: auto;
+    min-height: 0;
+    overflow: visible; /* month view non-scrollable */
     background: var(--color-bg, transparent);
 }
 
@@ -248,6 +247,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex: 1 1 auto;
     height: 100%;
     min-height: 0;
 }
